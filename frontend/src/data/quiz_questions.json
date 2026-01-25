@@ -1,0 +1,138 @@
+[
+    {
+        "id": 1,
+        "question": "Quelle ambiance recherchez-vous pour votre parfum idéal ?",
+        "options": [
+            {
+                "text": "Un jardin printanier en pleine floraison",
+                "scores": {
+                    "floral": 10,
+                    "fresh": 5
+                }
+            },
+            {
+                "text": "Une promenade en forêt après la pluie",
+                "scores": {
+                    "woody": 10,
+                    "fresh": 3
+                }
+            },
+            {
+                "text": "Un marché aux épices envoûtant",
+                "scores": {
+                    "oriental": 8,
+                    "spicy": 10
+                }
+            },
+            {
+                "text": "La brise marine sur la côte",
+                "scores": {
+                    "fresh": 10,
+                    "woody": 2
+                }
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "question": "Quelle matière première vous fait le plus rêver ?",
+        "options": [
+            {
+                "text": "La Rose de Mai ou le Jasmin",
+                "scores": {
+                    "floral": 10
+                }
+            },
+            {
+                "text": "Le Bois de Santal ou le Cèdre",
+                "scores": {
+                    "woody": 10
+                }
+            },
+            {
+                "text": "La Vanille ou le Benjoin",
+                "scores": {
+                    "oriental": 10
+                }
+            },
+            {
+                "text": "La Bergamote ou le Citron",
+                "scores": {
+                    "fresh": 10
+                }
+            },
+            {
+                "text": "Le Poivre rose ou la Cardamone",
+                "scores": {
+                    "spicy": 10
+                }
+            }
+        ]
+    },
+    {
+        "id": 3,
+        "question": "Comment décririez-vous votre personnalité ?",
+        "options": [
+            {
+                "text": "Romantique et Douce",
+                "scores": {
+                    "floral": 8,
+                    "oriental": 2
+                }
+            },
+            {
+                "text": "Audacieuse et Mystérieuse",
+                "scores": {
+                    "oriental": 8,
+                    "spicy": 5
+                }
+            },
+            {
+                "text": "Dynamique et Naturelle",
+                "scores": {
+                    "fresh": 8,
+                    "woody": 2
+                }
+            },
+            {
+                "text": "Élégante et Assurée",
+                "scores": {
+                    "woody": 8,
+                    "floral": 2
+                }
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "question": "Quelle est votre saison préférée ?",
+        "options": [
+            {
+                "text": "Le Printemps et ses fleurs",
+                "scores": {
+                    "floral": 10
+                }
+            },
+            {
+                "text": "L'Été et sa fraîcheur",
+                "scores": {
+                    "fresh": 10
+                }
+            },
+            {
+                "text": "L'Automne et ses odeurs de bois",
+                "scores": {
+                    "woody": 10,
+                    "spicy": 5
+                }
+            },
+            {
+                "text": "L'Hiver et sa chaleur cocooning",
+                "scores": {
+                    "oriental": 10,
+                    "spicy": 5
+                }
+            }
+        ]
+    }
+]
