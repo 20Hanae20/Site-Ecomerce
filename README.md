@@ -1,59 +1,90 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌿 Site Parfum - Expérience E-commerce de Luxe
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Bannière Luxe](https://placehold.co/1200x400?text=Site+Parfum+-+Haute+Parfumerie)
 
-## About Laravel
+> **Une fusion entre l'art de la parfumerie et l'innovation technologique.**
+> Ce projet est une plateforme e-commerce complète (Full Stack) proposant une expérience utilisateur immersive, un design soigné et un système de recommandation intelligent.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌟 Fonctionnalités Clés
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🎨 Expérience Utilisateur (Front-Office)
+*   **Design Premium** : Interface "Glassmorphism" sombre et dorée, animations fluides et typographie élégante.
+*   **🧪 Quiz Olfactif IA** : Algorithme de recommandation qui analyse le profil sensoriel de l'utilisateur pour lui proposer sa signature olfactive idéale.
+*   **Parcours Client** : Catalogue filtrable, pages produits détaillées, gestion du panier et tunnel de commande simulé.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🛡️ Administration (Back-Office)
+*   **Dashboard Visuel** : Statistiques de ventes, graphiques de tendance et suivi de l'activité.
+*   **Gestion Globale** : CRUD complet pour les produits, catégories, commandes, utilisateurs et promotions.
+*   **Sécurité** : Système de rôles et permissions (Super Admin, Modérateur, Gestionnaire).
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🛠️ Stack Technique
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Ce projet adopte une architecture **Headless** moderne :
 
-## Laravel Sponsors
+| Couche | Technologie | Rôle |
+| :--- | :--- | :--- |
+| **Backend** | **Laravel 10** (PHP) | API REST, Logique métier, Sécurité, Base de données |
+| **Frontend** | **React 18** (Vite) | Interface Utilisateur (SPA), Gestion d'état, Appel API |
+| **Base de données** | **MySQL** | Stockage relationnel (Utilisateurs, Commandes, Produits) |
+| **Styles** | **CSS 3** | Design System personnalisé (Variables CSS, Flexbox, Grid) |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🚀 Installation & Démarrage
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Pré-requis
+*   PHP 8.1+ & Composer
+*   Node.js 16+ & NPM
+*   MySQL
 
-## Contributing
+### 1. Installation du Backend (API)
+```bash
+cd "Site parfum"
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Installation des dépendances
+composer install
 
-## Code of Conduct
+# Configuration de l'environnement
+cp .env.example .env
+# (Configurez votre BDD dans le fichier .env)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Génération de la clé et migration
+php artisan key:generate
+php artisan migrate --seed # Remplit la base avec des données de test
 
-## Security Vulnerabilities
+# Lancement du serveur
+php artisan serve
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 2. Installation du Frontend (React)
+```bash
+cd frontend
 
-## License
+# Installation des dépendances
+npm install
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Lancement du serveur de développement
+npm run dev
+```
+
+Accédez à l'application sur : `http://localhost:5173`
+
+---
+
+## 🧪 Le Quiz Olfactif : Comment ça marche ?
+
+Le système de recommandation est une fonctionnalité phare du projet. Il ne se contente pas de filtrer, il **matche**.
+
+1.  **Profilage** : L'utilisateur répond à 4 questions ciblées (Ambiance, Matière, Personnalité, Saison).
+2.  **Scoring** : Chaque réponse alimente un vecteur de préférences (Floral, Boisé, Oriental, Frais, Épicé).
+3.  **Matching** : L'algorithme compare ce vecteur avec les attributs techniques de chaque parfum en base de données.
+4.  **Résultat** : Les 3 parfums ayant le score de compatibilité le plus élevé sont présentés avec un pourcentage de pertinence.
+
+---
+
+## 👤 Auteur
+
+Projet réalisé par **Hanae Chaiboub** - 2026.
+*Cadre :  E-commerce*
