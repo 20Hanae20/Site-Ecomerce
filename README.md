@@ -1,7 +1,5 @@
 # 🌿 Site Parfum - Expérience E-commerce de Luxe
 
-![Bannière Luxe](https://placehold.co/1200x400?text=Site+Parfum+-+Haute+Parfumerie)
-
 > **Une fusion entre l'art de la parfumerie et l'innovation technologique.**
 > Ce projet est une plateforme e-commerce complète (Full Stack) proposant une expérience utilisateur immersive, un design soigné et un système de recommandation intelligent.
 
