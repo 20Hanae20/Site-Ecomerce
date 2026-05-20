@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    use \App\Models\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'order_number',
         'status',

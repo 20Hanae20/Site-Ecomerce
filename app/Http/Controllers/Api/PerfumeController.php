@@ -52,7 +52,7 @@ class PerfumeController extends Controller
 
         // Hide out of stock (optional)
         if ($request->boolean('in_stock_only')) {
-            $query->where('stock', '>', 0);
+            $query->where('stock_quantity', '>', 0);
         }
 
         // Sorting
@@ -66,13 +66,13 @@ class PerfumeController extends Controller
                 $query->orderBy('price', 'desc');
                 break;
             case 'popularity':
-                $query->orderBy('views', 'desc');
+                $query->orderBy('rating_avg', 'desc');
                 break;
             case 'best_sellers':
-                $query->orderBy('sales_count', 'desc');
+                $query->orderBy('rating_count', 'desc');
                 break;
             case 'rating':
-                $query->orderBy('rating', 'desc');
+                $query->orderBy('rating_avg', 'desc');
                 break;
             default:
                 $query->orderBy('created_at', 'desc');
@@ -98,7 +98,7 @@ class PerfumeController extends Controller
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'gallery_urls' => 'nullable|array',
             'gallery_urls.*' => 'url',
-            'stock' => 'nullable|integer',
+            'stock_quantity' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);
 
@@ -131,8 +131,8 @@ class PerfumeController extends Controller
      */
     public function show(Perfume $perfume, Request $request)
     {
-        // Increment views for popularity tracking
-        $perfume->increment('views');
+        // Increment views for popularity tracking (using rating_count as view counter)
+        $perfume->increment('rating_count');
 
         // Track user view if authenticated
         if ($request->user()) {
@@ -167,7 +167,7 @@ class PerfumeController extends Controller
             'gallery_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'gallery_urls' => 'nullable|array',
             'gallery_urls.*' => 'url',
-            'stock' => 'nullable|integer',
+            'stock_quantity' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
         ]);
 

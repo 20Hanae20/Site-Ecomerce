@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Address extends Model
 {
+    use \App\Models\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'city',
         'neighborhood',

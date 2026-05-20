@@ -107,13 +107,12 @@ class AdminController extends Controller
         }
 
         $totalSales = \App\Models\Order::where('status', '!=', 'cancelled')
-            ->where('payment_status', 'completed')
-            ->sum('total');
+            ->sum('total_amount');
 
         $orderCount = \App\Models\Order::where('status', '!=', 'cancelled')->count();
-        $userCount = \App\Models\User::where('role', 'user')->count();
+        $userCount = \App\Models\User::where('role', 'customer')->count();
         $newReviewsCount = \App\Models\Review::where('is_approved', false)->count();
-        $lowStockCount = \App\Models\Perfume::where('stock', '<', 5)->count();
+        $lowStockCount = \App\Models\Perfume::where('stock_quantity', '<', 5)->count();
 
         // Top Selling Products
         $topProducts = \App\Models\OrderItem::select('perfume_name', \DB::raw('SUM(quantity) as total_sold'))
@@ -123,10 +122,9 @@ class AdminController extends Controller
             ->get();
 
         // 7 Day Sales Trend
-        $salesTrend = \App\Models\Order::select(\DB::raw('DATE(created_at) as date'), \DB::raw('SUM(total) as total'))
+        $salesTrend = \App\Models\Order::select(\DB::raw('DATE(created_at) as date'), \DB::raw('SUM(total_amount) as total'))
             ->where('created_at', '>=', now()->subDays(7))
             ->where('status', '!=', 'cancelled')
-            ->where('payment_status', 'completed')
             ->groupBy('date')
             ->get();
 

@@ -12,7 +12,21 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->api(prepend: [
+            \App\Http\Middleware\CorsMiddleware::class,
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\CorsMiddleware::class,
+            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+        ]);
+        
+        $middleware->alias([
+            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            'prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

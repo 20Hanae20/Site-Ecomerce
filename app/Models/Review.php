@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends Model
 {
+    use \App\Models\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'perfume_id',
         'order_id',

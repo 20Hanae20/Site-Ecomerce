@@ -43,7 +43,7 @@ class CartController extends Controller
         $cart = Cart::firstOrCreate(['user_id' => $user->id]);
         $perfume = Perfume::findOrFail($request->perfume_id);
 
-        if ($perfume->stock < ($request->quantity ?? 1)) {
+        if ($perfume->stock_quantity < ($request->quantity ?? 1)) {
             return response()->json(['message' => self::STOCK_ERROR_MESSAGE], 422);
         }
 
@@ -51,7 +51,7 @@ class CartController extends Controller
 
         if ($cartItem) {
             $newQuantity = $cartItem->quantity + ($request->quantity ?? 1);
-            if ($perfume->stock < $newQuantity) {
+            if ($perfume->stock_quantity < $newQuantity) {
                 return response()->json(['message' => self::STOCK_ERROR_MESSAGE], 422);
             }
             $cartItem->update(['quantity' => $newQuantity]);
@@ -80,7 +80,7 @@ class CartController extends Controller
         if ($request->quantity == 0) {
             $cartItem->delete();
         } else {
-            if ($perfume->stock < $request->quantity) {
+            if ($perfume->stock_quantity < $request->quantity) {
                 return response()->json(['message' => self::STOCK_ERROR_MESSAGE], 422);
             }
             $cartItem->update(['quantity' => $request->quantity]);

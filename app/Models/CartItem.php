@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class CartItem extends Model
 {
-    protected $fillable = ['cart_id', 'perfume_id', 'quantity'];
+    use \App\Models\Traits\BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'cart_id', 'perfume_id', 'quantity'];
 
     public function cart()
     {

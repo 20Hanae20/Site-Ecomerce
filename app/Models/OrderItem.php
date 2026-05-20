@@ -7,7 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends Model
 {
+    use \App\Models\Traits\BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'order_id',
         'perfume_id',
         'perfume_name',

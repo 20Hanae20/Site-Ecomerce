@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Promotion extends Model
 {
-    protected $fillable = ['name', 'code', 'type', 'value', 'start_date', 'end_date', 'is_active'];
+    use \App\Models\Traits\BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'name', 'code', 'type', 'value', 'start_date', 'end_date', 'is_active'];
 
     protected $casts = [
         'start_date' => 'datetime',

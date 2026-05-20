@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
-    protected $fillable = ['user_id'];
+    use \App\Models\Traits\BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'user_id'];
 
     public function user()
     {

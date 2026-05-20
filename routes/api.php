@@ -13,8 +13,19 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\TenantController;
+use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Tenant Information (public)
+Route::get('/tenant/current', [TenantController::class, 'current']);
+Route::get('/tenant/by-domain', [TenantController::class, 'byDomain']);
+
+// Subscription Plans (public)
+Route::get('/subscription/plans', [SubscriptionController::class, 'plans']);
+Route::get('/subscription/current', [SubscriptionController::class, 'current']);
+Route::get('/subscription/has-feature', [SubscriptionController::class, 'hasFeature']);
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
@@ -109,7 +120,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin Review Moderation
     Route::get('/admin/reviews', [ReviewController::class, 'adminIndex']);
     Route::patch('/reviews/{review}/toggle-approval', [ReviewController::class, 'toggleApproval']);
-});
+    
+    // Tenant Admin
+    Route::put('/tenant', [TenantController::class, 'update']);    
+    // Subscription Admin
+    Route::put('/subscription/upgrade', [SubscriptionController::class, 'upgrade']);});
 
 // Admin Authentication (Public)
 Route::post('/admin/login', [\App\Http\Controllers\Api\AdminController::class, 'login']);
