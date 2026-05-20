@@ -31,6 +31,29 @@ php artisan key:generate
 # Configurez votre base de données dans le .env
 php artisan migrate --seed
 php artisan serve
+
+### Storage & logos
+
+The application stores tenant logos in the `storage/app/public/tenants/{tenant_id}` folder. To make the files publicly accessible, create a symbolic link:
+
+```bash
+php artisan storage:link
+```
+
+You can manage tenant logos with the included artisan helper:
+
+```bash
+# List stored logos
+php artisan tenant:logos list
+
+# Delete logo files for a tenant
+php artisan tenant:logos delete --tenant=123
+
+# Delete all tenant logos
+php artisan tenant:logos clear
+```
+
+If you upload files via the admin UI, ensure `storage:link` is present and your web server follows the `storage` symlink.
 ```
 
 ### 3. Frontend (React / Vite)

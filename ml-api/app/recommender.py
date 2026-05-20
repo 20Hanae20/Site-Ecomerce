@@ -21,7 +21,7 @@ def load_model():
         print(f"Error loading model: {e}")
         raise
 
-def predict(model, data, available_perfumes=None):
+def predict(model, data, available_perfumes=None, tenant_id=None):
     """
     Makes a prediction using the loaded model.
     Rank available_perfumes based on features if provided.
@@ -29,6 +29,12 @@ def predict(model, data, available_perfumes=None):
     try:
         # If we have available perfumes and features, let's do a smart ranking
         if available_perfumes and isinstance(data, list):
+            # Filter by tenant if provided (each perfume may include a tenant_id)
+            if tenant_id is not None:
+                available_perfumes = [p for p in available_perfumes if p.get('tenant_id') == tenant_id]
+
+            if not available_perfumes:
+                return []
             # Feature indices: 0:floral, 1:woody, 2:oriental, 3:fresh, 4:spicy, 5:fruity, 6:aromatic
             families = ['floral', 'boisé', 'oriental', 'frais', 'épicé', 'fruité', 'aromatique']
             

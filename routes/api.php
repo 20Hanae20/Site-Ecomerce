@@ -123,6 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Tenant Admin
     Route::put('/tenant', [TenantController::class, 'update']);    
+    Route::post('/admin/upload-logo', [TenantController::class, 'uploadLogo']);
     // Subscription Admin
     Route::put('/subscription/upgrade', [SubscriptionController::class, 'upgrade']);});
 

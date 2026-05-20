@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Tenant;
+use App\Models\Subscription;
 use Illuminate\Console\Command;
 use Stancl\Tenancy\Database\Models\Domain;
 
@@ -50,6 +51,15 @@ class TenantCommand extends Command
         Domain::create([
             'domain' => $domain,
             'tenant_id' => $tenant->id,
+        ]);
+
+        // Create a local subscription record (Cashier/Stripe will be integrated separately)
+        Subscription::create([
+            'tenant_id' => $tenant->id,
+            'name' => $plan,
+            'stripe_id' => null,
+            'stripe_status' => 'pending',
+            'stripe_price' => $plan,
         ]);
 
         $this->info("Tenant created successfully!");

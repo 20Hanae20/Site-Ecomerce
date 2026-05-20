@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Tenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TenantController extends Controller
 {
@@ -115,5 +117,38 @@ class TenantController extends Controller
                 'data' => $tenant->data,
             ],
         ], 200);
+    }
+
+    /**
+     * Upload a logo for the tenant (admin only)
+     */
+    public function uploadLogo(Request $request)
+    {
+        if (!$request->user()?->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (! tenant()) {
+            return response()->json(['message' => 'No tenant context'], 400);
+        }
+
+        $request->validate([
+            'logo' => 'required|image|max:2048'
+        ]);
+
+        $tenant = tenant();
+
+        $file = $request->file('logo');
+        $ext = $file->getClientOriginalExtension();
+        $path = $file->storeAs('public/tenants/'.$tenant->id, 'logo.'.Str::lower($ext));
+
+        $url = Storage::url(str_replace('public/', '', $path));
+
+        $tenant->data = $tenant->data ?? [];
+        $tenant->data['theme'] = $tenant->data['theme'] ?? [];
+        $tenant->data['theme']['logo'] = $url;
+        $tenant->save();
+
+        return response()->json(['message' => 'Logo uploaded', 'url' => $url]);
     }
 }

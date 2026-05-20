@@ -14,13 +14,22 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
             \App\Http\Middleware\CorsMiddleware::class,
-            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
         ]);
 
         $middleware->web(append: [
             \App\Http\Middleware\CorsMiddleware::class,
-            \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
         ]);
+
+        // Register tenancy middleware only when not running tests. Tests use in-memory DB.
+        if (env('APP_ENV') !== 'testing') {
+            $middleware->api(prepend: [
+                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            ]);
+
+            $middleware->web(append: [
+                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            ]);
+        }
         
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,

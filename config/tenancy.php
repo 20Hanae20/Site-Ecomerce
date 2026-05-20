@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use Stancl\Tenancy\Database\Models\Domain;
-use Stancl\Tenancy\Database\Models\Tenant;
+use App\Models\Tenant as AppTenant;
 
 return [
-    'tenant_model' => Tenant::class,
+    'tenant_model' => AppTenant::class,
     'id_generator' => App\Tenancy\IncrementalTenantIdGenerator::class,
 
     'domain_model' => Domain::class,

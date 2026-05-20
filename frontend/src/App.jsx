@@ -44,6 +44,7 @@ import AdminPromotions from './pages/Admin/Promotions';
 import AdminReviews from './pages/Admin/Reviews';
 import AdminSettings from './pages/Admin/Settings';
 import AdminLogs from './pages/Admin/Logs';
+import AdminBranding from './pages/Admin/Branding';
 import AddPerfume from './pages/AddPerfume';
 
 import './App.css';
@@ -101,6 +102,7 @@ function App() {
             <Route path="/admin/promotions" element={<ProtectedRoute component={AdminPromotions} requiredRole={['admin', 'super_admin', 'gestionnaire']} />} />
             <Route path="/admin/reviews" element={<ProtectedRoute component={AdminReviews} requiredRole={['admin', 'super_admin', 'moderateur']} />} />
             <Route path="/admin/settings" element={<ProtectedRoute component={AdminSettings} requiredRole={['admin', 'super_admin']} />} />
+            <Route path="/admin/branding" element={<ProtectedRoute component={AdminBranding} requiredRole={['admin', 'super_admin']} />} />
             <Route path="/admin/logs" element={<ProtectedRoute component={AdminLogs} requiredRole={['admin', 'super_admin']} />} />
           </Route>
 

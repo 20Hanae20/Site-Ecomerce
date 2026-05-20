@@ -23,6 +23,7 @@ class RecommendRequest(BaseModel):
     user_id: Optional[int] = None
     features: Optional[List[float]] = None
     available_perfumes: Optional[List[dict]] = None
+    tenant_id: Optional[int] = None
     top_n: Optional[int] = 5
 
 # Root endpoint
@@ -49,7 +50,7 @@ async def get_recommendations(request: RecommendRequest):
         input_data = request.features if request.features else {"user_id": request.user_id}
         
         # Call the prediction logic
-        recommendations = predict(model, input_data, request.available_perfumes)
+        recommendations = predict(model, input_data, request.available_perfumes, request.tenant_id)
         
         # Limit result if needed (top_n)
         if isinstance(recommendations, list):
