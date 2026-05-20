@@ -46,7 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     
     // Recommendations Dashboard (viewed + purchased + recommendations)
-    Route::get('/recommendations/dashboard', [\App\Http\Controllers\Api\RecommendationController::class, 'dashboard']);
+    Route::get('/recommendations/dashboard', [\App\Http\Controllers\Api\RecommendationController::class, 'dashboard'])
+        ->middleware('feature:ai_recommendations');
     
     // User Profile
     Route::get('/profile', [ProfileController::class, 'show']);
@@ -87,7 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/payments/{payment}', [PaymentController::class, 'show']);
 
     // Admin Logged Routes
-    Route::prefix('admin')->group(function () {
+    Route::prefix('admin')->middleware('role:admin,super_admin,gestionnaire,moderateur')->group(function () {
         Route::get('/logs', [\App\Http\Controllers\Api\AdminController::class, 'getLogs']);
         Route::get('/action-logs', [\App\Http\Controllers\Api\AdminController::class, 'getActionLogs']);
         Route::get('/stats', [\App\Http\Controllers\Api\AdminController::class, 'getDashboardStats']);
@@ -122,9 +123,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/reviews/{review}/toggle-approval', [ReviewController::class, 'toggleApproval']);
     
     // Tenant Admin
-    Route::put('/tenant', [TenantController::class, 'update']);    
+    Route::put('/tenant', [TenantController::class, 'update'])->middleware('role:admin,super_admin,gestionnaire');
     // Subscription Admin
-    Route::put('/subscription/upgrade', [SubscriptionController::class, 'upgrade']);});
+    Route::put('/subscription/upgrade', [SubscriptionController::class, 'upgrade'])->middleware('role:admin,super_admin,gestionnaire');
+});
 
 // Admin Authentication (Public)
 Route::post('/admin/login', [\App\Http\Controllers\Api\AdminController::class, 'login']);

@@ -50,6 +50,7 @@ class CheckFeatureGate
             'reviews' => 'free',
             'advanced_analytics' => 'starter',
             'custom_branding' => 'starter',
+            'ai_recommendations' => 'starter',
             'multi_warehouse' => 'professional',
             'advanced_promotions' => 'professional',
             'api_access' => 'professional',

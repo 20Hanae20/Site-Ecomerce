@@ -17,27 +17,37 @@
 ## 🚀 Installation & Configuration
 
 ### 1. Prérequis
-*   **PHP** >= 8.2 & **Composer**
-*   **Node.js** & **NPM**
-*   **Python** >= 3.9
-*   **MySQL**
+* **PHP** >= 8.2 & **Composer**
+* **Node.js** & **NPM**
+* **Python** >= 3.9
+* **MySQL**
 
-### 2. Backend (Laravel API)
+### 2. Backend (Laravel API + SaaS)
 ```bash
-# Aller dans le dossier racine
+# Depuis la racine du projet
 composer install
-copy .env.example .env
+cp .env.example .env
 php artisan key:generate
-# Configurez votre base de données dans le .env
+
+# Configurez DB + Stripe dans .env
+# STRIPE_KEY, STRIPE_SECRET, STRIPE_WEBHOOK_SECRET
+# STRIPE_PRICE_STARTER, STRIPE_PRICE_PROFESSIONAL
+
 php artisan migrate --seed
 php artisan serve
 ```
 
-### 3. Frontend (React / Vite)
+### 3. Frontend
 ```bash
+# Build assets Laravel (public/build)
+npm install
+npm run build
+
+# Build SPA React admin/client (frontend/dist)
 cd frontend
 npm install
 npm run dev
+# ou npm run build
 ```
 
 ### 4. Machine Learning API (FastAPI)
@@ -45,6 +55,15 @@ npm run dev
 cd ml-api
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8001
+```
+
+### 5. Tenancy & validation rapide
+```bash
+# Créer un tenant demo/domain
+php artisan tenant create --name="Maison Demo" --domain="demo.localhost" --plan=starter
+
+# Vérifications backend
+php artisan test
 ```
 
 ---
@@ -71,4 +90,3 @@ Le système s'appuie sur une boucle de rétroaction dynamique :
 
 ## 📝 Licence
 Ce projet est réalisé dans le cadre du développement **Climatrack**. Tous droits réservés.
-

@@ -14,9 +14,14 @@ import {
     LogOut,
     Home
 } from 'lucide-react';
+import api from '../../services/api';
 
 const AdminLayout = () => {
     const [user, setUser] = useState(null);
+    const [tenantBrand, setTenantBrand] = useState({
+        name: 'SITE PARFUM',
+        logo: null,
+    });
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -38,6 +43,20 @@ const AdminLayout = () => {
         }
 
         setUser(parsedUser);
+
+        api.get('/tenant/current')
+            .then(({ data }) => {
+                setTenantBrand({
+                    name: data?.name || 'SITE PARFUM',
+                    logo: data?.theme?.logo || null,
+                });
+            })
+            .catch(() => {
+                setTenantBrand({
+                    name: 'SITE PARFUM',
+                    logo: null,
+                });
+            });
     }, [navigate]);
 
     const handleLogout = () => {
@@ -71,7 +90,15 @@ const AdminLayout = () => {
             <aside className="admin-sidebar-premium glass-premium">
                 <div className="admin-brand-premium">
                     <Link to="/" className="brand-link-luxury">
+                        {tenantBrand.logo && (
+                            <img
+                                src={tenantBrand.logo}
+                                alt={`${tenantBrand.name} logo`}
+                                className="tenant-logo-premium"
+                            />
+                        )}
                         <h2 className="font-serif gradient-text-gold">S.P ADMIN</h2>
+                        <p className="tenant-brand-name">{tenantBrand.name}</p>
                     </Link>
                     <div className="role-badge-premium">
                         {user.role}
@@ -169,6 +196,22 @@ const AdminLayout = () => {
                 }
 
                 .brand-link-luxury { text-decoration: none; }
+                .tenant-logo-premium {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    margin-bottom: 0.75rem;
+                    border: 1px solid var(--glass-border);
+                }
+                .tenant-brand-name {
+                    margin-top: 0.5rem;
+                    opacity: 0.65;
+                    font-size: 0.7rem;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    color: var(--text-secondary);
+                }
 
                 .role-badge-premium {
                     display: inline-block;

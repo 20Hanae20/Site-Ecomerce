@@ -15,8 +15,12 @@ class RecommendationController extends Controller
     public function recommend(Request $request)
     {
         try {
+            $tenantId = tenant('id');
+
             // Get top rated perfumes as fallback recommendations
-            $recommendations = Perfume::where('is_active', true)
+            $recommendations = Perfume::query()
+                ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
+                ->where('is_active', true)
                 ->where('rating_avg', '>=', 4.0)
                 ->orderBy('rating_avg', 'desc')
                 ->take(5)
@@ -56,10 +60,12 @@ class RecommendationController extends Controller
         }
 
         $userId = $request->user()->id;
+        $tenantId = tenant('id');
 
         try {
             // Get recently viewed perfumes
             $viewedPerfumes = \App\Models\PerfumeView::where('user_id', $userId)
+                ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
                 ->with('perfume')
                 ->orderBy('viewed_at', 'desc')
                 ->take(10)
@@ -73,6 +79,7 @@ class RecommendationController extends Controller
 
             // Get purchased perfumes
             $purchasedPerfumes = \App\Models\Order::where('user_id', $userId)
+                ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
                 ->with('items.perfume')
                 ->where('status', '!=', 'cancelled')
                 ->get()
@@ -112,8 +119,11 @@ class RecommendationController extends Controller
      */
     private function getSimpleRecommendations($userId)
     {
+        $tenantId = tenant('id');
+
         // Get user's purchased perfume categories
         $purchasedCategories = \App\Models\Order::where('user_id', $userId)
+            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
             ->where('status', '!=', 'cancelled')
             ->with('items.perfume.category')
             ->get()
@@ -128,6 +138,7 @@ class RecommendationController extends Controller
 
         // Get recommendations from same categories or top rated
         $recommendations = Perfume::where('is_active', true)
+            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
             ->where(function($query) use ($purchasedCategories) {
                 if ($purchasedCategories->isNotEmpty()) {
                     $query->whereIn('category_id', $purchasedCategories)
@@ -136,11 +147,12 @@ class RecommendationController extends Controller
                     $query->where('rating_avg', '>=', 4.0);
                 }
             })
-            ->whereNotIn('id', function($query) use ($userId) {
+            ->whereNotIn('id', function($query) use ($userId, $tenantId) {
                 $query->select('perfume_id')
                     ->from('order_items')
                     ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                    ->where('orders.user_id', $userId);
+                    ->where('orders.user_id', $userId)
+                    ->when($tenantId, fn ($subQuery) => $subQuery->where('orders.tenant_id', $tenantId));
             })
             ->orderBy('rating_avg', 'desc')
             ->take(8)

@@ -13,6 +13,7 @@ class Tenant extends BaseTenant
 
     protected $casts = [
         'data' => 'array',
+        'trial_ends_at' => 'datetime',
     ];
 
     public function domains(): HasMany

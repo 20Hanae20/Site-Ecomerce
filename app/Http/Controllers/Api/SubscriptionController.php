@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Tenant;
 use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
@@ -21,6 +20,16 @@ class SubscriptionController extends Controller
             'plan' => 'free',
             'status' => 'active',
             'features' => ['basic_catalog', 'reviews'],
+            'billing_provider' => 'stripe',
+            'stripe_price_id' => null,
+        ];
+
+        $subscription['cashier_scaffolded'] = true;
+        $subscription['stripe'] = [
+            'customer_id' => $tenant->stripe_id ?? null,
+            'payment_method_type' => $tenant->pm_type ?? null,
+            'payment_method_last_four' => $tenant->pm_last_four ?? null,
+            'trial_ends_at' => $tenant->trial_ends_at?->toISOString(),
         ];
 
         return response()->json($subscription, 200);
@@ -56,82 +65,14 @@ class SubscriptionController extends Controller
      */
     public function plans()
     {
+        $plans = $this->planCatalog();
+
         return response()->json([
-            'plans' => [
-                [
-                    'id' => 'free',
-                    'name' => 'Gratuit',
-                    'price' => 0,
-                    'billing_period' => 'month',
-                    'features' => [
-                        'basic_catalog',
-                        'reviews',
-                    ],
-                    'limitations' => [
-                        'max_products' => 50,
-                        'max_custom_fields' => 0,
-                        'ai_recommendations' => false,
-                    ],
-                ],
-                [
-                    'id' => 'starter',
-                    'name' => 'Démarrage',
-                    'price' => 29.99,
-                    'billing_period' => 'month',
-                    'features' => [
-                        'basic_catalog',
-                        'reviews',
-                        'advanced_analytics',
-                        'custom_branding',
-                    ],
-                    'limitations' => [
-                        'max_products' => 500,
-                        'max_custom_fields' => 5,
-                        'ai_recommendations' => true,
-                    ],
-                ],
-                [
-                    'id' => 'professional',
-                    'name' => 'Professionnel',
-                    'price' => 99.99,
-                    'billing_period' => 'month',
-                    'features' => [
-                        'basic_catalog',
-                        'reviews',
-                        'advanced_analytics',
-                        'custom_branding',
-                        'multi_warehouse',
-                        'advanced_promotions',
-                        'api_access',
-                    ],
-                    'limitations' => [
-                        'max_products' => 5000,
-                        'max_custom_fields' => 20,
-                        'ai_recommendations' => true,
-                    ],
-                ],
-                [
-                    'id' => 'enterprise',
-                    'name' => 'Entreprise',
-                    'price' => 'custom',
-                    'billing_period' => 'month',
-                    'features' => [
-                        'basic_catalog',
-                        'reviews',
-                        'advanced_analytics',
-                        'custom_branding',
-                        'multi_warehouse',
-                        'advanced_promotions',
-                        'api_access',
-                        'white_label',
-                        'dedicated_support',
-                    ],
-                    'limitations' => [
-                        'max_products' => 'unlimited',
-                        'max_custom_fields' => 'unlimited',
-                        'ai_recommendations' => true,
-                    ],
-                ],
+            'plans' => array_values($plans),
+            'billing' => [
+                'provider' => 'stripe',
+                'publishable_key_configured' => ! empty(config('services.stripe.key')),
+                'cashier_scaffolded' => true,
             ],
         ], 200);
     }
@@ -162,19 +103,105 @@ class SubscriptionController extends Controller
         ];
 
         // Set features based on plan
-        $planFeatures = [
-            'free' => ['basic_catalog', 'reviews'],
-            'starter' => ['basic_catalog', 'reviews', 'advanced_analytics', 'custom_branding'],
-            'professional' => ['basic_catalog', 'reviews', 'advanced_analytics', 'custom_branding', 'multi_warehouse', 'advanced_promotions', 'api_access'],
-            'enterprise' => ['basic_catalog', 'reviews', 'advanced_analytics', 'custom_branding', 'multi_warehouse', 'advanced_promotions', 'api_access', 'white_label', 'dedicated_support'],
-        ];
+        $planCatalog = $this->planCatalog();
+        $selectedPlan = $planCatalog[$validated['plan']];
+        $planFeatures = array_column($planCatalog, 'features', 'id');
 
         $tenant->data['subscription']['features'] = $planFeatures[$validated['plan']] ?? [];
+        $tenant->data['subscription']['billing_provider'] = 'stripe';
+        $tenant->data['subscription']['stripe_price_id'] = $selectedPlan['stripe_price_id'] ?? null;
         $tenant->save();
 
         return response()->json([
             'message' => 'Plan upgraded successfully',
             'subscription' => $tenant->data['subscription'],
         ], 200);
+    }
+
+    private function planCatalog(): array
+    {
+        return [
+            'free' => [
+                'id' => 'free',
+                'name' => 'Gratuit',
+                'price' => 0,
+                'billing_period' => 'month',
+                'stripe_price_id' => null,
+                'features' => [
+                    'basic_catalog',
+                    'reviews',
+                ],
+                'limitations' => [
+                    'max_products' => 50,
+                    'max_custom_fields' => 0,
+                    'ai_recommendations' => false,
+                ],
+            ],
+            'starter' => [
+                'id' => 'starter',
+                'name' => 'Démarrage',
+                'price' => 29.99,
+                'billing_period' => 'month',
+                'stripe_price_id' => config('services.stripe.prices.starter'),
+                'features' => [
+                    'basic_catalog',
+                    'reviews',
+                    'advanced_analytics',
+                    'custom_branding',
+                    'ai_recommendations',
+                ],
+                'limitations' => [
+                    'max_products' => 500,
+                    'max_custom_fields' => 5,
+                    'ai_recommendations' => true,
+                ],
+            ],
+            'professional' => [
+                'id' => 'professional',
+                'name' => 'Professionnel',
+                'price' => 99.99,
+                'billing_period' => 'month',
+                'stripe_price_id' => config('services.stripe.prices.professional'),
+                'features' => [
+                    'basic_catalog',
+                    'reviews',
+                    'advanced_analytics',
+                    'custom_branding',
+                    'ai_recommendations',
+                    'multi_warehouse',
+                    'advanced_promotions',
+                    'api_access',
+                ],
+                'limitations' => [
+                    'max_products' => 5000,
+                    'max_custom_fields' => 20,
+                    'ai_recommendations' => true,
+                ],
+            ],
+            'enterprise' => [
+                'id' => 'enterprise',
+                'name' => 'Entreprise',
+                'price' => 'custom',
+                'billing_period' => 'month',
+                'stripe_price_id' => null,
+                'features' => [
+                    'basic_catalog',
+                    'reviews',
+                    'advanced_analytics',
+                    'custom_branding',
+                    'ai_recommendations',
+                    'multi_warehouse',
+                    'advanced_promotions',
+                    'api_access',
+                    'white_label',
+                    'dedicated_support',
+                ],
+                'limitations' => [
+                    'max_products' => 'unlimited',
+                    'max_custom_fields' => 'unlimited',
+                    'ai_recommendations' => true,
+                ],
+            ],
+        ];
     }
 }
