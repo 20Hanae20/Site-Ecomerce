@@ -12,7 +12,9 @@ return new class extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE `perfumes` MODIFY `intensity` varchar(100) DEFAULT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `perfumes` MODIFY `intensity` varchar(100) DEFAULT NULL");
+        }
     }
 
     public function down(): void
@@ -21,6 +23,8 @@ return new class extends Migration
             return;
         }
 
-        DB::statement("ALTER TABLE `perfumes` MODIFY `intensity` enum('light','medium','strong') DEFAULT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `perfumes` MODIFY `intensity` enum('light','medium','strong') DEFAULT NULL");
+        }
     }
 };

@@ -38,14 +38,16 @@ return new class extends Migration
             }
         });
 
-        $hasForeignKey = DB::table('information_schema.TABLE_CONSTRAINTS')
-            ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-            ->where('TABLE_NAME', 'perfumes')
-            ->where('CONSTRAINT_NAME', 'perfumes_category_id_foreign')
-            ->exists();
+                if (DB::getDriverName() !== 'sqlite') {
+            $hasForeignKey = DB::table('information_schema.TABLE_CONSTRAINTS')
+                ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
+                ->where('TABLE_NAME', 'perfumes')
+                ->where('CONSTRAINT_NAME', 'perfumes_category_id_foreign')
+                ->exists();
 
-        if (Schema::hasColumn('perfumes', 'category_id') && ! $hasForeignKey) {
-            DB::statement('ALTER TABLE perfumes ADD CONSTRAINT perfumes_category_id_foreign FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL');
+            if (Schema::hasColumn('perfumes', 'category_id') && ! $hasForeignKey) {
+                DB::statement('ALTER TABLE perfumes ADD CONSTRAINT perfumes_category_id_foreign FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL');
+            }
         }
     }
 
@@ -68,3 +70,4 @@ return new class extends Migration
         });
     }
 };
+

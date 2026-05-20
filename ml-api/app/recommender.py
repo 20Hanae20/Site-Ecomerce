@@ -3,23 +3,61 @@ import os
 import pandas as pd
 import numpy as np
 
-# Path to the model
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
+# Base model path
+BASE_DIR = os.path.dirname(__file__)
+MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+
+# Cache for tenant-specific models
+TENANT_MODELS = {}
+
 
 def load_model():
-    """
-    Loads the trained model from the pickle file.
-    """
+    """Load the global model."""
     if not os.path.exists(MODEL_PATH):
         raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
-    
+
     try:
         model = joblib.load(MODEL_PATH)
-        print("Model loaded successfully.")
+        print("Global model loaded successfully.")
         return model
     except Exception as e:
         print(f"Error loading model: {e}")
         raise
+
+
+def _load_tenant_model(tenant_id):
+    """Try to load a tenant-specific model from storage/app/tenants/{tenant_id}/model.pkl
+    Returns a dict with model and optional perfumes list, or None if not found.
+    """
+    if tenant_id in TENANT_MODELS:
+        return TENANT_MODELS[tenant_id]
+
+    tenant_dir = os.path.join(os.path.dirname(BASE_DIR), 'storage', 'app', 'tenants', str(tenant_id))
+    tenant_model_path = os.path.join(tenant_dir, 'model.pkl')
+    tenant_perfumes_path = os.path.join(tenant_dir, 'perfumes.json')
+
+    if os.path.exists(tenant_model_path):
+        try:
+            model_data = joblib.load(tenant_model_path)
+            model = model_data.get('model') if isinstance(model_data, dict) else model_data
+            perfumes = None
+            if os.path.exists(tenant_perfumes_path):
+                import json as _json
+                with open(tenant_perfumes_path, 'r', encoding='utf-8') as pf:
+                    perfumes = _json.load(pf)
+
+            ctx = {
+                'model': model,
+                'perfumes': perfumes
+            }
+            TENANT_MODELS[tenant_id] = ctx
+            return ctx
+        except Exception as e:
+            print(f"Failed to load tenant model for {tenant_id}: {e}")
+            return None
+
+    return None
+
 
 def predict(model, data, available_perfumes=None, tenant_id=None):
     """
@@ -27,6 +65,13 @@ def predict(model, data, available_perfumes=None, tenant_id=None):
     Rank available_perfumes based on features if provided.
     """
     try:
+        # If tenant-specific model exists, prefer it and its perfume list
+        tenant_ctx = None
+        if tenant_id is not None:
+            tenant_ctx = _load_tenant_model(tenant_id)
+            if tenant_ctx and tenant_ctx.get('perfumes') is not None:
+                available_perfumes = tenant_ctx.get('perfumes')
+
         # If we have available perfumes and features, let's do a smart ranking
         if available_perfumes and isinstance(data, list):
             # Filter by tenant if provided (each perfume may include a tenant_id)
@@ -62,9 +107,10 @@ def predict(model, data, available_perfumes=None, tenant_id=None):
         # Standard model prediction fallback
         if isinstance(data, list):
             input_features = np.array(data).reshape(1, -1)
+            model_to_use = tenant_ctx.get('model') if tenant_ctx else model
             # Many models aren't ready for direct ID output, so we return 
             # some sensible default IDs if it fails or returns unexpected shapes
-            result = model.predict(input_features)
+            result = model_to_use.predict(input_features)
             return result.tolist() if hasattr(result, "tolist") else [1, 2, 3]
             
         return [1, 2, 3] # Ultimate fallback

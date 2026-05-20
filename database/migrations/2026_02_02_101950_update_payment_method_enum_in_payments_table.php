@@ -9,13 +9,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // For MySQL, we need to use raw SQL to modify enum
-        DB::statement("ALTER TABLE payments MODIFY COLUMN payment_method ENUM('card', 'paypal', 'cash', 'bank_transfer', 'cod', 'stripe') DEFAULT 'card'");
+        // Only run raw MySQL statements when using MySQL driver
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE payments MODIFY COLUMN payment_method ENUM('card', 'paypal', 'cash', 'bank_transfer', 'cod', 'stripe') DEFAULT 'card'");
+        }
     }
 
     public function down(): void
     {
-        // Revert back to original enum values
-        DB::statement("ALTER TABLE payments MODIFY COLUMN payment_method ENUM('card', 'paypal', 'cash', 'bank_transfer') DEFAULT 'card'");
+        if (DB::getDriverName() === 'mysql') {
+            // Revert back to original enum values
+            DB::statement("ALTER TABLE payments MODIFY COLUMN payment_method ENUM('card', 'paypal', 'cash', 'bank_transfer') DEFAULT 'card'");
+        }
     }
 };

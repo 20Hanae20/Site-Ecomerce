@@ -17,6 +17,8 @@ class KMeansRecommender:
         self.model = None
         self.scaler = None
         self.perfume_data = None
+        # Cache tenant-specific models: {tenant_id: {'model':..., 'scaler':..., 'perfumes':...}}
+        self.tenant_models = {}
         self.load_model()
     
     def load_model(self):
@@ -56,20 +58,31 @@ class KMeansRecommender:
             # Convert user data to feature vector
             user_vector = self._prepare_user_vector(user_data)
             
-            # Predict cluster for this user
-            user_cluster = self.model.predict([user_vector])[0]
+            # If a tenant-specific model was attached to user_data, use it
+            tenant_id = user_data.get('tenant_id') if isinstance(user_data, dict) else None
+            model_context = None
+            if tenant_id is not None:
+                model_context = self._get_tenant_model(tenant_id)
+
+            model_to_use = model_context.get('model') if model_context else self.model
+            perfume_data = model_context.get('perfumes') if model_context and model_context.get('perfumes') is not None else self.perfume_data
+
+            # Predict cluster for this user using selected model
+            user_cluster = model_to_use.predict([user_vector])[0]
             
             # Get all perfume clusters and distances
-            if hasattr(self.model, 'labels_') and self.perfume_data:
+            if hasattr(model_to_use, 'labels_') and perfume_data:
                 # Return perfumes in the same cluster
                 recommendations = self._get_same_cluster_perfumes(
                     user_cluster, 
-                    n_recommendations
+                    n_recommendations,
+                    perfumes=perfume_data
                 )
             else:
                 recommendations = self._get_nearest_perfumes(
                     user_vector, 
-                    n_recommendations
+                    n_recommendations,
+                    perfumes=perfume_data
                 )
             
             return {
@@ -103,15 +116,54 @@ class KMeansRecommender:
             user_vector = self.scaler.transform(user_vector)
         
         return user_vector[0]
+
+    def _get_tenant_model(self, tenant_id: int):
+        """Load or return cached tenant-specific model and data.
+
+        Expects tenant models to be stored under storage/app/tenants/{tenant_id}/kmeans_model.pkl
+        and a perfumes.json with tenant perfume data. Falls back to global model.
+        """
+        if tenant_id in self.tenant_models:
+            return self.tenant_models[tenant_id]
+
+        tenant_dir = Path(__file__).parent.parent.parent / 'storage' / 'app' / 'tenants' / str(tenant_id)
+        model_path = tenant_dir / 'kmeans_model.pkl'
+        perfumes_path = tenant_dir / 'perfumes.json'
+
+        if model_path.exists():
+            try:
+                with open(model_path, 'rb') as f:
+                    model_data = pickle.load(f)
+
+                model = model_data.get('model') if isinstance(model_data, dict) else model_data
+                scaler = model_data.get('scaler') if isinstance(model_data, dict) else None
+                perfumes = None
+                if perfumes_path.exists():
+                    import json as _json
+                    with open(perfumes_path, 'r', encoding='utf-8') as pf:
+                        perfumes = _json.load(pf)
+
+                ctx = {
+                    'model': model,
+                    'scaler': scaler,
+                    'perfumes': perfumes
+                }
+                self.tenant_models[tenant_id] = ctx
+                return ctx
+            except Exception:
+                pass
+
+        return None
     
-    def _get_same_cluster_perfumes(self, cluster_id, n_recommendations):
+    def _get_same_cluster_perfumes(self, cluster_id, n_recommendations, perfumes=None):
         """Get perfumes in the same cluster as the user"""
-        if not self.perfume_data:
+        perfumes = perfumes if perfumes is not None else self.perfume_data
+        if not perfumes:
             return []
         
         # Filter perfumes by cluster
         cluster_perfumes = [
-            p for p in self.perfume_data 
+            p for p in perfumes 
             if p.get('cluster') == cluster_id
         ]
         
@@ -123,14 +175,15 @@ class KMeansRecommender:
         
         return cluster_perfumes[:n_recommendations]
     
-    def _get_nearest_perfumes(self, user_vector, n_recommendations):
+    def _get_nearest_perfumes(self, user_vector, n_recommendations, perfumes=None):
         """Get perfumes nearest to user in feature space"""
-        if not self.perfume_data:
+        perfumes = perfumes if perfumes is not None else self.perfume_data
+        if not perfumes:
             return []
         
         # Calculate distances to all perfumes
         perfume_vectors = np.array([
-            p.get('features', []) for p in self.perfume_data
+            p.get('features', []) for p in perfumes
         ])
         
         distances = np.linalg.norm(
@@ -142,7 +195,7 @@ class KMeansRecommender:
         nearest_indices = np.argsort(distances)[:n_recommendations]
         
         recommendations = [
-            self.perfume_data[i] for i in nearest_indices
+            perfumes[i] for i in nearest_indices
         ]
         
         return recommendations

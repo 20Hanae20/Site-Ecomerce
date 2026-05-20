@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\TenantController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\BillingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -124,8 +126,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Tenant Admin
     Route::put('/tenant', [TenantController::class, 'update']);    
     Route::post('/admin/upload-logo', [TenantController::class, 'uploadLogo']);
+    // Billing checkout
+    Route::post('/billing/checkout', [BillingController::class, 'createCheckout']);
     // Subscription Admin
     Route::put('/subscription/upgrade', [SubscriptionController::class, 'upgrade']);});
 
 // Admin Authentication (Public)
 Route::post('/admin/login', [\App\Http\Controllers\Api\AdminController::class, 'login']);
+
+// Stripe webhook (public endpoint)
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
