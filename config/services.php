@@ -39,4 +39,14 @@ return [
         'url' => env('ML_API_URL', 'http://127.0.0.1:8001/recommend'),
     ],
 
+    'stripe' => [
+        'key' => env('STRIPE_KEY'),
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'prices' => [
+            'starter' => env('STRIPE_PRICE_STARTER'),
+            'professional' => env('STRIPE_PRICE_PROFESSIONAL'),
+        ],
+    ],
+
 ];

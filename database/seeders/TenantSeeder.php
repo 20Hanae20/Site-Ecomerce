@@ -18,12 +18,30 @@ class TenantSeeder extends Seeder
             $tenant = Tenant::create([
                 'data' => [
                     'name' => 'Maison de Parfum Demo',
+                    'subscription' => [
+                        'plan' => 'starter',
+                        'status' => 'active',
+                        'features' => ['basic_catalog', 'reviews', 'advanced_analytics', 'custom_branding', 'ai_recommendations'],
+                        'billing_provider' => 'stripe',
+                        'stripe_price_id' => config('services.stripe.prices.starter'),
+                    ],
                     'theme' => [
                         'primary_color' => '#7f1d1d',
                         'logo' => '/images/logo.png',
                     ],
                 ],
             ]);
+        } else {
+            $tenant->data = array_merge($tenant->data ?? [], [
+                'subscription' => $tenant->data['subscription'] ?? [
+                    'plan' => 'starter',
+                    'status' => 'active',
+                    'features' => ['basic_catalog', 'reviews', 'advanced_analytics', 'custom_branding', 'ai_recommendations'],
+                    'billing_provider' => 'stripe',
+                    'stripe_price_id' => config('services.stripe.prices.starter'),
+                ],
+            ]);
+            $tenant->save();
         }
 
         $domain = Domain::firstOrNew([

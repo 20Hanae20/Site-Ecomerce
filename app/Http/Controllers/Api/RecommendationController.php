@@ -15,76 +15,10 @@ class RecommendationController extends Controller
     public function recommend(Request $request)
     {
         try {
-            // Determine tenant id: prefer explicit param, then authenticated user
-            $tenantId = $request->input('tenant_id') ?? ($request->user()->tenant_id ?? null);
-
-            // If ML features provided, call ML microservice and pass tenant_id
-            $features = $request->input('features');
-            $topN = (int) ($request->input('top_n', 5));
-
-            if ($features && is_array($features)) {
-                // Build candidate perfumes list (scoped to tenant when possible)
-                $candidatesQuery = Perfume::where('is_active', true);
-                if ($tenantId) {
-                    $candidatesQuery->where('tenant_id', $tenantId);
-                }
-
-                $availablePerfumes = $candidatesQuery->get()->map(function($perfume) {
-                    return [
-                        'id' => $perfume->id,
-                        'name' => $perfume->name,
-                        'price' => (float) $perfume->price,
-                        'rating' => (float) $perfume->rating_avg,
-                        'image_url' => $perfume->image_url,
-                        'olfactory_family' => $perfume->olfactory_family ?? '',
-                        'features' => $perfume->getAttribute('features') ?? null,
-                        'tenant_id' => $perfume->tenant_id ?? null,
-                    ];
-                })->toArray();
-
-                try {
-                    $mlUrl = config('services.ml_api.url');
-                    $payload = [
-                        'features' => $features,
-                        'available_perfumes' => $availablePerfumes,
-                        'tenant_id' => $tenantId,
-                        'top_n' => $topN,
-                    ];
-
-                    $resp = Http::timeout(6)->post($mlUrl, $payload);
-                    if ($resp->successful()) {
-                        $body = $resp->json();
-                        $ids = is_array($body) && isset($body['recommendations']) ? $body['recommendations'] : ($body['recommendations'] ?? []);
-                        if (!empty($ids)) {
-                            $perfumes = Perfume::whereIn('id', $ids)->get();
-                            // Preserve order as returned by ML service
-                            $ordered = collect($ids)->map(function($id) use ($perfumes) {
-                                return $perfumes->firstWhere('id', $id);
-                            })->filter();
-
-                            return response()->json([
-                                'success' => true,
-                                'recommendations' => $ordered->map(function($perfume) {
-                                    return [
-                                        'id' => $perfume->id,
-                                        'name' => $perfume->name,
-                                        'price' => $perfume->price,
-                                        'rating' => $perfume->rating_avg,
-                                        'image_url' => $perfume->image_url
-                                    ];
-                                })->values(),
-                                'method' => 'ml-service'
-                            ]);
-                        }
-                    }
-                } catch (\Exception $e) {
-                    // Fall back to top-rated if ML fails
-                }
-            }
+            $tenantId = tenant('id');
 
             // Get top rated perfumes as fallback recommendations
             $recommendations = Perfume::where('is_active', true)
-                ->when($tenantId, function($q) use ($tenantId) { $q->where('tenant_id', $tenantId); })
                 ->where('rating_avg', '>=', 4.0)
                 ->orderBy('rating_avg', 'desc')
                 ->take($topN)
@@ -124,10 +58,12 @@ class RecommendationController extends Controller
         }
 
         $userId = $request->user()->id;
+        $tenantId = tenant('id');
 
         try {
             // Get recently viewed perfumes
             $viewedPerfumes = \App\Models\PerfumeView::where('user_id', $userId)
+                ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
                 ->with('perfume')
                 ->orderBy('viewed_at', 'desc')
                 ->take(10)
@@ -141,11 +77,12 @@ class RecommendationController extends Controller
 
             // Get purchased perfumes
             $purchasedPerfumes = \App\Models\Order::where('user_id', $userId)
+                ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
                 ->with('items.perfume')
                 ->where('status', '!=', 'cancelled')
                 ->get()
                 ->flatMap(function($order) {
-                    return $order->items->map(function($item) {
+                    return $order->items->map(function($item) use ($order) {
                         return [
                             'perfume' => $item->perfume,
                             'order_id' => $order->id,
@@ -180,8 +117,11 @@ class RecommendationController extends Controller
      */
     private function getSimpleRecommendations($userId)
     {
+        $tenantId = tenant('id');
+
         // Get user's purchased perfume categories
         $purchasedCategories = \App\Models\Order::where('user_id', $userId)
+            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
             ->where('status', '!=', 'cancelled')
             ->with('items.perfume.category')
             ->get()
@@ -196,6 +136,7 @@ class RecommendationController extends Controller
 
         // Get recommendations from same categories or top rated
         $recommendations = Perfume::where('is_active', true)
+            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
             ->where(function($query) use ($purchasedCategories) {
                 if ($purchasedCategories->isNotEmpty()) {
                     $query->whereIn('category_id', $purchasedCategories)
@@ -204,14 +145,16 @@ class RecommendationController extends Controller
                     $query->where('rating_avg', '>=', 4.0);
                 }
             })
-            ->whereNotIn('id', function($query) use ($userId) {
+            ->whereNotIn('id', function($query) use ($userId, $tenantId) {
                 $query->select('perfume_id')
                     ->from('order_items')
                     ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                    ->where('orders.user_id', $userId);
+                    ->where('orders.user_id', $userId)
+                    ->when($tenantId, fn ($subQuery) => $subQuery->where('orders.tenant_id', $tenantId));
             })
             ->orderBy('rating_avg', 'desc')
             ->take(8)
+            ->with('category')
             ->get();
 
         return $recommendations->map(function($perfume) {

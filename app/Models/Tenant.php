@@ -27,9 +27,10 @@ if (trait_exists('\\Laravel\\Cashier\\Billable')) {
     {
         protected $guarded = [];
 
-        protected $casts = [
-            'data' => 'array',
-        ];
+    protected $casts = [
+        'data' => 'array',
+        'trial_ends_at' => 'datetime',
+    ];
 
         public function domains(): HasMany
         {

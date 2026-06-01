@@ -35,6 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
             'prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'feature' => \App\Http\Middleware\CheckFeatureGate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
