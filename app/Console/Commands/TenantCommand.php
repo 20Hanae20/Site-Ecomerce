@@ -166,9 +166,9 @@ class TenantCommand extends Command
 
         $this->info("=== Tenant Information ===");
         $this->line("ID: {$tenant->id}");
-        $this->line("Name: {$tenant->data['name'] ?? 'N/A'}");
-        $this->line("Domain: {$domain?->domain ?? 'N/A'}");
-        $this->line("Plan: {$tenant->data['subscription']['plan'] ?? 'free'}");
+        $this->line("Name: " . ($tenant->data['name'] ?? 'N/A'));
+        $this->line("Domain: " . ($domain?->domain ?? 'N/A'));
+        $this->line("Plan: " . ($tenant->data['subscription']['plan'] ?? 'free'));
         $this->line("Created: {$tenant->created_at}");
         $this->line("Updated: {$tenant->updated_at}");
 

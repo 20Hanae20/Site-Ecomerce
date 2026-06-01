@@ -11,7 +11,6 @@ const Cart = () => {
     const [selectedAddress, setSelectedAddress] = useState('');
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [recommendations, setRecommendations] = useState([]);
-    const [fetchingRecommendations, setFetchingRecommendations] = useState(false);
     const navigate = useNavigate();
 
     const getImageUrl = (imageUrl) => {
@@ -30,13 +29,10 @@ const Cart = () => {
         if (!token) return;
 
         try {
-            setFetchingRecommendations(true);
             const response = await api.get('/recommendations/dashboard');
             setRecommendations(response.data.data.recommendations || []);
         } catch (err) {
             console.error('Error fetching recommendations in cart:', err);
-        } finally {
-            setFetchingRecommendations(false);
         }
     };
 

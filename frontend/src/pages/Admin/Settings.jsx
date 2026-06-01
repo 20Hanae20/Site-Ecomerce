@@ -42,7 +42,7 @@ const AdminSettings = () => {
             await api.put('/admin/settings', { settings: flattened });
             setMessage({ text: 'Les secrets de la Maison ont été mis à jour', type: 'success' });
             setTimeout(() => setMessage({ text: '', type: '' }), 3000);
-        } catch (err) {
+        } catch {
             setMessage({ text: 'Échec de la synchronisation des paramètres', type: 'error' });
         } finally {
             setIsSaving(false);

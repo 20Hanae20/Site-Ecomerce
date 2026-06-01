@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import {
@@ -22,9 +22,9 @@ const Orders = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [filter]);
+    }, [fetchOrders]);
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         setIsLoading(true);
         try {
             const params = filter ? `?status=${filter}` : '';
@@ -36,7 +36,7 @@ const Orders = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filter]);
 
     const getStatusConfig = (status) => {
         const configs = {

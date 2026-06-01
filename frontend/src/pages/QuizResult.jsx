@@ -6,7 +6,7 @@ const QuizResult = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { addToCart } = useCart();
-    const { result, error } = location.state || {};
+    const { result } = location.state || {};
 
     if (!result) {
         return <div className="loader">Aucun résultat. Veuillez refaire le quiz.</div>;

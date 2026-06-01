@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ component: Component, requiredRole = null, ...rest }) => {
+const ProtectedRoute = ({ component: Comp, requiredRole = null, ...rest }) => {
     const token = localStorage.getItem('token');
     let user = {};
     try {
@@ -22,7 +22,7 @@ const ProtectedRoute = ({ component: Component, requiredRole = null, ...rest }) 
         }
     }
 
-    return <Component {...rest} />;
+    return <Comp {...rest} />;
 };
 
 export default ProtectedRoute;

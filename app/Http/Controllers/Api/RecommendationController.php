@@ -16,6 +16,7 @@ class RecommendationController extends Controller
     {
         try {
             $tenantId = tenant('id');
+            $topN = 8;
 
             // Get top rated perfumes as fallback recommendations
             $recommendations = Perfume::where('is_active', true)

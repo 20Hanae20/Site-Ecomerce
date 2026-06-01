@@ -20,7 +20,7 @@ const Branding = () => {
         return () => {
             // Optionally reset if needed
         };
-    }, [theme.primary_color]);
+    }, [theme]);
 
     const fetchTenant = async () => {
         setLoading(true);

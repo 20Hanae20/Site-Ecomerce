@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { CreditCard, Wallet, Truck, ShieldCheck, ChevronRight, Check } from 'lucide-react';
@@ -20,19 +20,19 @@ const Checkout = () => {
             return;
         }
         fetchOrder();
-    }, [orderId]);
+    }, [orderId, navigate, fetchOrder]);
 
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/orders/${orderId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setOrder(response.data);
-        } catch (err) {
+        } catch {
             setError('Impossible de charger la commande');
         }
-    };
+    }, [orderId]);
 
     const handlePayment = async () => {
         setIsProcessing(true);

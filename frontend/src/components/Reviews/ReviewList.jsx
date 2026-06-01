@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { Star, CheckCircle, Quote } from 'lucide-react';
 
@@ -10,9 +10,9 @@ const ReviewList = ({ perfumeId }) => {
 
     useEffect(() => {
         fetchReviews();
-    }, [perfumeId, page]);
+    }, [fetchReviews]);
 
-    const fetchReviews = async () => {
+    const fetchReviews = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await api.get(`/perfumes/${perfumeId}/reviews?page=${page}`);
@@ -27,7 +27,7 @@ const ReviewList = ({ perfumeId }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [perfumeId, page]);
 
     const renderStars = (rating) => {
         return [...Array(5)].map((_, i) => (
