@@ -7,10 +7,12 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const apiBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
+
     useEffect(() => {
         const fetchPerfumes = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8000/api/perfumes?per_page=4');
+                const response = await axios.get(`${apiBase}/api/perfumes?per_page=4`);
                 setPerfumes(response.data.data || []);
             } catch (err) {
                 console.error('Erreur:', err);
@@ -28,7 +30,7 @@ const Home = () => {
         };
 
         fetchPerfumes();
-    }, []);
+    }, [apiBase]);
 
     return (
         <div className="home-premium">

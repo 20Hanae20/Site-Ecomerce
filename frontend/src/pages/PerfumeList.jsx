@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/useCart';
 import { Filter, Search, RotateCcw, ShoppingCart, Star } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
+
 const getPerfumeImage = (perfume) => {
     if (perfume.image_url) {
         if (perfume.image_url.startsWith('http://') || perfume.image_url.startsWith('https://')) {
             return perfume.image_url;
         }
-        return `http://localhost:8000${perfume.image_url}`;
+        return `${API_BASE}${perfume.image_url}`;
     }
     return null;
 };
@@ -34,19 +36,14 @@ const PerfumeList = () => {
         page: 1
     });
 
-    useEffect(() => {
-        fetchCategories();
-        fetchPerfumes();
-    }, [fetchPerfumes]);
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/categories');
+            const response = await axios.get(`${API_BASE}/api/categories`);
             setCategories(response.data);
         } catch (err) {
             console.error("Fetch categories error:", err);
         }
-    };
+    }, []);
 
     const fetchPerfumes = useCallback(async () => {
         setIsLoading(true);
@@ -59,7 +56,7 @@ const PerfumeList = () => {
             if (filters.sort_by) params.append('sort_by', filters.sort_by);
             params.append('page', filters.page);
 
-            const response = await axios.get(`http://127.0.0.1:8000/api/perfumes?${params.toString()}`);
+            const response = await axios.get(`${API_BASE}/api/perfumes?${params.toString()}`);
             setPerfumes(response.data.data);
             setPagination({
                 current_page: response.data.current_page,
@@ -74,6 +71,11 @@ const PerfumeList = () => {
         }
     }, [filters]);
 
+    useEffect(() => {
+        fetchCategories();
+        fetchPerfumes();
+    }, [fetchCategories, fetchPerfumes]);
+
     // Autocomplete Logic
     useEffect(() => {
         const fetchSuggestions = async () => {
@@ -82,7 +84,7 @@ const PerfumeList = () => {
                 return;
             }
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/perfumes?q=${filters.q}&per_page=5`);
+                const response = await axios.get(`${API_BASE}/api/perfumes?q=${filters.q}&per_page=5`);
                 setSuggestions(response.data.data);
                 setShowSuggestions(true);
             } catch (error) {

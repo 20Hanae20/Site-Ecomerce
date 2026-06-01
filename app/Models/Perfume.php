@@ -57,17 +57,17 @@ class Perfume extends Model
 
     public function stockQuantity()
     {
-        return $this->attributes['stock_quantity'] ?? $this->attributes['stock'] ?? null;
+        return $this->attributes['stock'] ?? $this->attributes['stock_quantity'] ?? null;
     }
 
     public function getStockAttribute()
     {
-        return $this->attributes['stock_quantity'] ?? $this->attributes['stock'] ?? null;
+        return $this->attributes['stock'] ?? $this->attributes['stock_quantity'] ?? null;
     }
 
     public function setStockAttribute($value)
     {
-        $this->attributes['stock_quantity'] = $value;
+        $this->attributes['stock'] = $value;
     }
 
     public function getRatingAttribute()
@@ -77,7 +77,7 @@ class Perfume extends Model
 
     public function setRatingAttribute($value)
     {
-        $this->attributes['rating_avg'] = $value;
+        $this->attributes['rating'] = $value;
     }
 
     public function getReviewsCountAttribute()
@@ -87,17 +87,17 @@ class Perfume extends Model
 
     public function setReviewsCountAttribute($value)
     {
-        $this->attributes['rating_count'] = $value;
+        $this->attributes['reviews_count'] = $value;
     }
 
     public function getViewsAttribute()
     {
-        return $this->attributes['rating_count'] ?? $this->attributes['views'] ?? null;
+        return $this->attributes['views'] ?? $this->attributes['rating_count'] ?? null;
     }
 
     public function setViewsAttribute($value)
     {
-        $this->attributes['rating_count'] = $value;
+        $this->attributes['views'] = $value;
     }
 
     public function stockMovements()

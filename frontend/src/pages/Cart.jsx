@@ -16,7 +16,8 @@ const Cart = () => {
     const getImageUrl = (imageUrl) => {
         if (!imageUrl) return null;
         if (imageUrl.startsWith('http')) return imageUrl;
-        return `http://localhost:8000${imageUrl}`;
+        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
+        return `${apiHost}${imageUrl}`;
     };
 
     useEffect(() => {
@@ -41,7 +42,7 @@ const Cart = () => {
         if (!token) return;
 
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/addresses', {
+            const response = await axios.get('http://127.0.0.1:8002/api/addresses', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAddresses(response.data);
@@ -62,7 +63,7 @@ const Cart = () => {
         setIsCheckingOut(true);
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/orders',
+            const response = await axios.post('http://127.0.0.1:8002/api/orders',
                 { shipping_address_id: selectedAddress },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
