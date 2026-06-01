@@ -82,7 +82,7 @@ class RecommendationController extends Controller
                 ->where('status', '!=', 'cancelled')
                 ->get()
                 ->flatMap(function($order) {
-                    return $order->items->map(function($item) {
+                    return $order->items->map(function($item) use ($order) {
                         return [
                             'perfume' => $item->perfume,
                             'order_id' => $order->id,
@@ -154,6 +154,7 @@ class RecommendationController extends Controller
             })
             ->orderBy('rating_avg', 'desc')
             ->take(8)
+            ->with('category')
             ->get();
 
         return $recommendations->map(function($perfume) {
