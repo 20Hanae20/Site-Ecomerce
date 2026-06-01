@@ -12,6 +12,11 @@ return new class extends Migration
             return;
         }
 
+        // Only perform MySQL-specific ALTER/SHOW operations when using MySQL driver
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         $columns = DB::select("SHOW COLUMNS FROM `addresses`");
         $columnNames = array_map(fn($column) => $column->Field, $columns);
 

@@ -107,18 +107,40 @@ def main():
     print("=" * 60)
     
     try:
-        # Create training data
-        print("\n📊 Creating training data...")
-        perfumes = create_training_data()
-        print(f"✅ Generated {len(perfumes)} synthetic perfume profiles")
-        
+        import argparse
+        parser = argparse.ArgumentParser(description='Train K-Means model (optionally for a tenant)')
+        parser.add_argument('--tenant-id', type=int, help='Tenant ID to train model for')
+        parser.add_argument('--perfumes-json', type=str, help='Path to perfumes JSON file to use as training data')
+        parser.add_argument('--n-clusters', type=int, default=5, help='Number of clusters')
+        parser.add_argument('--output', type=str, help='Output path for model pickle')
+
+        args = parser.parse_args()
+
+        # Load training data
+        if args.perfumes_json:
+            print(f"\n📥 Loading perfumes data from: {args.perfumes_json}")
+            with open(args.perfumes_json, 'r', encoding='utf-8') as pf:
+                perfumes = json.load(pf)
+            print(f"✅ Loaded {len(perfumes)} perfume profiles from JSON")
+        else:
+            print("\n📊 Creating synthetic training data...")
+            perfumes = create_training_data()
+            print(f"✅ Generated {len(perfumes)} synthetic perfume profiles")
+
         # Train model
         print("\n🤖 Training K-Means model...")
-        kmeans, scaler, perfumes_with_clusters = train_model(perfumes, n_clusters=5)
-        
+        kmeans, scaler, perfumes_with_clusters = train_model(perfumes, n_clusters=args.n_clusters)
+
+        # Determine output path
+        if args.output:
+            model_path = Path(args.output)
+        elif args.tenant_id:
+            model_path = Path(__file__).parent.parent.parent / 'storage' / 'app' / 'tenants' / str(args.tenant_id) / 'model.pkl'
+        else:
+            model_path = Path(__file__).parent.parent.parent / 'storage' / 'app' / 'perfume_recommender_model.pkl'
+
         # Save model
         print("\n💾 Saving model...")
-        model_path = Path(__file__).parent.parent.parent / 'storage' / 'app' / 'perfume_recommender_model.pkl'
         save_model(kmeans, scaler, perfumes_with_clusters, model_path)
         
         print("\n" + "=" * 60)

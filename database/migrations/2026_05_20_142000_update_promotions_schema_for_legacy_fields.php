@@ -12,15 +12,17 @@ return new class extends Migration
             return;
         }
 
-        if (! Schema::hasColumn('promotions', 'start_date')) {
+        if (! Schema::hasColumn('promotions', 'start_date') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE `promotions` ADD `start_date` datetime NULL AFTER `value`");
         }
 
-        if (! Schema::hasColumn('promotions', 'end_date')) {
+        if (! Schema::hasColumn('promotions', 'end_date') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE `promotions` ADD `end_date` datetime NULL AFTER `start_date`");
         }
 
-        DB::statement("ALTER TABLE `promotions` MODIFY `type` enum('percentage','fixed_amount','fixed') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `promotions` MODIFY `type` enum('percentage','fixed_amount','fixed') NOT NULL");
+        }
 
         if (Schema::hasColumn('promotions', 'starts_at')) {
             DB::statement("UPDATE `promotions` SET `start_date` = `starts_at` WHERE `start_date` IS NULL");
@@ -37,14 +39,16 @@ return new class extends Migration
             return;
         }
 
-        if (Schema::hasColumn('promotions', 'start_date')) {
+        if (Schema::hasColumn('promotions', 'start_date') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE `promotions` DROP COLUMN `start_date`");
         }
 
-        if (Schema::hasColumn('promotions', 'end_date')) {
+        if (Schema::hasColumn('promotions', 'end_date') && DB::getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE `promotions` DROP COLUMN `end_date`");
         }
 
-        DB::statement("ALTER TABLE `promotions` MODIFY `type` enum('percentage','fixed_amount') NOT NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE `promotions` MODIFY `type` enum('percentage','fixed_amount') NOT NULL");
+        }
     }
 };

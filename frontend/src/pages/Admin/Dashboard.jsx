@@ -185,7 +185,10 @@ const AdminDashboard = () => {
                         <div className="log-placeholder-luxury">
                             <Clock size={40} className="gold-icon pulse" />
                             <p>Accédez aux <strong>Registres de Sécurité</strong> pour un contrôle total sur l'intégrité de la Maison.</p>
-                            <button className="gold-button" onClick={() => navigate('/admin/logs')}>Ouvrir les Journaux</button>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button className="gold-button" onClick={() => navigate('/admin/logs')}>Ouvrir les Journaux</button>
+                                <button className="gold-button" onClick={() => navigate('/admin/branding')}>Branding</button>
+                            </div>
                         </div>
                     </div>
                 </section>

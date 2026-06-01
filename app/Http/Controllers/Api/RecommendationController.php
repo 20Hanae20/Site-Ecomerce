@@ -18,12 +18,10 @@ class RecommendationController extends Controller
             $tenantId = tenant('id');
 
             // Get top rated perfumes as fallback recommendations
-            $recommendations = Perfume::query()
-                ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
-                ->where('is_active', true)
+            $recommendations = Perfume::where('is_active', true)
                 ->where('rating_avg', '>=', 4.0)
                 ->orderBy('rating_avg', 'desc')
-                ->take(5)
+                ->take($topN)
                 ->get();
 
             return response()->json([
