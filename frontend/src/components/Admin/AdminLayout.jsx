@@ -17,7 +17,15 @@ import {
 import api from '../../services/api';
 
 const AdminLayout = () => {
-    const [user, setUser] = useState(null);
+    const [user] = useState(() => {
+        try {
+            const storedUser = localStorage.getItem('user');
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch {
+            localStorage.removeItem('user');
+            return null;
+        }
+    });
     const [tenantBrand, setTenantBrand] = useState({
         name: 'SITE PARFUM',
         logo: null,
@@ -26,23 +34,19 @@ const AdminLayout = () => {
     const location = useLocation();
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token') || localStorage.getItem('admin_token');
 
-        if (!storedUser || !token) {
+        if (!user || !token) {
             navigate('/login');
             return;
         }
 
-        const parsedUser = JSON.parse(storedUser);
-        const isStaff = ['admin', 'super_admin', 'moderateur', 'gestionnaire'].includes(parsedUser.role);
+        const isStaff = ['admin', 'super_admin', 'moderateur', 'gestionnaire'].includes(user.role);
 
         if (!isStaff) {
             navigate('/');
             return;
         }
-
-        setUser(parsedUser);
 
         api.get('/tenant/current')
             .then(({ data }) => {
@@ -57,7 +61,7 @@ const AdminLayout = () => {
                     logo: null,
                 });
             });
-    }, [navigate]);
+    }, [navigate, user]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');

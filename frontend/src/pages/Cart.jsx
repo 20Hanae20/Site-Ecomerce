@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, ChevronRight } from 'lucide-react';

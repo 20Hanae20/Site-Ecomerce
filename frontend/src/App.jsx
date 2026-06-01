@@ -49,7 +49,7 @@ import AddPerfume from './pages/AddPerfume';
 
 import './App.css';
 
-import { CartProvider } from './context/CartContext';
+import { CartProvider } from './context/CartProvider';
 
 function App() {
   return (

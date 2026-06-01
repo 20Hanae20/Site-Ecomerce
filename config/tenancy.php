@@ -6,7 +6,7 @@ use App\Models\Tenant;
 use Stancl\Tenancy\Database\Models\Domain;
 
 return [
-    'tenant_model' => AppTenant::class,
+    'tenant_model' => Tenant::class,
     'id_generator' => App\Tenancy\IncrementalTenantIdGenerator::class,
 
     'domain_model' => Domain::class,

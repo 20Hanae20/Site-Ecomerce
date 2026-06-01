@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { Filter, Search, RotateCcw, ShoppingCart, Star } from 'lucide-react';
 
 const getPerfumeImage = (perfume) => {

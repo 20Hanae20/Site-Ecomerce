@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { Search, Filter, Eye, Printer, X, ShoppingBag, Clock, Package, Truck, CheckCircle, XCircle } from 'lucide-react';
 
@@ -10,11 +10,7 @@ const AdminOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [message, setMessage] = useState({ text: '', type: '' });
 
-    useEffect(() => {
-        fetchOrders();
-    }, [filterStatus]);
-
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
@@ -28,7 +24,11 @@ const AdminOrders = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filterStatus, searchTerm]);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
 
     const handleUpdateStatus = async (orderId, newStatus) => {
         try {

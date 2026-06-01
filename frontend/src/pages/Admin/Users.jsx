@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { Search, Filter, Shield, User as UserIcon, ShieldAlert, Trash2, Ban, Unlock, Users, ShieldCheck, UserPlus, Fingerprint } from 'lucide-react';
 
@@ -10,11 +10,7 @@ const AdminUsers = () => {
     const [message, setMessage] = useState({ text: '', type: '' });
     const [currentUser] = useState(JSON.parse(localStorage.getItem('user')));
 
-    useEffect(() => {
-        fetchUsers();
-    }, [filterRole]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
@@ -29,7 +25,11 @@ const AdminUsers = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filterRole, searchTerm]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const handleUpdateStatus = async (userId, status) => {
         try {

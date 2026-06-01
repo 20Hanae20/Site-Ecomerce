@@ -16,21 +16,21 @@ const Contact = () => {
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const fetchSettings = async () => {
-        try {
-            const response = await axios.get('http://127.0.0.1:8000/api/settings/public');
-            const publicSettings = response.data;
-            setSettings(prev => ({
-                ...prev,
-                ...publicSettings
-            }));
-        } catch (err) {
-            console.error("Failed to fetch contact settings", err);
-        }
-    };
-
     useEffect(() => {
-        fetchSettings();
+        const loadSettings = async () => {
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/settings/public');
+                const publicSettings = response.data;
+                setSettings(prev => ({
+                    ...prev,
+                    ...publicSettings
+                }));
+            } catch (err) {
+                console.error("Failed to fetch contact settings", err);
+            }
+        };
+
+        loadSettings();
     }, []);
 
     const handleChange = (e) => {

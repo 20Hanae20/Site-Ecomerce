@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 import { Star, ShoppingBag, Truck, ShieldCheck, ChevronRight } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
 import ReviewForm from '../components/Reviews/ReviewForm';

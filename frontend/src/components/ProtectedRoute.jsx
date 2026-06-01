@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ component: Comp, requiredRole = null, ...rest }) => {
+const ProtectedRoute = ({ component, requiredRole = null, ...rest }) => {
+    const Comp = component;
     const token = localStorage.getItem('token');
     let user = {};
     try {
