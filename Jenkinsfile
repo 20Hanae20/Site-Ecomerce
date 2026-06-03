@@ -182,7 +182,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        ./vendor/bin/sonar-scanner \
+                        npx sonar-scanner \
                           -Dsonar.projectKey=laravel-app \
                           -Dsonar.sources=. \
                           -Dsonar.host.url=http://localhost:9000 \
