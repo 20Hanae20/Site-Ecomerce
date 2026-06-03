@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -56,171 +57,274 @@ const Login = () => {
     };
 
     return (
-        <div className="container-premium auth-section-luxury">
-            <div className="auth-card-premium glass-premium animate-fade-in">
-                <div className="auth-header-luxury">
-                    <h1 className="font-serif gradient-text-gold">CONNEXION</h1>
-                    <p className="auth-subtitle">Retrouvez votre sillage personnel.</p>
-                </div>
+        <div className="auth-split-layout">
+            <div className="auth-form-side">
+                <div className="auth-form-container">
+                    <Link to="/" className="back-link">
+                        <ArrowLeft size={16} /> Retour au site
+                    </Link>
 
-                <form onSubmit={handleSubmit} className="premium-form">
-                    {message && (
-                        <div className={`premium-alert ${message.includes('réussie') ? 'success' : 'error'}`}>
-                            {message}
+                    <div className="auth-header">
+                        <div className="brand-logo mb-4">
+                            <span className="brand-icon">❖</span>
+                            <span className="brand-text">AURA SaaS</span>
                         </div>
-                    )}
-
-                    <div className="premium-input-group">
-                        <label>VOTRE EMAIL</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="votre@email.com"
-                            required
-                        />
-                        {errors.email && <span className="error-hint">{errors.email[0]}</span>}
+                        <h1>Bon retour !</h1>
+                        <p className="text-muted">Connectez-vous pour accéder à votre tableau de bord.</p>
                     </div>
 
-                    <div className="premium-input-group">
-                        <label>MOT DE PASSE</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="••••••••"
-                            required
-                        />
-                        {errors.password && <span className="error-hint">{errors.password[0]}</span>}
-                    </div>
+                    <form onSubmit={handleSubmit} className="saas-form">
+                        {message && (
+                            <div className={`alert ${message.includes('réussie') ? 'alert-success' : 'alert-danger'}`}>
+                                {message}
+                            </div>
+                        )}
 
-                    <button type="submit" className="btn-premium btn-auth-luxury" disabled={isLoading}>
-                        {isLoading ? 'TRAITEMENT...' : 'S\'IDENTIFIER'}
-                    </button>
+                        <div className="form-group">
+                            <label className="form-label" htmlFor="email">Adresse Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                name="email"
+                                className="form-input"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="nom@entreprise.com"
+                                required
+                            />
+                            {errors.email && <span className="error-text">{errors.email[0]}</span>}
+                        </div>
 
-                    <div className="auth-links-luxury">
-                        <Link to="/forgot-password">Mot de passe oublié ?</Link>
-                        <p>Pas encore membre ? <Link to="/register" className="gold-link">Créer un compte</Link></p>
+                        <div className="form-group">
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="form-label mb-0" htmlFor="password">Mot de passe</label>
+                                <Link to="/forgot-password" className="forgot-link">Oublié ?</Link>
+                            </div>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                className="form-input"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="••••••••"
+                                required
+                            />
+                            {errors.password && <span className="error-text">{errors.password[0]}</span>}
+                        </div>
+
+                        <button type="submit" className="btn btn-primary w-100 mt-4" disabled={isLoading}>
+                            {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+                        </button>
+
+                        <div className="auth-footer text-center mt-5">
+                            <p className="text-muted">
+                                Vous n'avez pas de compte ? <Link to="/register" className="text-primary font-medium">Créer un compte</Link>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div className="auth-illustration-side">
+                <div className="illustration-content animate-fade-up">
+                    <h2>La plateforme de référence pour les distributeurs.</h2>
+                    <p>Découvrez comment nos outils d'IA et de gestion simplifient votre activité commerciale au quotidien.</p>
+                    
+                    <ul className="benefit-list">
+                        <li><CheckCircle size={20} /> Synchronisation des stocks en temps réel</li>
+                        <li><CheckCircle size={20} /> Suggestions de parfums basées sur l'IA</li>
+                        <li><CheckCircle size={20} /> Sécurité et Multi-Tenancy natifs</li>
+                    </ul>
+
+                    <div className="testimonial-card">
+                        <p className="quote">"Depuis que nous utilisons AURA SaaS, notre gestion d'inventaire multi-sites est devenue un jeu d'enfant."</p>
+                        <div className="author">- Jean Dupont, Directeur Retail</div>
                     </div>
-                </form>
+                </div>
             </div>
 
             <style>{`
-                .auth-section-luxury {
-                    min-height: 80vh;
+                .auth-split-layout {
+                    display: flex;
+                    min-height: 100vh;
+                    background: var(--bg-surface);
+                }
+
+                .auth-form-side {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    padding: 2rem;
+                }
+
+                .auth-form-container {
+                    width: 100%;
+                    max-width: 400px;
+                    margin: 0 auto;
+                }
+
+                .back-link {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    color: var(--text-muted);
+                    text-decoration: none;
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    margin-bottom: 3rem;
+                    transition: color var(--transition-fast);
+                }
+
+                .back-link:hover {
+                    color: var(--text-main);
+                }
+
+                .auth-header {
+                    margin-bottom: 2.5rem;
+                }
+
+                .auth-header h1 {
+                    font-size: 1.875rem;
+                    margin-bottom: 0.5rem;
+                    letter-spacing: -0.5px;
+                }
+
+                .brand-logo {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                .brand-icon {
+                    color: var(--primary);
+                    font-size: 1.5rem;
+                }
+                .brand-text {
+                    font-weight: 700;
+                    font-size: 1.25rem;
+                    color: var(--text-main);
+                }
+
+                .alert {
+                    padding: 0.875rem 1rem;
+                    border-radius: var(--radius-md);
+                    font-size: 0.875rem;
+                    margin-bottom: 1.5rem;
+                }
+                .alert-success {
+                    background: var(--success-bg);
+                    color: var(--success);
+                    border: 1px solid #a7f3d0;
+                }
+                .alert-danger {
+                    background: var(--danger-bg);
+                    color: var(--danger);
+                    border: 1px solid #fecaca;
+                }
+
+                .forgot-link {
+                    font-size: 0.875rem;
+                    color: var(--primary);
+                    text-decoration: none;
+                    font-weight: 500;
+                }
+
+                .w-100 { width: 100%; }
+                .mb-0 { margin-bottom: 0 !important; }
+                .font-medium { font-weight: 500; }
+                .text-primary { color: var(--primary); text-decoration: none; }
+                .text-primary:hover { text-decoration: underline; }
+
+                .error-text {
+                    color: var(--danger);
+                    font-size: 0.75rem;
+                    margin-top: 0.25rem;
+                    display: block;
+                }
+
+                /* Illustration Side */
+                .auth-illustration-side {
+                    flex: 1.2;
+                    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+                    color: white;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    padding: 4rem 1rem;
-                }
-
-                .auth-card-premium {
-                    width: 100%;
-                    max-width: 500px;
                     padding: 4rem;
-                    border-radius: 12px;
-                    text-align: center;
-                    background: var(--bg-card);
-                    box-shadow: var(--shadow-lg);
-                    border: 1px solid var(--glass-border);
+                    position: relative;
+                    overflow: hidden;
                 }
 
-                .auth-header-luxury h1 {
+                .auth-illustration-side::before {
+                    content: '';
+                    position: absolute;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+                }
+
+                .illustration-content {
+                    position: relative;
+                    z-index: 10;
+                    max-width: 480px;
+                }
+
+                .illustration-content h2 {
+                    color: white;
                     font-size: 2.5rem;
+                    line-height: 1.2;
                     margin-bottom: 1rem;
-                    letter-spacing: 2px;
-                    color: var(--text-primary);
                 }
 
-                .auth-subtitle {
-                    font-size: 0.95rem;
-                    color: var(--text-secondary);
+                .illustration-content p {
+                    color: rgba(255,255,255,0.8);
+                    font-size: 1.125rem;
+                    margin-bottom: 2.5rem;
+                    line-height: 1.6;
+                }
+
+                .benefit-list {
+                    list-style: none;
                     margin-bottom: 3rem;
                 }
 
-                .premium-form {
-                    text-align: left;
-                }
-
-                .premium-input-group {
-                    margin-bottom: 2rem;
-                }
-
-                .premium-input-group label {
-                    display: block;
-                    font-size: 0.75rem;
-                    color: var(--text-secondary);
-                    margin-bottom: 0.5rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                }
-
-                .premium-input-group input {
-                    width: 100%;
-                    background: #ffffff;
-                    border: 1px solid #cbd5e1;
-                    padding: 1rem;
-                    color: var(--text-primary);
-                    border-radius: 8px;
-                    transition: all 0.2s ease;
-                }
-
-                .premium-input-group input:focus {
-                    outline: none;
-                    border-color: var(--primary);
-                    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-                }
-
-                .btn-auth-luxury {
-                    width: 100%;
-                    padding: 1rem;
-                    font-size: 1rem;
-                    margin-bottom: 2rem;
-                }
-
-                .auth-links-luxury {
-                    text-align: center;
-                    font-size: 0.9rem;
-                }
-
-                .auth-links-luxury a {
-                    color: var(--text-secondary);
-                    text-decoration: none;
-                    display: block;
+                .benefit-list li {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
                     margin-bottom: 1rem;
+                    font-size: 1rem;
+                    font-weight: 500;
                 }
 
-                .auth-links-luxury a:hover {
-                    color: var(--primary);
+                .benefit-list svg {
+                    color: #a7f3d0;
                 }
 
-                .gold-link {
-                    color: var(--primary) !important;
+                .testimonial-card {
+                    background: rgba(255,255,255,0.1);
+                    backdrop-filter: blur(10px);
+                    padding: 1.5rem;
+                    border-radius: var(--radius-lg);
+                    border: 1px solid rgba(255,255,255,0.2);
+                }
+
+                .quote {
+                    font-style: italic;
+                    margin-bottom: 1rem !important;
+                    font-size: 1rem !important;
+                    color: white !important;
+                }
+
+                .author {
                     font-weight: 600;
+                    font-size: 0.875rem;
                 }
 
-                .premium-alert {
-                    padding: 1rem;
-                    border-radius: 8px;
-                    margin-bottom: 2rem;
-                    font-size: 0.9rem;
-                    background: #f8fafc;
-                }
-
-                .premium-alert.success { border: 1px solid #22c55e; color: #16a34a; background: #f0fdf4; }
-                .premium-alert.error { border: 1px solid #ef4444; color: #dc2626; background: #fef2f2; }
-
-                .error-hint {
-                    font-size: 0.8rem;
-                    color: #dc2626;
-                    margin-top: 0.5rem;
-                    display: block;
-                }
-
-                @media (max-width: 480px) {
-                    .auth-card-premium { padding: 2rem; }
+                @media (max-width: 992px) {
+                    .auth-illustration-side {
+                        display: none;
+                    }
                 }
             `}</style>
         </div>

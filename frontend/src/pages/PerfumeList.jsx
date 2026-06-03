@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/useCart';
-import { Filter, Search, RotateCcw, ShoppingCart, Star } from 'lucide-react';
+import { Filter, Search, RotateCcw, ShoppingCart, Star, Box } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`;
 
@@ -65,7 +65,7 @@ const PerfumeList = () => {
             });
         } catch (err) {
             console.error("Fetch perfumes error:", err);
-            setError("Impossible de charger les parfums.");
+            setError("Impossible de charger l'inventaire.");
         } finally {
             setIsLoading(false);
         }
@@ -133,47 +133,66 @@ const PerfumeList = () => {
 
     const renderMainContent = () => {
         if (isLoading) return (
-            <div className="loader-container-premium">
-                <div className="premium-loader"></div>
+            <div className="text-center py-5">
+                <div className="spinner"></div>
+                <p className="text-muted mt-3">Chargement du catalogue...</p>
             </div>
         );
-        if (error) return <div className="premium-alert error">{error}</div>;
-        if (perfumes.length === 0) return <div className="no-results-premium">Aucune fragrance ne correspond à votre recherche.</div>;
+        if (error) return <div className="alert alert-danger">{error}</div>;
+        if (perfumes.length === 0) return (
+            <div className="saas-card text-center py-5">
+                <Box size={48} className="text-muted mx-auto mb-3" />
+                <h3>Aucun produit trouvé</h3>
+                <p className="text-muted">Modifiez vos filtres de recherche.</p>
+                <button className="btn btn-secondary mt-3" onClick={resetFilters}>Réinitialiser</button>
+            </div>
+        );
 
         return (
             <>
-                <div className="catalog-grid-premium">
+                <div className="catalog-grid">
                     {perfumes.map(perfume => (
-                        <div key={perfume.id} className="premium-card catalog-card-luxury">
-                            <Link to={`/perfumes/${perfume.id}`} className="card-media-wrapper">
+                        <div key={perfume.id} className="saas-card product-card">
+                            <Link to={`/perfumes/${perfume.id}`} className="product-media">
                                 {getPerfumeImage(perfume) ? (
                                     <img src={getPerfumeImage(perfume)} alt={perfume.name} />
                                 ) : (
-                                    <div className="placeholder-luxury">
-                                        <span className="gold-rose">🌹</span>
+                                    <div className="placeholder-image">
+                                        <Box size={32} className="text-muted" />
                                     </div>
                                 )}
                                 {new Date(perfume.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
-                                    <span className="luxury-badge">NOUVEAU</span>
+                                    <span className="badge badge-primary absolute top-2 left-2">Nouveau</span>
                                 )}
                             </Link>
-                            <div className="card-body-luxury">
-                                <div className="card-head-row">
-                                    <span className="category-tag-luxury">{perfume.category?.name || 'Parfum'}</span>
-                                    {perfume.rating > 0 && <span className="rating-tag-luxury"><Star size={12} fill="var(--primary)" /> {perfume.rating}</span>}
+                            
+                            <div className="product-info">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-xs font-semibold text-muted uppercase tracking-wider">{perfume.category?.name || 'Général'}</span>
+                                    {perfume.rating > 0 && (
+                                        <span className="flex items-center gap-1 text-sm font-medium text-warning">
+                                            <Star size={14} fill="currentColor" /> {perfume.rating}
+                                        </span>
+                                    )}
                                 </div>
-                                <Link to={`/perfumes/${perfume.id}`} className="title-link-luxury">
-                                    <h3>{perfume.name}</h3>
+                                
+                                <Link to={`/perfumes/${perfume.id}`} className="text-decoration-none">
+                                    <h3 className="product-title mb-1 text-main">{perfume.name}</h3>
                                 </Link>
-                                <p className="notes-luxury">{perfume.notes || 'Notes de tête raffinées et fond boisé.'}</p>
-                                <div className="card-foot-row">
-                                    <span className="price-luxury">{perfume.price} €</span>
+                                
+                                <p className="text-sm text-muted mb-4 line-clamp-2" style={{ minHeight: '40px' }}>
+                                    {perfume.notes || 'Aucune description disponible.'}
+                                </p>
+                                
+                                <div className="flex justify-between items-center mt-auto border-t pt-3 border-light">
+                                    <span className="font-bold text-lg">{perfume.price} €</span>
                                     <button
-                                        className="btn-add-luxury"
+                                        className="btn btn-primary btn-sm flex items-center gap-2"
                                         onClick={(e) => handleQuickAdd(e, perfume.id)}
                                         disabled={addingIds.has(perfume.id) || perfume.stock === 0}
                                     >
-                                        <ShoppingCart size={16} /> {addingIds.has(perfume.id) ? '...' : ''}
+                                        <ShoppingCart size={14} /> 
+                                        {addingIds.has(perfume.id) ? '...' : (perfume.stock === 0 ? 'Rupture' : 'Ajouter')}
                                     </button>
                                 </div>
                             </div>
@@ -182,15 +201,16 @@ const PerfumeList = () => {
                 </div>
 
                 {pagination.last_page > 1 && (
-                    <div className="pagination-premium">
+                    <div className="pagination">
                         <button
                             disabled={filters.page === 1}
                             onClick={() => setFilters({ ...filters, page: filters.page - 1 })}
-                            className="btn-nav"
+                            className="btn btn-secondary"
                         >
-                            &lt;
+                            Précédent
                         </button>
 
+                        <div className="pagination-numbers">
                         {(() => {
                             const pages = [];
                             const current = filters.page;
@@ -211,7 +231,7 @@ const PerfumeList = () => {
                             return pages.map((p, index) => (
                                 <button
                                     key={index}
-                                    className={p === current ? 'active' : p === '...' ? 'dots' : ''}
+                                    className={`page-item ${p === current ? 'active' : ''} ${p === '...' ? 'disabled' : ''}`}
                                     onClick={() => typeof p === 'number' && setFilters({ ...filters, page: p })}
                                     disabled={p === '...'}
                                 >
@@ -219,13 +239,14 @@ const PerfumeList = () => {
                                 </button>
                             ));
                         })()}
+                        </div>
 
                         <button
                             disabled={filters.page === pagination.last_page}
                             onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
-                            className="btn-nav"
+                            className="btn btn-secondary"
                         >
-                            &gt;
+                            Suivant
                         </button>
                     </div>
                 )}
@@ -234,71 +255,112 @@ const PerfumeList = () => {
     };
 
     return (
-        <div className="container-premium catalog-page-luxury animate-fade-in">
-            <header className="catalog-header-luxury">
-                <h5 className="gradient-text-gold font-serif">COLLECTIONS EXCLUSIVES</h5>
-                <h1 className="font-serif">L'Ouvrage du <span className="gradient-text-gold">Parfumeur</span></h1>
-                <p>Découvrez notre sélection de fragrances d'exception, conçues pour l'âme.</p>
+        <div className="container saas-catalog-page py-5">
+            <header className="page-header mb-5">
+                <div className="flex justify-between items-end border-b border-light pb-4">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">Catalogue d'Inventaire</h1>
+                        <p className="text-muted">Gérez et explorez la base de données centralisée de parfums.</p>
+                    </div>
+                    <div className="text-right">
+                        <span className="badge badge-secondary">{pagination.total || 0} références actives</span>
+                    </div>
+                </div>
             </header>
 
-            <div className="catalog-layout-luxury">
-                <aside className="catalog-sidebar-luxury glass-premium">
-                    <div className="sidebar-search-luxury">
-                        <form onSubmit={handleSearch} className="search-form-luxury">
-                            <Search size={18} className="search-icon-luxury" />
-                            <input
-                                type="text"
-                                placeholder="RECHERCHER..."
-                                value={filters.q}
-                                onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-                                onFocus={() => setShowSuggestions(true)}
-                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                            />
-                        </form>
-                        {showSuggestions && suggestions.length > 0 && (
-                            <div className="suggestions-box-luxury glass-premium">
-                                {suggestions.map(s => (
-                                    <div key={s.id} className="suggestion-item-luxury" onClick={() => selectSuggestion(s.name)}>
-                                        {s.name}
+            <div className="catalog-layout">
+                {/* Sidebar Filters */}
+                <aside className="catalog-sidebar">
+                    <div className="saas-card p-4 sticky top-4">
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted mb-4 border-b border-light pb-2">Filtres</h3>
+                        
+                        <div className="filter-group mb-4">
+                            <form onSubmit={handleSearch} className="search-form relative">
+                                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" />
+                                <input
+                                    type="text"
+                                    className="form-input pl-9"
+                                    placeholder="Rechercher par nom, marque..."
+                                    value={filters.q}
+                                    onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                                    onFocus={() => setShowSuggestions(true)}
+                                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                />
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <div className="suggestions-dropdown saas-card absolute w-full mt-1 z-10 p-0 overflow-hidden">
+                                        {suggestions.map(s => (
+                                            <div key={s.id} className="p-2 hover:bg-light cursor-pointer text-sm" onClick={() => selectSuggestion(s.name)}>
+                                                {s.name}
+                                            </div>
+                                        ))}
                                     </div>
+                                )}
+                            </form>
+                        </div>
+
+                        <div className="filter-group mb-4">
+                            <label className="flex items-center gap-2 text-sm font-semibold mb-3"><Filter size={14} /> Catégories</label>
+                            <div className="flex flex-col gap-2">
+                                <button 
+                                    className={`text-left text-sm py-1 px-2 rounded transition-colors ${filters.category_id === '' ? 'bg-primary text-white font-medium' : 'text-muted hover:bg-light'}`}
+                                    onClick={() => setFilters({ ...filters, category_id: '', page: 1 })}
+                                >
+                                    Toutes les catégories
+                                </button>
+                                {categories.map(cat => (
+                                    <button 
+                                        key={cat.id} 
+                                        className={`text-left text-sm py-1 px-2 rounded transition-colors ${filters.category_id == cat.id ? 'bg-primary text-white font-medium' : 'text-muted hover:bg-light'}`}
+                                        onClick={() => setFilters({ ...filters, category_id: cat.id, page: 1 })}
+                                    >
+                                        {cat.name}
+                                    </button>
                                 ))}
                             </div>
-                        )}
-                    </div>
+                        </div>
 
-                    <div className="sidebar-group-luxury">
-                        <label><Filter size={14} /> UNIVERS</label>
-                        <div className="category-scroll-luxury">
-                            <button className={filters.category_id === '' ? 'active' : ''} onClick={() => setFilters({ ...filters, category_id: '', page: 1 })}>TOUS</button>
-                            {categories.map(cat => (
-                                <button key={cat.id} className={filters.category_id == cat.id ? 'active' : ''} onClick={() => setFilters({ ...filters, category_id: cat.id, page: 1 })}>{cat.name.toUpperCase()}</button>
-                            ))}
+                        <div className="filter-group mb-4">
+                            <label className="text-sm font-semibold mb-3 block">Prix (€)</label>
+                            <div className="flex gap-2 mb-3">
+                                <input 
+                                    type="number" 
+                                    className="form-input text-sm" 
+                                    placeholder="Min" 
+                                    value={filters.min_price} 
+                                    onChange={(e) => setFilters({ ...filters, min_price: e.target.value })} 
+                                />
+                                <input 
+                                    type="number" 
+                                    className="form-input text-sm" 
+                                    placeholder="Max" 
+                                    value={filters.max_price} 
+                                    onChange={(e) => setFilters({ ...filters, max_price: e.target.value })} 
+                                />
+                            </div>
+                            <button className="btn btn-secondary w-full btn-sm" onClick={() => { setFilters({ ...filters, page: 1 }); fetchPerfumes(); }}>Appliquer</button>
+                        </div>
+
+                        <div className="border-t border-light pt-4">
+                            <button className="btn w-full btn-sm text-muted hover:bg-light flex items-center justify-center gap-2" onClick={resetFilters}>
+                                <RotateCcw size={14} /> Réinitialiser
+                            </button>
                         </div>
                     </div>
-
-                    <div className="sidebar-group-luxury">
-                        <label>PLAGE DE PRIX</label>
-                        <div className="price-inputs-luxury">
-                            <input type="number" placeholder="MIN" value={filters.min_price} onChange={(e) => setFilters({ ...filters, min_price: e.target.value })} />
-                            <input type="number" placeholder="MAX" value={filters.max_price} onChange={(e) => setFilters({ ...filters, max_price: e.target.value })} />
-                        </div>
-                        <button className="btn-premium btn-apply-luxury" onClick={() => { setFilters({ ...filters, page: 1 }); fetchPerfumes(); }}>APPLIQUER</button>
-                    </div>
-
-                    <button className="btn-reset-luxury" onClick={resetFilters}>
-                        <RotateCcw size={14} /> RÉINITIALISER
-                    </button>
                 </aside>
 
-                <main className="catalog-content-luxury">
-                    <div className="catalog-toolbar-luxury">
-                        <span className="catalog-count">{pagination.total || 0} FRAGRANCES</span>
-                        <select className="catalog-sort-luxury" value={filters.sort_by} onChange={(e) => setFilters({ ...filters, sort_by: e.target.value, page: 1 })}>
-                            <option value="created_at">NOUVEAUTÉS</option>
-                            <option value="price_asc">PRIX CROISSANT</option>
-                            <option value="price_desc">PRIX DÉCROISSANT</option>
-                            <option value="popularity">POPULARITÉ</option>
-                        </select>
+                {/* Main Content */}
+                <main className="catalog-main">
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm text-muted">Affichage de la page {pagination.current_page || 1} sur {pagination.last_page || 1}</div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm text-muted whitespace-nowrap">Trier par:</label>
+                            <select className="form-input py-1 text-sm w-auto" value={filters.sort_by} onChange={(e) => setFilters({ ...filters, sort_by: e.target.value, page: 1 })}>
+                                <option value="created_at">Plus récents</option>
+                                <option value="price_asc">Prix: croissant</option>
+                                <option value="price_desc">Prix: décroissant</option>
+                                <option value="popularity">Popularité</option>
+                            </select>
+                        </div>
                     </div>
 
                     {renderMainContent()}
@@ -306,300 +368,170 @@ const PerfumeList = () => {
             </div>
 
             <style>{`
-                .catalog-page-luxury { padding-bottom: 8rem; }
-
-                .catalog-header-luxury {
-                    text-align: center;
-                    padding: 6rem 0;
-                }
-
-                .catalog-header-luxury h5 { letter-spacing: 5px; margin-bottom: 1.5rem; }
-                .catalog-header-luxury h1 { font-size: 4rem; margin-bottom: 1.5rem; line-height: 1; }
-                .catalog-header-luxury p { font-size: 1.1rem; opacity: 0.6; max-width: 600px; margin: 0 auto; }
-
-                .catalog-layout-luxury {
+                .catalog-layout {
                     display: grid;
-                    grid-template-columns: 280px 1fr;
-                    gap: 3rem;
-                }
-
-                .catalog-sidebar-luxury {
-                    padding: 2.5rem;
-                    border-radius: 20px;
-                    height: fit-content;
-                    position: sticky;
-                    top: 100px;
-                }
-
-                .sidebar-search-luxury { position: relative; margin-bottom: 3rem; }
-                .search-form-luxury {
-                    display: flex;
-                    align-items: center;
-                    border-bottom: 1px solid var(--glass-border);
-                    padding-bottom: 0.5rem;
-                }
-
-                .search-icon-luxury { opacity: 0.5; margin-right: 0.75rem; }
-
-                .search-form-luxury input {
-                    background: none;
-                    border: none;
-                    color: #fff;
-                    font-size: 0.8rem;
-                    letter-spacing: 2px;
-                    width: 100%;
-                }
-
-                .search-form-luxury input:focus { outline: none; }
-
-                .suggestions-box-luxury {
-                    position: absolute;
-                    top: 100%;
-                    left: 0;
-                    right: 0;
-                    z-index: 10;
-                    margin-top: 0.5rem;
-                    border-radius: 8px;
-                    overflow: hidden;
-                }
-
-                .suggestion-item-luxury {
-                    padding: 0.8rem 1.25rem;
-                    font-size: 0.8rem;
-                    cursor: pointer;
-                    transition: background 0.3s;
-                }
-
-                .suggestion-item-luxury:hover { background: var(--glass-hover); color: var(--primary); }
-
-                .sidebar-group-luxury { margin-bottom: 3rem; }
-                .sidebar-group-luxury label {
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    font-size: 0.7rem;
-                    letter-spacing: 2px;
-                    color: var(--primary);
-                    font-weight: 700;
-                    margin-bottom: 1.5rem;
-                }
-
-                .category-scroll-luxury { display: flex; flex-direction: column; gap: 0.75rem; }
-                .category-scroll-luxury button {
-                    background: none;
-                    border: none;
-                    text-align: left;
-                    color: var(--text-secondary);
-                    font-size: 0.8rem;
-                    letter-spacing: 1px;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                }
-
-                .category-scroll-luxury button:hover, .category-scroll-luxury button.active {
-                    color: #fff;
-                    transform: translateX(5px);
-                }
-
-                .category-scroll-luxury button.active { color: var(--primary); font-weight: 700; }
-
-                .price-inputs-luxury { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-                .price-inputs-luxury input {
-                    width: 50%;
-                    background: rgba(255,255,255,0.03);
-                    border: 1px solid var(--glass-border);
-                    padding: 0.6rem;
-                    color: #fff;
-                    font-size: 0.7rem;
-                    border-radius: 4px;
-                }
-
-                .btn-apply-luxury { width: 100%; padding: 0.7rem; font-size: 0.7rem; }
-
-                .btn-reset-luxury {
-                    width: 100%;
-                    background: none;
-                    border: 1px solid var(--glass-border);
-                    color: var(--text-secondary);
-                    padding: 0.8rem;
-                    border-radius: 8px;
-                    font-size: 0.7rem;
-                    letter-spacing: 1px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                }
-
-                .btn-reset-luxury:hover { border-color: #fff; color: #fff; }
-
-                .catalog-toolbar-luxury {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 3rem;
-                }
-
-                .catalog-count { font-size: 0.75rem; letter-spacing: 2px; opacity: 0.5; }
-                .catalog-sort-luxury {
-                    background: none;
-                    border: none;
-                    color: #fff;
-                    font-size: 0.8rem;
-                    letter-spacing: 1px;
-                    cursor: pointer;
-                }
-
-                .catalog-grid-premium {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    grid-template-columns: 260px 1fr;
                     gap: 2rem;
+                    align-items: start;
                 }
 
-                .card-media-wrapper {
-                    height: 320px;
+                .sticky { position: sticky; }
+                .top-4 { top: 1rem; }
+
+                .catalog-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                }
+
+                .product-card {
+                    display: flex;
+                    flex-direction: column;
+                    padding: 0;
+                    overflow: hidden;
+                    height: 100%;
+                }
+
+                .product-media {
+                    position: relative;
+                    height: 200px;
+                    background: var(--bg-body);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: #000;
-                    position: relative;
-                    overflow: hidden;
-                    text-decoration: none;
+                    border-bottom: 1px solid var(--border-light);
                 }
 
-                .card-media-wrapper img {
+                .product-media img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    opacity: 0.8;
-                    transition: all 0.6s ease;
+                    transition: transform 0.3s ease;
                 }
 
-                .catalog-card-luxury:hover .card-media-wrapper img {
-                    opacity: 1;
-                    transform: scale(1.1);
+                .product-card:hover .product-media img {
+                    transform: scale(1.05);
                 }
 
-                .placeholder-luxury { font-size: 4rem; }
-
-                .luxury-badge {
-                    position: absolute;
-                    top: 1rem;
-                    left: 1rem;
-                    background: var(--primary);
-                    color: #000;
-                    font-size: 0.6rem;
-                    font-weight: 800;
-                    padding: 0.3rem 0.8rem;
-                    border-radius: 4px;
-                    letter-spacing: 1px;
-                }
-
-                .card-body-luxury { padding: 1.5rem; }
-                .card-head-row {
+                .placeholder-image {
+                    width: 100%;
+                    height: 100%;
                     display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 0.75rem;
-                }
-
-                .category-tag-luxury { font-size: 0.6rem; letter-spacing: 2px; opacity: 0.5; text-transform: uppercase; }
-                .rating-tag-luxury { font-size: 0.7rem; color: var(--primary); display: flex; align-items: center; gap: 0.3rem; }
-
-                .title-link-luxury { text-decoration: none; color: #fff; }
-                .card-body-luxury h3 { font-size: 1.2rem; margin-bottom: 1rem; font-weight: 500; }
-
-                .notes-luxury { font-size: 0.8rem; opacity: 0.5; margin-bottom: 1.5rem; line-height: 1.6; }
-
-                .card-foot-row {
-                    display: flex;
-                    justify-content: space-between;
                     align-items: center;
+                    justify-content: center;
+                    background: var(--bg-alt);
                 }
 
-                .price-luxury { font-size: 1.2rem; font-weight: 700; color: #fff; }
+                .product-info {
+                    padding: 1.25rem;
+                    display: flex;
+                    flex-direction: column;
+                    flex-grow: 1;
+                }
 
-                .btn-add-luxury {
-                    background: none;
-                    border: 1px solid var(--glass-border);
-                    color: var(--primary);
+                .product-title {
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    line-height: 1.3;
+                }
+
+                .line-clamp-2 {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .pagination {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-top: 3rem;
+                    padding-top: 2rem;
+                    border-top: 1px solid var(--border-light);
+                }
+
+                .pagination-numbers {
+                    display: flex;
+                    gap: 0.25rem;
+                }
+
+                .page-item {
                     width: 36px;
                     height: 36px;
-                    border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    border-radius: var(--radius-md);
+                    border: 1px solid var(--border-light);
+                    background: var(--bg-surface);
+                    color: var(--text-main);
+                    font-size: 0.875rem;
                     cursor: pointer;
-                    transition: all 0.3s;
+                    transition: all 0.2s;
                 }
 
-                .btn-add-luxury:hover:not(:disabled) {
+                .page-item:hover:not(.disabled) {
+                    background: var(--bg-alt);
+                }
+
+                .page-item.active {
                     background: var(--primary);
-                    color: #000;
-                }
-
-                .pagination-premium {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.5rem;
-                    margin-top: 6rem;
-                }
-
-                .pagination-premium button {
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: rgba(255, 255, 255, 0.03);
-                    border: 1px solid var(--glass-border);
-                    color: rgba(255, 255, 255, 0.6);
-                    font-size: 0.9rem;
-                    font-family: 'Inter', sans-serif;
-                    border-radius: 50%;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                }
-
-                .pagination-premium button:hover:not(:disabled):not(.dots) {
+                    color: white;
                     border-color: var(--primary);
-                    color: var(--primary);
-                    transform: translateY(-2px);
+                    font-weight: 600;
                 }
 
-                .pagination-premium button.active {
-                    background: var(--primary);
-                    color: #000;
-                    border-color: var(--primary);
-                    font-weight: 700;
-                    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-                }
-
-                .pagination-premium button.btn-nav {
-                    font-size: 1.2rem;
-                    border-radius: 8px;
-                    width: auto;
-                    padding: 0 1rem;
-                }
-
-                .pagination-premium button:disabled {
-                    opacity: 0.3;
-                    cursor: not-allowed;
-                    transform: none !important;
-                    border-color: transparent;
-                }
-
-                .pagination-premium button.dots {
+                .page-item.disabled {
                     border: none;
                     background: none;
                     cursor: default;
                 }
 
-                @media (max-width: 968px) {
-                    .catalog-layout-luxury { grid-template-columns: 1fr; }
-                    .catalog-sidebar-luxury { position: static; }
+                .spinner {
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid var(--border-light);
+                    border-top-color: var(--primary);
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto;
+                }
+
+                @keyframes spin {
+                    to { transform: rotate(360deg); }
+                }
+
+                /* Utilities used in JSX */
+                .uppercase { text-transform: uppercase; }
+                .tracking-wider { letter-spacing: 0.05em; }
+                .text-xs { font-size: 0.75rem; }
+                .text-sm { font-size: 0.875rem; }
+                .text-lg { font-size: 1.125rem; }
+                .text-3xl { font-size: 1.875rem; }
+                .font-semibold { font-weight: 600; }
+                .font-bold { font-weight: 700; }
+                .border-b { border-bottom-width: 1px; }
+                .border-t { border-top-width: 1px; }
+                .pb-4 { padding-bottom: 1rem; }
+                .pb-2 { padding-bottom: 0.5rem; }
+                .pt-3 { padding-top: 0.75rem; }
+                .pt-4 { padding-top: 1rem; }
+                .pl-9 { padding-left: 2.25rem; }
+                .whitespace-nowrap { white-space: nowrap; }
+                .text-main { color: var(--text-main); }
+                .text-decoration-none { text-decoration: none; }
+                .hover\\:bg-light:hover { background-color: var(--bg-alt); }
+                .cursor-pointer { cursor: pointer; }
+
+                @media (max-width: 992px) {
+                    .catalog-layout {
+                        grid-template-columns: 1fr;
+                    }
+                    .catalog-sidebar {
+                        margin-bottom: 2rem;
+                    }
+                    .sticky { position: static; }
                 }
             `}</style>
         </div>

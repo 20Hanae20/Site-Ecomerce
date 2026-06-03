@@ -9,7 +9,6 @@ import {
     XCircle,
     ChevronRight,
     Calendar,
-    Hash,
     ShoppingBag,
     CreditCard
 } from 'lucide-react';
@@ -32,7 +31,7 @@ const Orders = () => {
             setOrders(response.data.data);
         } catch (err) {
             console.error('Fetch orders error:', err);
-            setError('L\'HISTOIRE DE VOS ACQUISITIONS EST MOMENTANÉMENT INDISPONIBLE.');
+            setError('Impossible de charger vos commandes.');
         } finally {
             setIsLoading(false);
         }
@@ -40,14 +39,14 @@ const Orders = () => {
 
     const getStatusConfig = (status) => {
         const configs = {
-            pending: { label: 'EN ATTENTE', color: '#f59e0b', icon: <Clock size={14} />, class: 'pending' },
-            paid: { label: 'PAYÉE', color: '#10b981', icon: <CreditCard size={14} />, class: 'paid' },
-            processing: { label: 'EN PRÉPARATION', color: '#3b82f6', icon: <Package size={14} />, class: 'processing' },
-            shipped: { label: 'EXPÉDIÉE', color: '#8b5cf6', icon: <Truck size={14} />, class: 'shipped' },
-            delivered: { label: 'LIVRÉE', color: '#22c55e', icon: <CheckCircle2 size={14} />, class: 'delivered' },
-            cancelled: { label: 'ANNULÉE', color: '#ef4444', icon: <XCircle size={14} />, class: 'cancelled' },
+            pending:    { label: 'En attente',      icon: <Clock size={14} />,        cls: 'status-warning' },
+            paid:       { label: 'Payée',           icon: <CreditCard size={14} />,   cls: 'status-success' },
+            processing: { label: 'En préparation',  icon: <Package size={14} />,       cls: 'status-info' },
+            shipped:    { label: 'Expédiée',        icon: <Truck size={14} />,         cls: 'status-primary' },
+            delivered:  { label: 'Livrée',          icon: <CheckCircle2 size={14} />,  cls: 'status-success' },
+            cancelled:  { label: 'Annulée',         icon: <XCircle size={14} />,       cls: 'status-danger' },
         };
-        return configs[status] || { label: status, color: '#94a3b8', icon: <Package size={14} />, class: '' };
+        return configs[status] || { label: status, icon: <Package size={14} />, cls: '' };
     };
 
     const formatDate = (dateString) => {
@@ -59,100 +58,95 @@ const Orders = () => {
     };
 
     if (isLoading) return (
-        <div className="loader-container-premium">
-            <div className="premium-loader"></div>
-            <p className="loader-text-luxury">RÉCUPÉRATION DE VOS TRÉSORS...</p>
+        <div className="container py-5 text-center">
+            <div className="orders-spinner"></div>
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Chargement de vos commandes...</p>
         </div>
     );
 
     if (error) return (
-        <div className="container-premium error-state-luxury animate-fade-in">
-            <h1 className="font-serif">{error}</h1>
-            <Link to="/profile" className="btn-premium">RETOUR AU PROFIL</Link>
+        <div className="container py-5">
+            <div className="saas-card" style={{ padding: '1.5rem', borderLeft: '4px solid var(--danger)' }}>
+                <p style={{ color: 'var(--danger)', marginBottom: '1rem' }}>{error}</p>
+                <Link to="/profile" className="btn btn-secondary">Retour au profil</Link>
+            </div>
         </div>
     );
 
+    const filterOptions = [
+        { val: '', label: 'Toutes' },
+        { val: 'pending', label: 'En attente' },
+        { val: 'paid', label: 'Payées' },
+        { val: 'delivered', label: 'Livrées' }
+    ];
+
     return (
-        <div className="container-premium orders-page-luxury animate-fade-in">
-            <header className="page-header-luxury">
-                <h5 className="gradient-text-gold font-serif">HISTORIQUE</h5>
-                <h1 className="font-serif">Mes <span className="gradient-text-gold">Commandes</span></h1>
-                <p className="aesthetic-hint">Suivez le voyage de vos fragrances d'exception.</p>
+        <div className="container orders-page py-5">
+            <header className="orders-header">
+                <div>
+                    <h1>Mes commandes</h1>
+                    <p style={{ color: 'var(--text-muted)' }}>Suivez le statut de toutes vos commandes.</p>
+                </div>
             </header>
 
-            <div className="orders-filters-luxury glass-premium">
-                {[
-                    { val: '', label: 'TOUTES' },
-                    { val: 'pending', label: 'EN ATTENTE' },
-                    { val: 'paid', label: 'PAYÉES' },
-                    { val: 'delivered', label: 'LIVRÉES' }
-                ].map(opt => (
+            {/* Filters */}
+            <div className="orders-filters">
+                {filterOptions.map(opt => (
                     <button
                         key={opt.val}
-                        className={`filter-btn-luxury ${filter === opt.val ? 'active' : ''}`}
+                        className={`filter-btn ${filter === opt.val ? 'active' : ''}`}
                         onClick={() => setFilter(opt.val)}
                     >
                         {opt.label}
                     </button>
-
                 ))}
             </div>
 
             {orders.length === 0 ? (
-                <div className="no-order-luxury glass-premium">
-                    <ShoppingBag size={48} className="gold-icon op-3" />
-                    <p>Votre sillage est encore discret. Aucune commande n'a été trouvée.</p>
-                    <Link to="/perfumes" className="btn-premium">DÉCOUVRIR LE CATALOGUE</Link>
+                <div className="saas-card empty-orders">
+                    <ShoppingBag size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
+                    <h3>Aucune commande trouvée</h3>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Parcourez notre catalogue pour passer votre première commande.</p>
+                    <Link to="/perfumes" className="btn btn-primary">Découvrir le catalogue</Link>
                 </div>
             ) : (
-                <div className="orders-list-luxury">
+                <div className="orders-list">
+                    {/* Table Header */}
+                    <div className="order-row order-row-header">
+                        <span>Commande</span>
+                        <span>Date</span>
+                        <span>Statut</span>
+                        <span>Articles</span>
+                        <span>Total</span>
+                        <span></span>
+                    </div>
+
                     {orders.map(order => {
                         const status = getStatusConfig(order.status);
                         return (
                             <Link
                                 key={order.id}
                                 to={`/orders/${order.id}`}
-                                className="order-link-wrapper"
+                                className="order-row order-row-data saas-card"
                             >
-                                <div className="order-card-luxury glass-premium">
-                                    <div className="order-main-info">
-                                        <div className="order-id-section">
-                                            <div className="icon-box-luxury">
-                                                <Hash size={18} />
-                                            </div>
-                                            <div>
-                                                <span className="order-number-luxury">{order.order_number}</span>
-                                                <div className="order-date-row">
-                                                    <Calendar size={12} />
-                                                    <span>{formatDate(order.created_at)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="order-status-section">
-                                            <div className={`status-pill-luxury ${status.class}`}>
-                                                {status.icon}
-                                                <span>{status.label}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="order-meta-section">
-                                            <div className="meta-item">
-                                                <Package size={14} />
-                                                <span>{order.items?.length || 0} article{order.items?.length > 1 ? 's' : ''}</span>
-                                            </div>
-                                            <div className="order-price-luxury">
-                                                {order.total} €
-                                            </div>
-                                        </div>
-
-                                        <div className="order-action-section">
-                                            <span className="details-text">VOIR DÉTAILS</span>
-                                            <ChevronRight size={18} className="gold-icon" />
-                                        </div>
-                                    </div>
-                                    <div className="order-card-glow"></div>
-                                </div>
+                                <span className="order-number">#{order.order_number}</span>
+                                <span className="order-date">
+                                    <Calendar size={14} style={{ marginRight: '0.25rem', opacity: 0.5 }} />
+                                    {formatDate(order.created_at)}
+                                </span>
+                                <span>
+                                    <span className={`order-status-badge ${status.cls}`}>
+                                        {status.icon}
+                                        {status.label}
+                                    </span>
+                                </span>
+                                <span className="order-items-count">
+                                    {order.items?.length || 0} article{(order.items?.length || 0) > 1 ? 's' : ''}
+                                </span>
+                                <span className="order-total">{order.total} €</span>
+                                <span className="order-arrow">
+                                    <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                                </span>
                             </Link>
                         );
                     })}
@@ -160,140 +154,149 @@ const Orders = () => {
             )}
 
             <style>{`
-                .orders-page-luxury { padding-top: 4rem; padding-bottom: 8rem; }
-                .page-header-luxury { text-align: center; margin-bottom: 5rem; }
-                .page-header-luxury h5 { letter-spacing: 5px; margin-bottom: 1rem; }
-                .page-header-luxury h1 { font-size: 3.5rem; }
+                .orders-page { padding-bottom: 6rem; }
 
-                .orders-filters-luxury {
+                .orders-header {
                     display: flex;
-                    justify-content: center;
-                    gap: 1rem;
-                    padding: 0.5rem;
-                    border-radius: 50px;
-                    max-width: fit-content;
-                    margin: 0 auto 5rem auto;
+                    justify-content: space-between;
+                    align-items: flex-end;
+                    margin-bottom: 2rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid var(--border-light);
                 }
+                .orders-header h1 { font-size: 1.875rem; margin-bottom: 0.25rem; }
 
-                .filter-btn-luxury {
-                    background: transparent;
-                    border: none;
-                    color: rgba(255,255,255,0.5);
-                    padding: 0.8rem 2rem;
-                    border-radius: 50px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    letter-spacing: 2px;
+                .orders-filters {
+                    display: flex;
+                    gap: 0.5rem;
+                    margin-bottom: 2rem;
+                }
+                .filter-btn {
+                    padding: 0.5rem 1rem;
+                    border: 1px solid var(--border-light);
+                    background: var(--bg-surface);
+                    color: var(--text-muted);
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    border-radius: var(--radius-full);
                     cursor: pointer;
-                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all var(--transition-fast);
                 }
-
-                .filter-btn-luxury.active {
-                    background: var(--grad-gold);
-                    color: #000;
-                    box-shadow: 0 5px 15px var(--primary-glow);
+                .filter-btn:hover {
+                    border-color: var(--primary);
+                    color: var(--primary);
                 }
-
-                .orders-list-luxury {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 1.5rem;
-                    max-width: 1100px;
-                    margin: 0 auto;
-                }
-
-                .order-link-wrapper { text-decoration: none; color: inherit; }
-
-                .order-card-luxury {
-                    padding: 2.5rem;
-                    border-radius: 20px;
-                    position: relative;
-                    overflow: hidden;
-                    transition: all 0.4s ease;
-                }
-
-                .order-card-luxury:hover {
-                    transform: translateX(15px);
+                .filter-btn.active {
+                    background: var(--primary);
+                    color: white;
                     border-color: var(--primary);
                 }
 
-                .order-main-info {
-                    display: grid;
-                    grid-template-columns: 1.5fr 1fr 1fr 120px;
-                    align-items: center;
-                    gap: 2rem;
-                    position: relative;
-                    z-index: 2;
+                .orders-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
                 }
 
-                .order-id-section { display: flex; gap: 1.5rem; align-items: center; }
-                .icon-box-luxury {
-                    width: 45px;
-                    height: 45px;
-                    border-radius: 12px;
-                    background: var(--glass-hover);
+                .order-row {
+                    display: grid;
+                    grid-template-columns: 1.2fr 1.2fr 1fr 0.8fr 0.8fr 40px;
+                    align-items: center;
+                    gap: 1rem;
+                    padding: 1rem 1.25rem;
+                    text-decoration: none;
+                    color: var(--text-main);
+                }
+
+                .order-row-header {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: var(--text-muted);
+                    background: none;
+                    border: none;
+                    padding-bottom: 0.75rem;
+                    border-bottom: 1px solid var(--border-light);
+                }
+
+                .order-row-data {
+                    border-radius: var(--radius-md);
+                    transition: all var(--transition-fast);
+                }
+                .order-row-data:hover {
+                    border-color: var(--primary);
+                    box-shadow: var(--shadow-md);
+                }
+
+                .order-number {
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                }
+                .order-date {
+                    font-size: 0.85rem;
+                    color: var(--text-muted);
+                    display: flex;
+                    align-items: center;
+                }
+
+                .order-status-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.375rem;
+                    padding: 0.3rem 0.75rem;
+                    border-radius: var(--radius-full);
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                }
+                .status-warning { background: var(--warning-bg); color: var(--warning); }
+                .status-success { background: var(--success-bg); color: var(--success); }
+                .status-danger { background: var(--danger-bg); color: var(--danger); }
+                .status-info { background: #dbeafe; color: #3b82f6; }
+                .status-primary { background: var(--primary-light); color: var(--primary); }
+
+                .order-items-count {
+                    font-size: 0.85rem;
+                    color: var(--text-muted);
+                }
+                .order-total {
+                    font-weight: 700;
+                    font-size: 1rem;
+                }
+                .order-arrow {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    color: var(--primary);
                 }
 
-                .order-number-luxury { font-weight: 700; letter-spacing: 1px; font-size: 1.1rem; display: block; margin-bottom: 0.25rem; }
-                .order-date-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; opacity: 0.4; }
-
-                .status-pill-luxury {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.6rem;
-                    padding: 0.5rem 1.25rem;
-                    border-radius: 50px;
-                    font-size: 0.7rem;
-                    font-weight: 800;
-                    letter-spacing: 1px;
-                    border: 1px solid transparent;
-                }
-
-                .status-pill-luxury.pending { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.05); }
-                .status-pill-luxury.paid { color: #10b981; border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); }
-                .status-pill-luxury.delivered { color: #22c55e; border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.05); }
-                .status-pill-luxury.cancelled { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); }
-
-                .order-meta-section { display: flex; flex-direction: column; gap: 0.5rem; }
-                .meta-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; opacity: 0.5; }
-                .order-price-luxury { font-size: 1.4rem; font-weight: 800; color: #fff; }
-
-                .order-action-section { display: flex; align-items: center; gap: 0.75rem; justify-content: flex-end; }
-                .details-text { font-size: 0.65rem; font-weight: 800; letter-spacing: 2px; color: var(--primary); opacity: 0; transition: 0.4s; }
-                .order-card-luxury:hover .details-text { opacity: 1; transform: translateX(-5px); }
-
-                .order-card-glow {
-                    position: absolute;
-                    top: 0; left: 0; width: 100%; height: 100%;
-                    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.03), transparent);
-                    transform: translateX(-100%);
-                    transition: 0.6s;
-                }
-                .order-card-luxury:hover .order-card-glow { transform: translateX(100%); }
-
-                .no-order-luxury {
-                    padding: 8rem;
+                .empty-orders {
+                    padding: 5rem 2rem;
                     text-align: center;
-                    border-radius: 30px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 2rem;
                 }
-                .op-3 { opacity: 0.3; }
+
+                .orders-spinner {
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid var(--border-light);
+                    border-top-color: var(--primary);
+                    border-radius: 50%;
+                    animation: ordersSpin 1s linear infinite;
+                    margin: 3rem auto;
+                }
+                @keyframes ordersSpin { to { transform: rotate(360deg); } }
 
                 @media (max-width: 900px) {
-                    .order-main-info { grid-template-columns: 1fr 1fr; gap: 2rem; }
-                    .order-action-section { display: none; }
+                    .order-row { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+                    .order-row-header { display: none; }
+                    .order-arrow { display: none; }
                 }
 
                 @media (max-width: 600px) {
-                    .order-main-info { grid-template-columns: 1fr; }
-                    .order-status-section { order: -1; }
+                    .order-row { grid-template-columns: 1fr; }
+                    .orders-filters { flex-wrap: wrap; }
                 }
             `}</style>
         </div>

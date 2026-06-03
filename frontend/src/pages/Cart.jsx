@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../context/useCart';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, ChevronRight, Package, Gift, Shield } from 'lucide-react';
 import api from '../services/api';
 
 const Cart = () => {
@@ -16,7 +16,7 @@ const Cart = () => {
     const getImageUrl = (imageUrl) => {
         if (!imageUrl) return null;
         if (imageUrl.startsWith('http')) return imageUrl;
-        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`;
+        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${globalThis.location.hostname}:8000`;
         return `${apiHost}${imageUrl}`;
     };
 
@@ -42,7 +42,7 @@ const Cart = () => {
         if (!token) return;
 
         try {
-            const response = await axios.get(`http://${window.location.hostname}:8000/api/addresses`, {
+            const response = await axios.get(`http://${globalThis.location.hostname}:8000/api/addresses`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAddresses(response.data);
@@ -63,7 +63,7 @@ const Cart = () => {
         setIsCheckingOut(true);
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post(`http://${window.location.hostname}:8000/api/orders`,
+            const response = await axios.post(`http://${globalThis.location.hostname}:8000/api/orders`,
                 { shipping_address_id: selectedAddress },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -77,102 +77,115 @@ const Cart = () => {
     };
 
     if (loading) return (
-        <div className="loader-container-premium">
-            <div className="premium-loader"></div>
-            <p className="loader-text-luxury">PRÉPARATION DE VOTRE SÉLECTION...</p>
+        <div className="container py-5 text-center">
+            <div className="cart-spinner"></div>
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Chargement du panier...</p>
         </div>
     );
 
-    if (error) return <div className="container-premium"><div className="premium-alert error">{error}</div></div>;
+    if (error) return (
+        <div className="container py-5">
+            <div className="saas-card" style={{ padding: '1.5rem', borderLeft: '4px solid var(--danger)' }}>
+                <p style={{ color: 'var(--danger)' }}>{error}</p>
+            </div>
+        </div>
+    );
 
     if (!cart || cart.items.length === 0) {
         return (
-            <div className="container-premium empty-cart-luxury animate-fade-in">
-                <div className="empty-icon-luxury glass-premium">
-                    <ShoppingBag size={48} className="gold-rose" />
+            <div className="container cart-empty-state py-5">
+                <div className="saas-card empty-card">
+                    <ShoppingBag size={48} style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }} />
+                    <h2>Votre panier est vide</h2>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Parcourez notre catalogue pour découvrir nos produits.</p>
+                    <Link to="/perfumes" className="btn btn-primary">
+                        Explorer le catalogue <ArrowRight size={16} />
+                    </Link>
                 </div>
-                <h1 className="font-serif">Votre Panier est Vide</h1>
-                <p>Votre sillage d'exception vous attend dans notre catalogue.</p>
-                <Link to="/perfumes" className="btn-premium">DÉCOUVRIR LA COLLECTION</Link>
             </div>
         );
     }
 
     return (
-        <div className="container-premium cart-page-luxury animate-fade-in">
-            <header className="cart-header-luxury">
-                <h5 className="gradient-text-gold font-serif">VOTRE SÉLECTION</h5>
-                <h1 className="font-serif">Le Panier de <span className="gradient-text-gold">Senteurs</span></h1>
+        <div className="container cart-page py-5">
+            <header className="cart-header">
+                <h1>Panier</h1>
+                <span className="badge badge-primary">{cart.items.length} article{cart.items.length > 1 ? 's' : ''}</span>
             </header>
 
-            <div className="cart-layout-luxury">
-                <div className="cart-items-column">
+            <div className="cart-layout">
+                {/* Items Column */}
+                <div className="cart-items-col">
                     {cart.items.map((item) => (
-                        <div key={item.id} className="premium-card cart-item-luxury">
-                            <div className="item-media-luxury">
+                        <div key={item.id} className="saas-card cart-item">
+                            <div className="item-image">
                                 {getImageUrl(item.perfume.image_url) ? (
                                     <img src={getImageUrl(item.perfume.image_url)} alt={item.perfume.name} />
                                 ) : (
-                                    <div className="placeholder-luxury small">🌹</div>
+                                    <div className="item-placeholder">
+                                        <Package size={24} style={{ color: 'var(--text-muted)' }} />
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="item-info-luxury">
-                                <span className="item-category-luxury">{item.perfume.category?.name || 'Parfum'}</span>
-                                <h3 className="item-title-luxury">{item.perfume.name}</h3>
-                                <p className="item-price-luxury">{item.perfume.price} €</p>
+                            <div className="item-details">
+                                <span className="item-cat">{item.perfume.category?.name || 'Parfum'}</span>
+                                <h3 className="item-name">{item.perfume.name}</h3>
+                                <span className="item-unit-price">{item.perfume.price} € / unité</span>
                             </div>
 
-                            <div className="item-controls-luxury">
-                                <div className="quantity-luxury glass-premium">
+                            <div className="item-actions">
+                                <div className="qty-control">
                                     <button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
                                         <Minus size={14} />
                                     </button>
-                                    <span>{item.quantity}</span>
+                                    <span className="qty-value">{item.quantity}</span>
                                     <button onClick={() => updateQuantity(item.id, item.quantity + 1)} disabled={item.quantity >= item.perfume.stock}>
                                         <Plus size={14} />
                                     </button>
                                 </div>
-                                <button className="btn-remove-luxury" onClick={() => removeFromCart(item.id)}>
+                                <button className="btn-remove" onClick={() => removeFromCart(item.id)} title="Supprimer">
                                     <Trash2 size={16} />
                                 </button>
                             </div>
 
-                            <div className="item-total-luxury">
+                            <div className="item-line-total">
                                 <span>{(item.perfume.price * item.quantity).toFixed(2)} €</span>
                             </div>
                         </div>
                     ))}
 
-                    <button className="btn-clear-luxury" onClick={clearCart}>
-                        <Trash2 size={14} /> VIDER LE PANIER
+                    <button className="btn btn-secondary btn-sm" onClick={clearCart} style={{ alignSelf: 'flex-start', marginTop: '0.5rem' }}>
+                        <Trash2 size={14} /> Vider le panier
                     </button>
                 </div>
 
-                <aside className="cart-summary-column">
-                    <div className="summary-card-luxury glass-premium">
-                        <h3 className="font-serif">RÉSUMÉ</h3>
-                        <div className="summary-divider-luxury"></div>
-
-                        <div className="summary-row-luxury">
-                            <span>SOUS-TOTAL</span>
+                {/* Summary Sidebar */}
+                <aside className="cart-summary-col">
+                    <div className="saas-card summary-card">
+                        <h3>Résumé de la commande</h3>
+                        <div className="summary-line">
+                            <span>Sous-total</span>
                             <span>{total.toFixed(2)} €</span>
                         </div>
-                        <div className="summary-row-luxury">
-                            <span>LIVRAISON</span>
-                            <span>OFFERTE</span>
+                        <div className="summary-line">
+                            <span>Livraison</span>
+                            <span style={{ color: 'var(--success)', fontWeight: 600 }}>Offerte</span>
                         </div>
 
-                        <div className="summary-total-luxury">
-                            <label>TOTAL</label>
-                            <span>{total.toFixed(2)} €</span>
+                        <div className="summary-total">
+                            <span>Total</span>
+                            <span className="total-amount">{total.toFixed(2)} €</span>
                         </div>
 
                         {addresses.length > 0 ? (
-                            <div className="checkout-actions-luxury">
-                                <div className="address-box-luxury">
-                                    <label><MapPin size={12} /> LIVRER À :</label>
-                                    <select value={selectedAddress} onChange={(e) => setSelectedAddress(e.target.value)}>
+                            <div className="checkout-section">
+                                <div className="form-group">
+                                    <label className="form-label">
+                                        <MapPin size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '0.25rem' }} />
+                                        Adresse de livraison
+                                    </label>
+                                    <select className="form-input" value={selectedAddress} onChange={(e) => setSelectedAddress(e.target.value)}>
                                         {addresses.map(addr => (
                                             <option key={addr.id} value={addr.id}>
                                                 {addr.street}, {addr.city}
@@ -180,55 +193,52 @@ const Cart = () => {
                                         ))}
                                     </select>
                                 </div>
-                                <button className="btn-premium btn-checkout-luxury" onClick={handleCheckout} disabled={isCheckingOut}>
-                                    {isCheckingOut ? 'VALIDATION...' : 'COMMANDER MAINTENANT'}
-                                    <ArrowRight size={18} />
+                                <button className="btn btn-primary" style={{ width: '100%', padding: '0.875rem' }} onClick={handleCheckout} disabled={isCheckingOut}>
+                                    {isCheckingOut ? 'Validation...' : 'Passer la commande'}
+                                    <ArrowRight size={16} />
                                 </button>
                             </div>
                         ) : (
-                            <div className="address-missing-luxury">
-                                <p>Authentifiez votre compte ou ajoutez une adresse pour finaliser.</p>
-                                <Link to="/profile" className="btn-premium">AJOUTER UNE ADRESSE</Link>
+                            <div className="no-address-section">
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                                    Connectez-vous ou ajoutez une adresse pour passer commande.
+                                </p>
+                                <Link to="/profile" className="btn btn-secondary" style={{ width: '100%' }}>
+                                    Ajouter une adresse
+                                </Link>
                             </div>
                         )}
                     </div>
 
-                    <div className="cart-benefits-luxury glass-premium">
-                        <div className="benefit-item-luxury">
-                            <span className="benefit-icon-luxury">🎁</span>
-                            <p>Échantillon offert sur demande</p>
+                    <div className="saas-card benefits-card">
+                        <div className="benefit-item">
+                            <Gift size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                            <span>Échantillon offert sur demande</span>
                         </div>
-                        <div className="benefit-item-luxury">
-                            <span className="benefit-icon-luxury">✨</span>
-                            <p>Écrin de luxe biodégradable</p>
+                        <div className="benefit-item">
+                            <Shield size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                            <span>Emballage soigné et sécurisé</span>
                         </div>
                     </div>
                 </aside>
             </div>
 
+            {/* Recommendations */}
             {recommendations.length > 0 && (
-                <section className="cart-recommendations-luxury animate-fade-in-up">
-                    <div className="section-title-luxury">
-                        <Sparkles className="gold-icon" size={24} />
-                        <h2 className="font-serif">Révélations <span className="gradient-text-gold">Complémentaires</span></h2>
-                        <p>Ces essences pourraient parfaire votre signature olfactive.</p>
-                    </div>
-
-                    <div className="recommendations-scroll-luxury">
+                <section className="cart-recs">
+                    <h2>Vous pourriez aussi aimer</h2>
+                    <div className="recs-grid">
                         {recommendations.slice(0, 4).map((rec, idx) => (
-                            <div key={idx} className="rec-card-mini glass-premium">
-                                <div className="rec-media-mini">
+                            <div key={idx} className="saas-card rec-card" onClick={() => navigate(`/perfumes/${rec.perfume.id}`)} style={{ cursor: 'pointer' }}>
+                                <div className="rec-img">
                                     <img src={getImageUrl(rec.perfume.image_url)} alt={rec.perfume.name} />
-                                    <div className="rec-match-mini">
-                                        <span>{rec.match_percentage}%</span>
-                                    </div>
+                                    <span className="badge badge-primary" style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
+                                        {rec.match_percentage}% match
+                                    </span>
                                 </div>
-                                <div className="rec-info-mini">
+                                <div className="rec-info">
                                     <h4>{rec.perfume.name}</h4>
-                                    <p>{rec.perfume.price} €</p>
-                                    <button onClick={() => navigate(`/perfumes/${rec.perfume.id}`)} className="btn-rec-view">
-                                        VOIR <ChevronRight size={12} />
-                                    </button>
+                                    <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{rec.perfume.price} €</span>
                                 </div>
                             </div>
                         ))}
@@ -237,165 +247,271 @@ const Cart = () => {
             )}
 
             <style>{`
-                .cart-page-luxury { padding-top: 4rem; padding-bottom: 8rem; }
-                .cart-header-luxury { text-align: center; margin-bottom: 6rem; }
-                .cart-header-luxury h5 { letter-spacing: 5px; margin-bottom: 1.5rem; }
-                .cart-header-luxury h1 { font-size: 3.5rem; }
+                .cart-page { padding-bottom: 6rem; }
 
-                .cart-layout-luxury {
-                    display: grid;
-                    grid-template-columns: 1fr 400px;
-                    gap: 4rem;
-                }
-
-                .cart-items-column { display: flex; flex-direction: column; gap: 1.5rem; }
-                
-                .cart-item-luxury {
-                    display: grid;
-                    grid-template-columns: 100px 1fr auto 120px;
+                .cart-header {
+                    display: flex;
                     align-items: center;
-                    padding: 1.5rem;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid var(--border-light);
+                }
+                .cart-header h1 { font-size: 1.875rem; }
+
+                .cart-layout {
+                    display: grid;
+                    grid-template-columns: 1fr 380px;
                     gap: 2rem;
+                    align-items: start;
                 }
 
-                .item-media-luxury { height: 100px; border-radius: 10px; overflow: hidden; background: #000; }
-                .item-media-luxury img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-                
-                .item-category-luxury { font-size: 0.6rem; letter-spacing: 2px; color: var(--primary); font-weight: 700; opacity: 0.7; }
-                .item-title-luxury { font-size: 1.1rem; margin: 0.4rem 0; font-weight: 500; }
-                .item-price-luxury { font-size: 0.9rem; opacity: 0.6; }
+                .cart-items-col {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                }
 
-                .item-controls-luxury { display: flex; align-items: center; gap: 1.5rem; }
-                .quantity-luxury {
+                .cart-item {
+                    display: grid;
+                    grid-template-columns: 90px 1fr auto 100px;
+                    align-items: center;
+                    gap: 1.5rem;
+                    padding: 1.25rem;
+                }
+
+                .item-image {
+                    width: 90px;
+                    height: 90px;
+                    border-radius: var(--radius-md);
+                    overflow: hidden;
+                    background: var(--bg-alt);
+                }
+                .item-image img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+                .item-placeholder {
+                    width: 100%;
+                    height: 100%;
                     display: flex;
                     align-items: center;
-                    gap: 1.25rem;
-                    padding: 0.5rem 1rem;
-                    border-radius: 50px;
-                    font-size: 0.9rem;
+                    justify-content: center;
                 }
-                .quantity-luxury button { background: none; border: none; color: #fff; cursor: pointer; opacity: 0.5; transition: 0.3s; }
-                .quantity-luxury button:hover { opacity: 1; color: var(--primary); }
-                .quantity-luxury button:disabled { opacity: 0.1; cursor: not-allowed; }
 
-                .btn-remove-luxury { background: none; border: none; color: #ef4444; cursor: pointer; opacity: 0.5; transition: 0.3s; }
-                .btn-remove-luxury:hover { opacity: 1; transform: scale(1.1); }
-
-                .item-total-luxury { text-align: right; font-weight: 700; font-size: 1.1rem; }
-
-                .btn-clear-luxury {
-                    align-self: flex-start;
-                    background: none;
-                    border: 1px solid var(--glass-border);
-                    color: var(--text-secondary);
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 8px;
+                .item-cat {
                     font-size: 0.7rem;
-                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: var(--primary);
+                    font-weight: 600;
+                }
+                .item-name {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    margin: 0.25rem 0;
+                }
+                .item-unit-price {
+                    font-size: 0.8rem;
+                    color: var(--text-muted);
+                }
+
+                .item-actions {
                     display: flex;
                     align-items: center;
-                    gap: 0.75rem;
-                    margin-top: 1rem;
-                    cursor: pointer;
-                    transition: 0.3s;
+                    gap: 1rem;
                 }
-                .btn-clear-luxury:hover { border-color: #ef4444; color: #ef4444; }
 
-                .summary-card-luxury { padding: 3rem; border-radius: 24px; position: sticky; top: 100px; }
-                .summary-card-luxury h3 { font-size: 1.5rem; letter-spacing: 3px; margin-bottom: 2rem; text-align: center; }
-                .summary-divider-luxury { height: 1px; background: var(--glass-border); margin-bottom: 2rem; }
-                
-                .summary-row-luxury { display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.85rem; letter-spacing: 1px; opacity: 0.7; }
-                
-                .summary-total-luxury {
+                .qty-control {
+                    display: flex;
+                    align-items: center;
+                    gap: 0;
+                    border: 1px solid var(--border-light);
+                    border-radius: var(--radius-md);
+                    overflow: hidden;
+                }
+                .qty-control button {
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: var(--bg-surface);
+                    border: none;
+                    cursor: pointer;
+                    color: var(--text-main);
+                    transition: background var(--transition-fast);
+                }
+                .qty-control button:hover:not(:disabled) {
+                    background: var(--bg-alt);
+                }
+                .qty-control button:disabled {
+                    opacity: 0.3;
+                    cursor: not-allowed;
+                }
+                .qty-value {
+                    width: 32px;
+                    text-align: center;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    border-left: 1px solid var(--border-light);
+                    border-right: 1px solid var(--border-light);
+                    line-height: 32px;
+                }
+
+                .btn-remove {
+                    background: none;
+                    border: none;
+                    color: var(--danger);
+                    cursor: pointer;
+                    opacity: 0.5;
+                    transition: opacity var(--transition-fast);
+                    padding: 0.25rem;
+                }
+                .btn-remove:hover { opacity: 1; }
+
+                .item-line-total {
+                    text-align: right;
+                    font-weight: 700;
+                    font-size: 1rem;
+                }
+
+                .summary-card {
+                    padding: 1.5rem;
+                    position: sticky;
+                    top: 1rem;
+                }
+                .summary-card h3 {
+                    font-size: 1.1rem;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 1rem;
+                    border-bottom: 1px solid var(--border-light);
+                }
+
+                .summary-line {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 0.75rem;
+                    font-size: 0.9rem;
+                    color: var(--text-muted);
+                }
+
+                .summary-total {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin-top: 2rem;
-                    margin-bottom: 3rem;
-                    padding-top: 2rem;
-                    border-top: 1px solid var(--glass-border);
+                    margin-top: 1rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid var(--border-light);
+                    margin-bottom: 1.5rem;
                 }
-                .summary-total-luxury label { font-weight: 700; letter-spacing: 3px; font-size: 0.9rem; }
-                .summary-total-luxury span { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
-
-                .address-box-luxury { margin-bottom: 2rem; }
-                .address-box-luxury label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.65rem; color: var(--primary); font-weight: 700; margin-bottom: 0.75rem; }
-                .address-box-luxury select { width: 100%; background: var(--glass-hover); border: 1px solid var(--glass-border); padding: 0.8rem; border-radius: 8px; color: #fff; font-size: 0.8rem; }
-                
-                .btn-checkout-luxury { width: 100%; padding: 1.25rem; display: flex; align-items: center; justify-content: center; gap: 1rem; }
-
-                .empty-cart-luxury { min-height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-                .empty-icon-luxury { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 3rem; }
-                .empty-cart-luxury h1 { font-size: 3rem; margin-bottom: 1rem; }
-                .empty-cart-luxury p { opacity: 0.6; margin-bottom: 3rem; }
-
-                .cart-benefits-luxury { margin-top: 2rem; padding: 2rem; border-radius: 20px; display: flex; flex-direction: column; gap: 1.5rem; }
-                .benefit-item-luxury { display: flex; align-items: center; gap: 1rem; }
-                .benefit-icon-luxury { font-size: 1.5rem; }
-                .benefit-item-luxury p { font-size: 0.8rem; opacity: 0.6; }
-
-                @media (max-width: 1024px) {
-                    .cart-layout-luxury { grid-template-columns: 1fr; }
-                    .cart-summary-column { order: -1; }
-                    .summary-card-luxury { position: static; }
-                    .cart-item-luxury { grid-template-columns: 80px 1fr 80px; }
-                    .item-controls-luxury { grid-column: 1 / -1; justify-content: space-between; border-top: 1px solid var(--glass-border); padding-top: 1rem; }
+                .summary-total span:first-child { font-weight: 600; }
+                .total-amount {
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    color: var(--primary);
                 }
 
-                .cart-recommendations-luxury { margin-top: 8rem; border-top: 1px solid var(--glass-border); padding-top: 5rem; }
-                .cart-recommendations-luxury .section-title-luxury { text-align: center; margin-bottom: 3rem; }
-                .cart-recommendations-luxury h2 { font-size: 2.5rem; margin: 1rem 0; }
-                .cart-recommendations-luxury p { opacity: 0.5; font-size: 0.9rem; }
+                .benefits-card {
+                    margin-top: 1rem;
+                    padding: 1.25rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1rem;
+                }
+                .benefit-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    font-size: 0.8rem;
+                    color: var(--text-muted);
+                }
 
-                .recommendations-scroll-luxury {
+                .cart-empty-state {
+                    min-height: 60vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .empty-card {
+                    padding: 4rem;
+                    text-align: center;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    max-width: 480px;
+                    margin: 0 auto;
+                }
+                .empty-card h2 {
+                    margin-bottom: 0.5rem;
+                }
+
+                .cart-recs {
+                    margin-top: 4rem;
+                    padding-top: 3rem;
+                    border-top: 1px solid var(--border-light);
+                }
+                .cart-recs h2 {
+                    font-size: 1.5rem;
+                    margin-bottom: 1.5rem;
+                }
+
+                .recs-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                    grid-template-columns: repeat(4, 1fr);
                     gap: 1.5rem;
                 }
 
-                .rec-card-mini {
-                    display: flex;
-                    gap: 1.25rem;
-                    padding: 1.25rem;
-                    border-radius: 16px;
-                    transition: 0.3s;
+                .rec-card { padding: 0; }
+                .rec-img {
+                    position: relative;
+                    height: 160px;
+                    overflow: hidden;
                 }
-                .rec-card-mini:hover { transform: translateY(-5px); border-color: var(--primary); }
-
-                .rec-media-mini { width: 80px; height: 100px; position: relative; border-radius: 10px; overflow: hidden; background: #000; flex-shrink: 0; }
-                .rec-media-mini img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-                
-                .rec-match-mini {
-                    position: absolute;
-                    top: 5px;
-                    right: 5px;
-                    background: var(--grad-gold);
-                    color: #000;
-                    font-size: 0.6rem;
-                    font-weight: 900;
-                    padding: 2px 6px;
-                    border-radius: 4px;
+                .rec-img img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s;
+                }
+                .rec-card:hover .rec-img img { transform: scale(1.05); }
+                .rec-info {
+                    padding: 1rem;
+                }
+                .rec-info h4 {
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    margin-bottom: 0.25rem;
                 }
 
-                .rec-info-mini { display: flex; flex-direction: column; justify-content: center; gap: 0.4rem; }
-                .rec-info-mini h4 { font-size: 0.95rem; font-weight: 500; }
-                .rec-info-mini p { color: var(--primary); font-weight: 700; font-size: 0.9rem; }
-                
-                .btn-rec-view {
-                    background: none; border: none; color: rgba(255,255,255,0.4);
-                    font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;
-                    display: flex; align-items: center; gap: 0.25rem; cursor: pointer;
-                    margin-top: 0.5rem; transition: 0.3s;
+                .cart-spinner {
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid var(--border-light);
+                    border-top-color: var(--primary);
+                    border-radius: 50%;
+                    animation: cartSpin 1s linear infinite;
+                    margin: 3rem auto;
                 }
-                .btn-rec-view:hover { color: var(--primary); transform: translateX(3px); }
+                @keyframes cartSpin { to { transform: rotate(360deg); } }
 
-                .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-                @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                @media (max-width: 1024px) {
+                    .cart-layout { grid-template-columns: 1fr; }
+                    .cart-summary-col { order: -1; }
+                    .summary-card { position: static; }
+                    .recs-grid { grid-template-columns: repeat(2, 1fr); }
+                }
+
+                @media (max-width: 640px) {
+                    .cart-item { grid-template-columns: 70px 1fr; gap: 1rem; }
+                    .item-actions { grid-column: 1 / -1; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border-light); }
+                    .item-line-total { grid-column: 1 / -1; text-align: left; }
+                    .recs-grid { grid-template-columns: 1fr; }
+                }
             `}</style>
         </div>
     );
 };
 
 export default Cart;
-
