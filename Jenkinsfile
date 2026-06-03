@@ -176,10 +176,22 @@ pipeline {
         }
 
         // ═══════════════════════════════════════════════════════════════
+        //  ÉTAPE 9.2 : Installation des dépendances NPM au root
+        // ═══════════════════════════════════════════════════════════════
+        stage('📦 Root: NPM Install (SonarScanner)') {
+            steps {
+                echo 'Installation des dépendances NPM au root (sonarqube-scanner, etc.)...'
+                sh 'npm ci --prefer-offline'
+                echo '✅ Dépendances NPM root installées.'
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
         //  ÉTAPE 9.5 : Analyse SonarQube
         // ═══════════════════════════════════════════════════════════════
-        stage('SonarQube Analysis') {
+        stage('🔍 SonarQube Analysis') {
             steps {
+                echo 'Lancement de l\'analyse SonarQube...'
                 withSonarQubeEnv('SonarQube') {
                     sh '''
                         npx sonar-scanner \
@@ -189,6 +201,7 @@ pipeline {
                           -Dsonar.login=${SONAR_TOKEN}
                     '''
                 }
+                echo '✅ Analyse SonarQube complétée.'
             }
         }
 
