@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import {
@@ -26,9 +26,9 @@ const OrderDetail = () => {
 
     useEffect(() => {
         fetchOrder();
-    }, [id]);
+    }, [fetchOrder]);
 
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await api.get(`/orders/${id}`);
@@ -39,7 +39,7 @@ const OrderDetail = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [id]);
 
     const handleCancelOrder = async () => {
         if (!window.confirm('Souhaitez-vous réellement annuler cette acquisition d\'exception ?')) {

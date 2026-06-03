@@ -52,9 +52,6 @@ import './App.css';
 import { CartProvider } from './context/CartContext';
 
 function App() {
-  const isAdminAuthenticated = !!localStorage.getItem('admin_token');
-  const isUserAuthenticated = !!localStorage.getItem('token');
-
   return (
     <Router>
       <CartProvider>

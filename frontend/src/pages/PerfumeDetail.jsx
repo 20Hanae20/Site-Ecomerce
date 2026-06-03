@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../context/CartContext';
@@ -19,9 +19,9 @@ const PerfumeDetail = () => {
     useEffect(() => {
         fetchPerfume();
         window.scrollTo(0, 0);
-    }, [id]);
+    }, [fetchPerfume]);
 
-    const fetchPerfume = async () => {
+    const fetchPerfume = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/perfumes/${id}`);
@@ -33,7 +33,7 @@ const PerfumeDetail = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [id]);
 
     const handleAddToCart = async () => {
         setIsAdding(true);

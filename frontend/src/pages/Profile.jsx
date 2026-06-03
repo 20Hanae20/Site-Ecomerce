@@ -82,7 +82,7 @@ const Profile = () => {
             setMessage({ text: 'VOTRE PROFIL A ÉTÉ MIS À JOUR.', type: 'success' });
             setUser(response.data.user);
             setTimeout(() => setMessage({ text: '', type: '' }), 5000);
-        } catch (err) {
+        } catch {
             setMessage({ text: 'ÉCHEC DE LA MISE À JOUR.', type: 'error' });
         }
     };

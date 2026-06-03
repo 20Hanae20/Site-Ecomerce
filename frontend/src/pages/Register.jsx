@@ -29,7 +29,7 @@ const Register = () => {
         setMessage('');
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
+            await axios.post('http://127.0.0.1:8000/api/register', formData);
             setMessage("Compte créé avec succès");
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {

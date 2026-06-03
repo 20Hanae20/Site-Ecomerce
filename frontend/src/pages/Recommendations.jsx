@@ -55,7 +55,7 @@ const Recommendations = () => {
         </div>
     );
 
-    const { viewed_perfumes = [], purchased_perfumes = [], recommendations = [] } = data || {};
+    const { viewed_perfumes = [], recommendations = [] } = data || {};
 
     return (
         <div className="container-premium recommendations-page-luxury animate-fade-in">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -37,7 +37,7 @@ const PerfumeList = () => {
     useEffect(() => {
         fetchCategories();
         fetchPerfumes();
-    }, [filters.category_id, filters.sort_by, filters.page]);
+    }, [fetchPerfumes]);
 
     const fetchCategories = async () => {
         try {
@@ -48,7 +48,7 @@ const PerfumeList = () => {
         }
     };
 
-    const fetchPerfumes = async () => {
+    const fetchPerfumes = useCallback(async () => {
         setIsLoading(true);
         try {
             const params = new URLSearchParams();
@@ -72,7 +72,7 @@ const PerfumeList = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [filters]);
 
     // Autocomplete Logic
     useEffect(() => {

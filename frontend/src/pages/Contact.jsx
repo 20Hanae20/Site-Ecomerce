@@ -16,10 +16,6 @@ const Contact = () => {
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
-
     const fetchSettings = async () => {
         try {
             const response = await axios.get('http://127.0.0.1:8000/api/settings/public');
@@ -32,6 +28,10 @@ const Contact = () => {
             console.error("Failed to fetch contact settings", err);
         }
     };
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
