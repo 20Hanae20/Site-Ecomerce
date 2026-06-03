@@ -5,6 +5,7 @@ pipeline {
         PHP_VERSION  = '8.4'
         NODE_VERSION = '18'
         COMPOSER_NO_INTERACTION = '1'
+        SONAR_TOKEN  = 'sqa_c72c5558f5f6b35f03ed49533c8d825eccddbbdd'
     }
 
     options {
@@ -170,6 +171,23 @@ pipeline {
                             sh 'npm audit --audit-level=high || echo "⚠️  Vulnérabilités NPM détectées."'
                         }
                     }
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        //  ÉTAPE 9.5 : Analyse SonarQube
+        // ═══════════════════════════════════════════════════════════════
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        ./vendor/bin/sonar-scanner \
+                          -Dsonar.projectKey=laravel-app \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://localhost:9000 \
+                          -Dsonar.login=${SONAR_TOKEN}
+                    '''
                 }
             }
         }
