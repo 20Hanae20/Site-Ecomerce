@@ -17,6 +17,54 @@ class RecommendationController extends Controller
         try {
             $tenantId = tenant('id');
             $topN = 8;
+            $userId = $request->user() ? $request->user()->id : null;
+
+            // Try to get ML recommendations
+            try {
+                $mlResponse = Http::timeout(3)->post('http://127.0.0.1:8001/recommend', [
+                    'user_id' => $userId,
+                    'tenant_id' => $tenantId,
+                    'top_n' => $topN,
+                ]);
+
+                if ($mlResponse->successful() && $mlResponse->json('success')) {
+                    $recommendedData = $mlResponse->json('recommendations');
+                    $recommendedIds = [];
+
+                    if (!empty($recommendedData)) {
+                        if (is_array($recommendedData[0]) && isset($recommendedData[0]['id'])) {
+                            $recommendedIds = array_column($recommendedData, 'id');
+                        } else {
+                            $recommendedIds = $recommendedData;
+                        }
+                    }
+
+                    if (!empty($recommendedIds)) {
+                        // Maintain order of returned IDs
+                        $placeholders = implode(',', array_fill(0, count($recommendedIds), '?'));
+                        $recommendations = Perfume::whereIn('id', $recommendedIds)
+                            ->orderByRaw("FIELD(id, $placeholders)", $recommendedIds)
+                            ->get();
+
+                        return response()->json([
+                            'success' => true,
+                            'recommendations' => $recommendations->map(function($perfume) {
+                                return [
+                                    'id' => $perfume->id,
+                                    'name' => $perfume->name,
+                                    'price' => $perfume->price,
+                                    'rating' => $perfume->rating_avg,
+                                    'image_url' => $perfume->image_url
+                                ];
+                            }),
+                            'method' => 'ml-model'
+                        ]);
+                    }
+                }
+            } catch (\Exception $mlException) {
+                // Log ML failure, but silently fallback
+                \Log::warning('ML Recommendation failed: ' . $mlException->getMessage());
+            }
 
             // Get top rated perfumes as fallback recommendations
             $recommendations = Perfume::where('is_active', true)

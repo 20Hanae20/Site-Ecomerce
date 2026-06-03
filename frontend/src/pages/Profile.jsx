@@ -53,7 +53,7 @@ const Profile = () => {
     const fetchProfile = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.get('http://127.0.0.1:8002/api/profile', {
+            const response = await axios.get(`http://${window.location.hostname}:8000/api/profile`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUser(response.data);
@@ -76,7 +76,7 @@ const Profile = () => {
         setMessage({ text: '', type: '' });
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.put('http://127.0.0.1:8002/api/profile', profileData, {
+            const response = await axios.put(`http://${window.location.hostname}:8000/api/profile`, profileData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setMessage({ text: 'VOTRE PROFIL A ÉTÉ MIS À JOUR.', type: 'success' });
@@ -92,7 +92,7 @@ const Profile = () => {
         setMessage({ text: '', type: '' });
         const token = localStorage.getItem('token');
         try {
-            await axios.post('http://127.0.0.1:8002/api/profile/change-password', {
+            await axios.post(`http://${window.location.hostname}:8000/api/profile/change-password`, {
                 current_password: passwordData.current_password,
                 new_password: passwordData.new_password,
                 new_password_confirmation: passwordData.new_password_confirmation
@@ -111,7 +111,7 @@ const Profile = () => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post('http://127.0.0.1:8002/api/addresses', addressData, {
+            const response = await axios.post(`http://${window.location.hostname}:8000/api/addresses`, addressData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAddresses([...addresses, response.data.address]);
@@ -128,7 +128,7 @@ const Profile = () => {
         if (!window.confirm("Supprimer cette adresse de votre carnet ?")) return;
         const token = localStorage.getItem('token');
         try {
-            await axios.delete(`http://127.0.0.1:8002/api/addresses/${id}`, {
+            await axios.delete(`http://${window.location.hostname}:8000/api/addresses/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAddresses(addresses.filter(a => a.id !== id));

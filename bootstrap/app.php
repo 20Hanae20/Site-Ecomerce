@@ -23,17 +23,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register tenancy middleware only when not running tests. Tests use in-memory DB.
         if (env('APP_ENV') !== 'testing') {
             $middleware->api(prepend: [
-                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+                \App\Http\Middleware\InitializeTenancyWithFallback::class,
             ]);
 
             $middleware->web(append: [
-                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+                \App\Http\Middleware\InitializeTenancyWithFallback::class,
             ]);
         }
         
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            'tenant' => \App\Http\Middleware\InitializeTenancyWithFallback::class,
             'prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureGate::class,

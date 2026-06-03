@@ -26,7 +26,7 @@ const Login = () => {
         setMessage('');
 
         try {
-            const response = await axios.post('http://127.0.0.1:8002/api/login', formData);
+            const response = await axios.post(`http://${window.location.hostname}:8000/api/login`, formData);
             localStorage.setItem('token', response.data.access_token);
             const user = response.data.user;
             localStorage.setItem('user', JSON.stringify(user));
@@ -120,21 +120,24 @@ const Login = () => {
                     width: 100%;
                     max-width: 500px;
                     padding: 4rem;
-                    border-radius: 20px;
+                    border-radius: 12px;
                     text-align: center;
+                    background: var(--bg-card);
+                    box-shadow: var(--shadow-lg);
+                    border: 1px solid var(--glass-border);
                 }
 
                 .auth-header-luxury h1 {
                     font-size: 2.5rem;
                     margin-bottom: 1rem;
-                    letter-spacing: 4px;
+                    letter-spacing: 2px;
+                    color: var(--text-primary);
                 }
 
                 .auth-subtitle {
-                    font-size: 0.9rem;
-                    opacity: 0.6;
+                    font-size: 0.95rem;
+                    color: var(--text-secondary);
                     margin-bottom: 3rem;
-                    letter-spacing: 1px;
                 }
 
                 .premium-form {
@@ -147,40 +150,39 @@ const Login = () => {
 
                 .premium-input-group label {
                     display: block;
-                    font-size: 0.7rem;
-                    letter-spacing: 2px;
-                    color: var(--primary);
-                    margin-bottom: 0.8rem;
+                    font-size: 0.75rem;
+                    color: var(--text-secondary);
+                    margin-bottom: 0.5rem;
                     font-weight: 600;
+                    text-transform: uppercase;
                 }
 
                 .premium-input-group input {
                     width: 100%;
-                    background: rgba(255,255,255,0.03);
-                    border: 1px solid var(--glass-border);
+                    background: #ffffff;
+                    border: 1px solid #cbd5e1;
                     padding: 1rem;
-                    color: #fff;
+                    color: var(--text-primary);
                     border-radius: 8px;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                 }
 
                 .premium-input-group input:focus {
                     outline: none;
                     border-color: var(--primary);
-                    background: rgba(255,255,255,0.05);
-                    box-shadow: 0 0 15px var(--glass-glow);
+                    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
                 }
 
                 .btn-auth-luxury {
                     width: 100%;
-                    padding: 1.2rem;
+                    padding: 1rem;
                     font-size: 1rem;
-                    margin-bottom: 2.5rem;
+                    margin-bottom: 2rem;
                 }
 
                 .auth-links-luxury {
                     text-align: center;
-                    font-size: 0.85rem;
+                    font-size: 0.9rem;
                 }
 
                 .auth-links-luxury a {
@@ -188,7 +190,6 @@ const Login = () => {
                     text-decoration: none;
                     display: block;
                     margin-bottom: 1rem;
-                    transition: color 0.3s ease;
                 }
 
                 .auth-links-luxury a:hover {
@@ -197,7 +198,6 @@ const Login = () => {
 
                 .gold-link {
                     color: var(--primary) !important;
-                    display: inline !important;
                     font-weight: 600;
                 }
 
@@ -205,17 +205,16 @@ const Login = () => {
                     padding: 1rem;
                     border-radius: 8px;
                     margin-bottom: 2rem;
-                    font-size: 0.85rem;
-                    border-left: 4px solid;
-                    background: rgba(255,255,255,0.05);
+                    font-size: 0.9rem;
+                    background: #f8fafc;
                 }
 
-                .premium-alert.success { border-color: #22c55e; color: #22c55e; }
-                .premium-alert.error { border-color: #ef4444; color: #ef4444; }
+                .premium-alert.success { border: 1px solid #22c55e; color: #16a34a; background: #f0fdf4; }
+                .premium-alert.error { border: 1px solid #ef4444; color: #dc2626; background: #fef2f2; }
 
                 .error-hint {
-                    font-size: 0.75rem;
-                    color: #ef4444;
+                    font-size: 0.8rem;
+                    color: #dc2626;
                     margin-top: 0.5rem;
                     display: block;
                 }

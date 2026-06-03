@@ -24,7 +24,7 @@ const PerfumeDetail = () => {
     const fetchPerfume = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`http://127.0.0.1:8002/api/perfumes/${id}`);
+            const response = await axios.get(`http://${window.location.hostname}:8000/api/perfumes/${id}`);
             setData(response.data);
             setActiveImage(response.data.perfume.image_url);
         } catch (err) {
@@ -66,7 +66,7 @@ const PerfumeDetail = () => {
     const getImageUrl = (url) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
-        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
+        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`;
         const path = url.startsWith('/') ? url : `/${url}`;
         return `${apiHost}${path}`;
     };

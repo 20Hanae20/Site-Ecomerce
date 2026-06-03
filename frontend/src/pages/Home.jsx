@@ -7,7 +7,7 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const apiBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
+    const apiBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`;
 
     useEffect(() => {
         const fetchPerfumes = async () => {
@@ -117,27 +117,31 @@ const Home = () => {
                     padding: 8rem 0;
                     text-align: center;
                     position: relative;
+                    background: var(--bg-deep);
                 }
 
                 .hero-subtitle {
                     font-size: 0.9rem;
-                    letter-spacing: 4px;
+                    letter-spacing: 2px;
                     margin-bottom: 2rem;
+                    color: var(--primary);
+                    text-transform: uppercase;
+                    font-weight: 600;
                 }
 
                 .hero-title {
                     font-size: 5rem;
                     line-height: 1.1;
                     margin-bottom: 2rem;
-                    color: #fff;
+                    color: var(--text-primary);
                 }
 
                 .hero-description {
                     max-width: 600px;
                     margin: 0 auto 3rem;
                     font-size: 1.1rem;
-                    opacity: 0.7;
-                    font-weight: 300;
+                    color: var(--text-secondary);
+                    font-weight: 400;
                 }
 
                 .hero-actions {
@@ -147,25 +151,27 @@ const Home = () => {
                 }
 
                 .btn-minimal {
-                    color: #fff;
+                    color: var(--text-primary);
                     text-decoration: none;
                     text-transform: uppercase;
-                    letter-spacing: 2px;
-                    font-size: 0.8rem;
+                    letter-spacing: 1px;
+                    font-size: 0.9rem;
                     font-weight: 600;
                     display: flex;
                     align-items: center;
-                    border-bottom: 1px solid var(--primary);
+                    border-bottom: 2px solid var(--primary);
                     padding-bottom: 5px;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
                 }
 
                 .btn-minimal:hover {
-                    letter-spacing: 3px;
+                    color: var(--primary);
+                    letter-spacing: 2px;
                 }
 
                 .experience-section {
                     padding: 5rem 0;
+                    background: var(--bg-card);
                 }
 
                 .experience-grid {
@@ -177,22 +183,31 @@ const Home = () => {
                 .experience-card {
                     padding: 3rem;
                     text-align: center;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s ease;
+                    background: var(--bg-card);
+                    border: 1px solid var(--glass-border);
+                    border-radius: 12px;
+                    box-shadow: var(--shadow-sm);
                 }
 
-                .experience-card:hover { border-color: var(--primary); }
+                .experience-card:hover { 
+                    border-color: #cbd5e1;
+                    box-shadow: var(--shadow-lg);
+                    transform: translateY(-3px);
+                }
 
                 .exp-icon { font-size: 2.5rem; display: block; margin-bottom: 1.5rem; }
 
                 .experience-card h3 {
                     margin-bottom: 1rem;
-                    letter-spacing: 2px;
                     font-size: 1.2rem;
+                    color: var(--text-primary);
+                    font-weight: 600;
                 }
 
                 .experience-card p {
-                    font-size: 0.9rem;
-                    opacity: 0.6;
+                    font-size: 0.95rem;
+                    color: var(--text-secondary);
                 }
 
                 .section-header {
@@ -202,7 +217,7 @@ const Home = () => {
                     margin-bottom: 4rem;
                 }
 
-                .section-header h2 { font-size: 3rem; }
+                .section-header h2 { font-size: 3rem; color: var(--text-primary); }
 
                 .view-all {
                     color: var(--primary);
@@ -223,23 +238,22 @@ const Home = () => {
 
                 .card-image-wrapper {
                     height: 350px;
-                    background: #000;
+                    background: #f8fafc;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    border-bottom: 1px solid var(--glass-border);
                 }
 
                 .card-image-wrapper img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
-                    opacity: 0.8;
-                    transition: all 0.5s ease;
+                    transition: all 0.4s ease;
                 }
 
                 .perfume-card-luxury:hover img {
-                    opacity: 1;
-                    transform: scale(1.05);
+                    transform: scale(1.03);
                 }
 
                 .placeholder-image {
@@ -252,40 +266,45 @@ const Home = () => {
                 }
 
                 .brand-label {
-                    font-size: 0.7rem;
-                    letter-spacing: 3px;
+                    font-size: 0.8rem;
+                    letter-spacing: 2px;
                     color: var(--primary);
                     text-transform: uppercase;
                     display: block;
                     margin-bottom: 0.5rem;
+                    font-weight: 600;
                 }
 
                 .card-info h3 {
                     font-size: 1.4rem;
                     margin-bottom: 0.5rem;
-                    font-weight: 500;
+                    font-weight: 600;
+                    color: var(--text-primary);
                 }
 
                 .price-label {
                     font-size: 1.25rem;
                     font-weight: 700;
                     margin-bottom: 1.5rem;
+                    color: var(--text-primary);
                 }
 
                 .card-link {
                     display: block;
                     padding: 1rem;
-                    border: 1px solid var(--glass-border);
-                    color: #fff;
+                    border: 1px solid #cbd5e1;
+                    color: var(--text-primary);
                     text-decoration: none;
-                    font-size: 0.8rem;
-                    letter-spacing: 1px;
-                    transition: all 0.3s ease;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    transition: all 0.2s ease;
+                    border-radius: 6px;
                 }
 
                 .card-link:hover {
-                    background: #fff;
-                    color: #000;
+                    background: var(--primary);
+                    border-color: var(--primary);
+                    color: #fff;
                 }
 
                 @media (max-width: 768px) {

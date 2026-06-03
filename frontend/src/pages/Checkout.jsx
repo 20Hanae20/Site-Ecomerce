@@ -25,7 +25,7 @@ const Checkout = () => {
     const fetchOrder = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.get(`http://127.0.0.1:8002/api/orders/${orderId}`, {
+            const response = await axios.get(`http://${window.location.hostname}:8000/api/orders/${orderId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setOrder(response.data);
@@ -41,7 +41,7 @@ const Checkout = () => {
 
         try {
             if (paymentMethod === 'cod') {
-                await axios.post('http://127.0.0.1:8002/api/payments/initiate',
+                await axios.post(`http://${window.location.hostname}:8000/api/payments/initiate`,
                     { order_id: orderId, payment_method: 'cod' },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -52,7 +52,7 @@ const Checkout = () => {
                 return;
             }
 
-            const initiateResponse = await axios.post('http://127.0.0.1:8002/api/payments/initiate',
+            const initiateResponse = await axios.post(`http://${window.location.hostname}:8000/api/payments/initiate`,
                 { order_id: orderId, payment_method: paymentMethod },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -65,7 +65,7 @@ const Checkout = () => {
             });
 
             if (gatewayResult.success) {
-                await axios.post(`http://127.0.0.1:8002/api/payments/${payment.id}/validate`,
+                await axios.post(`http://${window.location.hostname}:8000/api/payments/${payment.id}/validate`,
                     { transaction_id: gatewayResult.transaction_id, gateway_response: gatewayResult.gateway_response },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -74,7 +74,7 @@ const Checkout = () => {
                     state: { success: true, orderId: orderId, transactionId: gatewayResult.transaction_id }
                 });
             } else {
-                await axios.post(`http://127.0.0.1:8002/api/payments/${payment.id}/fail`,
+                await axios.post(`http://${window.location.hostname}:8000/api/payments/${payment.id}/fail`,
                     { failure_reason: gatewayResult.message },
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
