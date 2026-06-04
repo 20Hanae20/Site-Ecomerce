@@ -12,15 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(prepend: [
-            \App\Http\Middleware\CorsMiddleware::class,
-        ]);
-
-        $middleware->web(append: [
-            \App\Http\Middleware\CorsMiddleware::class,
-        ]);
+        // Laravel 11 uses built-in CORS via config/cors.php
+        // Custom CorsMiddleware removed to avoid conflicts
 
         // Register tenancy middleware only when not running tests. Tests use in-memory DB.
+        // Temporarily disabled for testing
+        /*
         if (env('APP_ENV') !== 'testing') {
             $middleware->api(prepend: [
                 \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
@@ -30,12 +27,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
             ]);
         }
+        */
         
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
             'prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'permission' => \App\Http\Middleware\PermissionMiddleware::class,
             'feature' => \App\Http\Middleware\CheckFeatureGate::class,
         ]);
     })

@@ -43,8 +43,8 @@ const QuizResult = () => {
                             <p className="notes">{perfume.notes}</p>
                             <div className="price">{perfume.price} €</div>
                             <div className="actions">
-                                <Link to={`/perfume/${perfume.id}`} className="details-btn">Découvrir</Link>
-                                <button className="add-cart-btn" onClick={() => addToCart(perfume)}>
+                                <Link to={`/perfumes/${perfume.id}`} className="details-btn">Découvrir</Link>
+                                <button className="add-cart-btn" onClick={() => addToCart(perfume.id, 1)}>
                                     <ShoppingBag size={18} />
                                 </button>
                             </div>

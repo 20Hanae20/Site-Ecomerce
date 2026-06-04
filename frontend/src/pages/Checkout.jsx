@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { CreditCard, Wallet, Truck, ShieldCheck, ChevronRight, Check } from 'lucide-react';
 import { simulatePayment } from '../services/paymentSimulator';
 
@@ -25,9 +25,7 @@ const Checkout = () => {
     const fetchOrder = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.get(`http://127.0.0.1:8002/api/orders/${orderId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/orders/${orderId}`);
             setOrder(response.data);
         } catch {
             setError('Impossible de charger la commande');
@@ -41,10 +39,7 @@ const Checkout = () => {
 
         try {
             if (paymentMethod === 'cod') {
-                await axios.post('http://127.0.0.1:8002/api/payments/initiate',
-                    { order_id: orderId, payment_method: 'cod' },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await api.post('/payments/initiate', { order_id: orderId, payment_method: 'cod' });
 
                 navigate('/payment/confirmation', {
                     state: { success: true, orderId: orderId, isCod: true }
@@ -52,10 +47,7 @@ const Checkout = () => {
                 return;
             }
 
-            const initiateResponse = await axios.post('http://127.0.0.1:8002/api/payments/initiate',
-                { order_id: orderId, payment_method: paymentMethod },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const initiateResponse = await api.post('/payments/initiate', { order_id: orderId, payment_method: paymentMethod });
 
             const payment = initiateResponse.data.payment;
 
@@ -65,19 +57,13 @@ const Checkout = () => {
             });
 
             if (gatewayResult.success) {
-                await axios.post(`http://127.0.0.1:8002/api/payments/${payment.id}/validate`,
-                    { transaction_id: gatewayResult.transaction_id, gateway_response: gatewayResult.gateway_response },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await api.post(`/payments/${payment.id}/validate`, { transaction_id: gatewayResult.transaction_id, gateway_response: gatewayResult.gateway_response });
 
                 navigate('/payment/confirmation', {
                     state: { success: true, orderId: orderId, transactionId: gatewayResult.transaction_id }
                 });
             } else {
-                await axios.post(`http://127.0.0.1:8002/api/payments/${payment.id}/fail`,
-                    { failure_reason: gatewayResult.message },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+                await api.post(`/payments/${payment.id}/fail`, { failure_reason: gatewayResult.message });
 
                 navigate('/payment/confirmation', {
                     state: { success: false, orderId: orderId, failureReason: gatewayResult.message }

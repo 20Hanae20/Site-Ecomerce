@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Perfume;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RecommendationController extends Controller
 {
@@ -96,7 +97,8 @@ class RecommendationController extends Controller
 
             // Ask FastAPI
             try {
-                $response = Http::timeout(3)->post('http://127.0.0.1:8000/recommend', [
+                $mlUrl = config('services.ml_api.url', env('ML_API_URL', 'http://127.0.0.1:8001/recommend'));
+                $response = Http::timeout(5)->post($mlUrl, [
                     'user_id' => $userId,
                     'features' => $userFeatures,
                     'available_perfumes' => $availablePerfumes,
@@ -122,22 +124,34 @@ class RecommendationController extends Controller
                             'success' => true,
                             'recommendations' => $perfumes->map(function($p) use ($recommendationIds) {
                                 return [
-                                    'id' => $p->id,
-                                    'name' => $p->name,
-                                    'price' => $p->price,
-                                    'rating' => $p->rating_avg,
-                                    'image_url' => $p->image_url,
-                                    'category' => $p->category,
-                                    'notes' => $p->notes,
-                                    // Dummy similarity matching percentage for frontend display
+                                    'perfume' => [
+                                        'id' => $p->id,
+                                        'name' => $p->name,
+                                        'price' => $p->price,
+                                        'rating' => $p->rating_avg,
+                                        'image_url' => $p->image_url,
+                                        'category' => $p->category,
+                                        'notes' => $p->notes,
+                                    ],
                                     'match_percentage' => rand(80, 99)
                                 ];
                             }),
                             'method' => 'ml-api-' . $modelName
                         ]);
                     }
+                } else {
+                    Log::warning('ML API responded with non-success', [
+                        'url' => $mlUrl,
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
                 }
             } catch (\Exception $apiException) {
+                Log::error('ML API request failed', [
+                    'message' => $apiException->getMessage(),
+                    'user_id' => $userId,
+                    'tenant_id' => $tenantId,
+                ]);
                 // Keep moving, fallback will handle it
             }
 
@@ -152,13 +166,15 @@ class RecommendationController extends Controller
                 'success' => true,
                 'recommendations' => $recommendations->map(function($perfume) {
                     return [
-                        'id' => $perfume->id,
-                        'name' => $perfume->name,
-                        'price' => $perfume->price,
-                        'rating' => $perfume->rating_avg,
-                        'image_url' => $perfume->image_url,
-                        'category' => $perfume->category,
-                        'notes' => $perfume->notes,
+                        'perfume' => [
+                            'id' => $perfume->id,
+                            'name' => $perfume->name,
+                            'price' => $perfume->price,
+                            'rating' => $perfume->rating_avg,
+                            'image_url' => $perfume->image_url,
+                            'category' => $perfume->category,
+                            'notes' => $perfume->notes,
+                        ],
                         'match_percentage' => rand(75, 90)
                     ];
                 }),

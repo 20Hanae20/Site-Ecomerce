@@ -53,6 +53,107 @@ body {
   display: inline-block;
 }
 
+/* SaaS B2B Badges */
+.tenant-badge,
+.subscription-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.tenant-badge {
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.subscription-badge {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* SaaS B2B Info Panels */
+.tenant-info,
+.subscription-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.info-value.active {
+  color: #22c55e;
+}
+
+.loading-text {
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Analytics CTA */
+.analytics-cta,
+.admin-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.analytics-cta p,
+.admin-cta p {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.analytics-cta button,
+.admin-cta button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--grad-gold);
+  border: none;
+  border-radius: 8px;
+  color: #05070a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.analytics-cta button:hover,
+.admin-cta button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px var(--primary-glow);
+}
+
 /* Components */
 .glass-premium {
   background: var(--glass);

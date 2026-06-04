@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -26,7 +26,7 @@ const Login = () => {
         setMessage('');
 
         try {
-            const response = await axios.post('http://127.0.0.1:8002/api/login', formData);
+            const response = await api.post('/login', formData);
             localStorage.setItem('token', response.data.access_token);
             const user = response.data.user;
             localStorage.setItem('user', JSON.stringify(user));

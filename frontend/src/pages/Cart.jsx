@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/useCart';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { API_HOST } from '../services/api';
 import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, ChevronRight } from 'lucide-react';
-import api from '../services/api';
 
 const Cart = () => {
     const { cart, total, loading, error, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -16,7 +15,7 @@ const Cart = () => {
     const getImageUrl = (imageUrl) => {
         if (!imageUrl) return null;
         if (imageUrl.startsWith('http')) return imageUrl;
-        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
+        const apiHost = API_HOST.replace(/\/api\/?$/, '');
         return `${apiHost}${imageUrl}`;
     };
 
@@ -42,9 +41,7 @@ const Cart = () => {
         if (!token) return;
 
         try {
-            const response = await axios.get('http://127.0.0.1:8002/api/addresses', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/addresses');
             setAddresses(response.data);
             if (response.data.length > 0) {
                 setSelectedAddress(response.data[0].id);
@@ -63,10 +60,7 @@ const Cart = () => {
         setIsCheckingOut(true);
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post('http://127.0.0.1:8002/api/orders',
-                { shipping_address_id: selectedAddress },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const response = await api.post('/orders', { shipping_address_id: selectedAddress });
 
             navigate('/checkout', { state: { orderId: response.data.order.id } });
         } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import {
     User,
     Shield,
@@ -51,11 +51,8 @@ const Profile = () => {
     }, []);
 
     const fetchProfile = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const response = await axios.get('http://127.0.0.1:8002/api/profile', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/profile');
             setUser(response.data);
             setProfileData({
                 name: response.data.name || '',
@@ -76,9 +73,7 @@ const Profile = () => {
         setMessage({ text: '', type: '' });
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.put('http://127.0.0.1:8002/api/profile', profileData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.put('/profile', profileData);
             setMessage({ text: 'VOTRE PROFIL A ÉTÉ MIS À JOUR.', type: 'success' });
             setUser(response.data.user);
             setTimeout(() => setMessage({ text: '', type: '' }), 5000);
@@ -92,12 +87,10 @@ const Profile = () => {
         setMessage({ text: '', type: '' });
         const token = localStorage.getItem('token');
         try {
-            await axios.post('http://127.0.0.1:8002/api/profile/change-password', {
+            await api.post('/profile/change-password', {
                 current_password: passwordData.current_password,
                 new_password: passwordData.new_password,
                 new_password_confirmation: passwordData.new_password_confirmation
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
             setMessage({ text: 'MOT DE PASSE MODIFIÉ AVEC SUCCÈS.', type: 'success' });
             setPasswordData({ current_password: '', new_password: '', new_password_confirmation: '' });
@@ -111,9 +104,7 @@ const Profile = () => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post('http://127.0.0.1:8002/api/addresses', addressData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post('/addresses', addressData);
             setAddresses([...addresses, response.data.address]);
             setShowAddressForm(false);
             setAddressData({ city: '', neighborhood: '', full_address: '', zip_code: '', is_default: false });
@@ -128,9 +119,7 @@ const Profile = () => {
         if (!window.confirm("Supprimer cette adresse de votre carnet ?")) return;
         const token = localStorage.getItem('token');
         try {
-            await axios.delete(`http://127.0.0.1:8002/api/addresses/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/addresses/${id}`);
             setAddresses(addresses.filter(a => a.id !== id));
             setMessage({ text: 'ADRESSE SUPPRIMÉE.', type: 'success' });
             setTimeout(() => setMessage({ text: '', type: '' }), 5000);

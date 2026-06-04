@@ -8,10 +8,6 @@ const ReviewList = ({ perfumeId }) => {
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState(null);
 
-    useEffect(() => {
-        fetchReviews();
-    }, [fetchReviews]);
-
     const fetchReviews = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -28,6 +24,10 @@ const ReviewList = ({ perfumeId }) => {
             setIsLoading(false);
         }
     }, [perfumeId, page]);
+
+    useEffect(() => {
+        fetchReviews();
+    }, [fetchReviews]);
 
     const renderStars = (rating) => {
         return [...Array(5)].map((_, i) => (

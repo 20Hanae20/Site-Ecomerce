@@ -36,9 +36,15 @@ class AuthController extends Controller
             'status' => User::STATUS_ACTIVE,
         ]);
 
+        // Send email verification
+        if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail) {
+            $user->sendEmailVerificationNotification();
+        }
+
         return response()->json([
-            'message' => 'Utilisateur enregistré avec succès',
-            'user' => $user
+            'message' => 'Utilisateur enregistré avec succès. Un email de vérification a été envoyé.',
+            'user' => $user,
+            'requires_verification' => true
         ], 201);
     }
 
@@ -90,5 +96,49 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
             'user' => $user
         ]);
+    }
+
+    /**
+     * Resend email verification notification
+     */
+    public function resendVerification(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur non trouvé'], 404);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email déjà vérifié'], 200);
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return response()->json(['message' => 'Email de vérification renvoyé avec succès']);
+    }
+
+    /**
+     * Verify email (called from email link)
+     */
+    public function verifyEmail(Request $request)
+    {
+        $user = User::find($request->route('id'));
+
+        if (!hash_equals((string)$request->route('hash'), sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Lien de vérification invalide'], 403);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'Email déjà vérifié']);
+        }
+
+        if ($user->markEmailAsVerified()) {
+            return response()->json(['message' => 'Email vérifié avec succès']);
+        }
+
+        return response()->json(['message' => 'Erreur lors de la vérification'], 500);
     }
 }

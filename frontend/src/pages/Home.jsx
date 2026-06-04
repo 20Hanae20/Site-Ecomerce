@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 const Home = () => {
     const [perfumes, setPerfumes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const apiBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://127.0.0.1:8002';
-
     useEffect(() => {
         const fetchPerfumes = async () => {
             try {
-                const response = await axios.get(`${apiBase}/api/perfumes?per_page=4`);
+                const response = await api.get(`/perfumes?per_page=4`);
                 setPerfumes(response.data.data || []);
             } catch (err) {
                 console.error('Erreur:', err);

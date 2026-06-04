@@ -107,10 +107,10 @@ class AdminController extends Controller
         }
 
         $totalSales = \App\Models\Order::where('status', '!=', 'cancelled')
-            ->sum('total_amount');
+            ->sum('total');
 
         $orderCount = \App\Models\Order::where('status', '!=', 'cancelled')->count();
-        $userCount = \App\Models\User::where('role', 'customer')->count();
+        $userCount = \App\Models\User::where('role', 'user')->count();
         $newReviewsCount = \App\Models\Review::where('is_approved', false)->count();
         $lowStockCount = \App\Models\Perfume::where('stock_quantity', '<', 5)->count();
 

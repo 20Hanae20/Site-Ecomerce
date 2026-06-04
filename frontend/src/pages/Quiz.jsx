@@ -32,8 +32,9 @@ const Quiz = () => {
 
     const finishQuiz = async (finalScores) => {
         setIsSubmitting(true);
+        const features = Object.values(finalScores);
         try {
-            const response = await api.post('/recommendations', { profile: finalScores });
+            const response = await api.post('/recommendations', { features, model_name: 'hybrid' });
             navigate('/quiz/result', { state: { result: response.data } });
         } catch (error) {
             console.error("Quiz submission failed", error);
@@ -46,6 +47,8 @@ const Quiz = () => {
                     }, error: true
                 }
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 

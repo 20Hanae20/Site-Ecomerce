@@ -131,19 +131,27 @@ class PerfumeController extends Controller
      */
     public function show(Perfume $perfume, Request $request)
     {
-        // Increment views for popularity tracking (using rating_count as view counter)
-        $perfume->increment('rating_count');
-
         // Track user view if authenticated
-        if ($request->user()) {
-            \App\Models\PerfumeView::recordView($request->user()->id, $perfume->id);
+        try {
+            if ($request->user()) {
+                \App\Models\PerfumeView::recordView($request->user()->id, $perfume->id);
+            }
+        } catch (\Exception $e) {
+            // Log error but continue
+            \Log::warning('Failed to record user view: ' . $e->getMessage());
         }
 
         // Load similar products (same category, different ID)
-        $similar = Perfume::where('category_id', $perfume->category_id)
-            ->where('id', '!=', $perfume->id)
-            ->limit(4)
-            ->get();
+        try {
+            $similar = Perfume::where('category_id', $perfume->category_id)
+                ->where('id', '!=', $perfume->id)
+                ->limit(4)
+                ->get();
+        } catch (\Exception $e) {
+            // Log error but continue with empty similar products
+            \Log::warning('Failed to load similar products: ' . $e->getMessage());
+            $similar = collect();
+        }
 
         return response()->json([
             'perfume' => $perfume->load('category'),

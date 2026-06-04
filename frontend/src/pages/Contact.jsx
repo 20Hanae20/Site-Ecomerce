@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { MapPin, Mail, Phone, Clock, Send, Sparkles, MessageSquare } from 'lucide-react';
 
 const Contact = () => {
@@ -19,7 +19,7 @@ const Contact = () => {
     useEffect(() => {
         const loadSettings = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8002/api/settings/public');
+                const response = await api.get('/settings/public');
                 const publicSettings = response.data;
                 setSettings(prev => ({
                     ...prev,
