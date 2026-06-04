@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActionLog extends Model
 {
-    protected $fillable = ['user_id', 'action', 'target_type', 'target_id', 'details', 'ip_address'];
+    use \App\Models\Traits\BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'user_id', 'action', 'target_type', 'target_id', 'details', 'ip_address'];
 
     protected $casts = [
         'details' => 'array',

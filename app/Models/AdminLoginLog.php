@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdminLoginLog extends Model
 {
+    use \App\Models\Traits\BelongsToTenant;
+
     public $timestamps = false;
 
     protected $fillable = [
+        'tenant_id',
         'user_id',
         'ip_address',
         'user_agent',

@@ -27,6 +27,7 @@ class AuthController extends Controller
         }
 
         $user = User::create([
+            'tenant_id' => tenant('id'),
             'name' => $request->first_name . ' ' . $request->last_name,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
