@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\TenantController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\BillingController;
 use Illuminate\Http\Request;
@@ -31,6 +33,8 @@ Route::get('/subscription/has-feature', [SubscriptionController::class, 'hasFeat
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+Route::post('/email/verify/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:6,1');
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->middleware('throttle:6,1');
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:6,1');
 
@@ -38,6 +42,8 @@ Route::get('/perfumes', [PerfumeController::class, 'index']);
 Route::get('/perfumes/{perfume}', [PerfumeController::class, 'show']);
 Route::get('/perfumes/{perfume}/reviews', [ReviewController::class, 'index']);
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/brands', [BrandController::class, 'index']);
+Route::get('/brands/{brand}', [BrandController::class, 'show']);
 Route::get('/promotions/active', [PromotionController::class, 'activePromotions']);
 Route::post('/promotions/apply', [PromotionController::class, 'apply']);
 Route::get('/settings/public', [SettingController::class, 'publicSettings']);
@@ -95,8 +101,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/action-logs', [\App\Http\Controllers\Api\AdminController::class, 'getActionLogs']);
         Route::get('/stats', [\App\Http\Controllers\Api\AdminController::class, 'getDashboardStats']);
         
+        // AI Analytics Dashboard
+        Route::get('/analytics/ml-dashboard', [AnalyticsController::class, 'mlDashboard']);
+        Route::get('/analytics/ml-performance', [AnalyticsController::class, 'mlPerformance']);
+        
         // Category Management
         Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
+        
+        // Brand Management
+        Route::apiResource('brands', BrandController::class)->except(['index', 'show']);
         // Order Management
         Route::get('/orders', [OrderController::class, 'adminIndex']);
         Route::get('/orders/{order}/invoice', [OrderController::class, 'generateInvoice']);

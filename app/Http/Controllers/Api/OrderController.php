@@ -54,7 +54,7 @@ class OrderController extends Controller
             DB::beginTransaction();
 
             foreach ($cartItems as $item) {
-                if ($item->perfume->stock < $item->quantity) {
+                if ($item->perfume->stock_quantity < $item->quantity) {
                     throw new \Exception("Stock insuffisant pour {$item->perfume->name}");
                 }
             }
@@ -90,7 +90,7 @@ class OrderController extends Controller
                 ]);
 
                 // Reserve stock (decrement temporarily)
-                $item->perfume->decrement('stock', $item->quantity);
+                $item->perfume->decrement('stock_quantity', $item->quantity);
             }
 
             // Clear cart
@@ -221,7 +221,7 @@ class OrderController extends Controller
 
             // Restore stock
             foreach ($order->items as $item) {
-                $item->perfume->increment('stock', $item->quantity);
+                $item->perfume->increment('stock_quantity', $item->quantity);
             }
 
             // Update order status

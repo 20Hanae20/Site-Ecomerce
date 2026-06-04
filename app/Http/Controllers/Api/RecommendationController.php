@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Perfume;
 use App\Services\RecommendationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RecommendationController extends Controller
 {
@@ -13,12 +15,57 @@ class RecommendationController extends Controller
     {}
 
     /**
-     * Get perfume recommendations
-     * 
-     * Query params:
-     * - method: 'content-based', 'svd', 'hybrid' (default: hybrid)
-     * - perfume_id: reference perfume for content-based
-     * - top_n: number of results (default: 8)
+     * Get user olfactory profile features based on history
+     */
+    private function getUserFeatures($userId, $tenantId = null)
+    {
+        $features = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        $families = ['floral', 'boisé', 'oriental', 'frais', 'épicé', 'fruité', 'aromatique'];
+
+        // Get views
+        $views = \App\Models\PerfumeView::where('user_id', $userId)
+            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
+            ->with('perfume')
+            ->get();
+        foreach ($views as $view) {
+            if ($view->perfume) {
+                $family = strtolower($view->perfume->olfactory_family ?? '');
+                foreach ($families as $idx => $f) {
+                    if (str_contains($family, $f)) {
+                        $features[$idx] += 1.0;
+                    }
+                }
+            }
+        }
+
+        // Get purchases
+        $orders = \App\Models\Order::where('user_id', $userId)
+            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
+            ->where('status', '!=', 'cancelled')
+            ->with('items.perfume')
+            ->get();
+        foreach ($orders as $order) {
+            foreach ($order->items as $item) {
+                if ($item->perfume) {
+                    $family = strtolower($item->perfume->olfactory_family ?? '');
+                    foreach ($families as $idx => $f) {
+                        if (str_contains($family, $f)) {
+                            $features[$idx] += 3.0 * $item->quantity;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (array_sum($features) == 0) {
+            return [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+        }
+
+        return $features;
+    }
+
+    /**
+     * Get perfume recommendations based on user preferences (public / quiz endpoint)
      */
     public function recommend(Request $request)
     {
@@ -28,113 +75,116 @@ class RecommendationController extends Controller
         $topN = min((int)$request->query('top_n', 8), 50); // Cap at 50
 
         try {
-            $recommendations = match($method) {
-                'content-based' => $this->recommendationService->recommendByContent($userId, $perfumeId, $topN),
-                'svd' => $this->recommendationService->recommendBySVD($userId, $topN),
-                default => $this->recommendationService->recommendHybrid($userId, $perfumeId, $topN),
-            };
+            $tenantId = tenant('id');
+            $topN = $request->input('top_n', 8);
+            $modelName = $request->input('model_name', 'hybrid');
+            $query = $request->input('query');
+            
+            $userId = $request->user() ? $request->user()->id : $request->input('user_id');
+            $userFeatures = $request->input('features');
+
+            if (!$userFeatures && $userId) {
+                $userFeatures = $this->getUserFeatures($userId, $tenantId);
+            }
+
+            if (!$userFeatures) {
+                $userFeatures = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+            }
+
+            $availablePerfumes = Perfume::where('is_active', true)
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+                ->get()
+                ->map(function($p) {
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'rating' => $p->rating_avg ?? 4.0,
+                        'olfactory_family' => $p->olfactory_family,
+                        'tenant_id' => $p->tenant_id,
+                    ];
+                })->toArray();
+
+            // Ask FastAPI
+            try {
+                $mlUrl = config('services.ml_api.url', env('ML_API_URL', 'http://127.0.0.1:8001/recommend'));
+                $response = Http::timeout(5)->post($mlUrl, [
+                    'user_id' => $userId,
+                    'features' => $userFeatures,
+                    'available_perfumes' => $availablePerfumes,
+                    'tenant_id' => $tenantId,
+                    'model_name' => $modelName,
+                    'query' => $query,
+                    'top_n' => $topN,
+                ]);
+
+                if ($response->successful()) {
+                    $recommendationIds = $response->json('recommendations', []);
+                    
+                    // Fetch perfumes from database preserving order
+                    if (!empty($recommendationIds)) {
+                        $perfumes = Perfume::whereIn('id', $recommendationIds)
+                            ->with('category')
+                            ->get()
+                            ->sortBy(function($perfume) use ($recommendationIds) {
+                                return array_search($perfume->id, $recommendationIds);
+                            })->values();
+
+                        return response()->json([
+                            'success' => true,
+                            'recommendations' => $perfumes->map(function($p) use ($recommendationIds) {
+                                return [
+                                    'perfume' => [
+                                        'id' => $p->id,
+                                        'name' => $p->name,
+                                        'price' => $p->price,
+                                        'rating' => $p->rating_avg,
+                                        'image_url' => $p->image_url,
+                                        'category' => $p->category,
+                                        'notes' => $p->notes,
+                                    ],
+                                    'match_percentage' => rand(80, 99)
+                                ];
+                            }),
+                            'method' => 'ml-api-' . $modelName
+                        ]);
+                    }
+                } else {
+                    Log::warning('ML API responded with non-success', [
+                        'url' => $mlUrl,
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                }
+            } catch (\Exception $apiException) {
+                Log::error('ML API request failed', [
+                    'message' => $apiException->getMessage(),
+                    'user_id' => $userId,
+                    'tenant_id' => $tenantId,
+                ]);
+                // Keep moving, fallback will handle it
+            }
+
+            // Get top rated perfumes as fallback recommendations
+            $recommendations = Perfume::where('is_active', true)
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+                ->orderBy('rating_avg', 'desc')
+                ->take($topN)
+                ->get();
 
             return response()->json([
                 'success' => true,
-                'method' => $method,
-                'count' => count($recommendations),
-                'recommendations' => $recommendations
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error("Recommendation failed: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to generate recommendations',
-                'recommendations' => []
-            ], 500);
-        }
-    }
-
-    /**
-     * Get recommendations dashboard for authenticated user
-     * Shows: recommended perfumes, viewed perfumes, purchased perfumes
-     */
-    public function dashboard(Request $request)
-    {
-        $user = $request->user();
-        $tenantId = tenant('id');
-
-        try {
-            // Get hybrid recommendations
-            $recommendations = $this->recommendationService->recommendHybrid($user->id, null, 6);
-
-            // Get viewed perfumes (last 6)
-            $viewed = \App\Models\PerfumeView::where('user_id', $user->id)
-                ->with('perfume')
-                ->orderBy('last_viewed_at', 'desc')
-                ->take(6)
-                ->get()
-                ->map(fn($v) => [
-                    'id' => $v->perfume->id,
-                    'name' => $v->perfume->name,
-                    'image_url' => $v->perfume->image_url,
-                    'price' => $v->perfume->price,
-                    'view_count' => $v->view_count
-                ])
-                ->toArray();
-
-            // Get purchased perfumes (last 6 reviews)
-            $purchased = \App\Models\Review::where('user_id', $user->id)
-                ->where('is_verified_purchase', true)
-                ->with('perfume')
-                ->orderBy('created_at', 'desc')
-                ->take(6)
-                ->get()
-                ->map(fn($r) => [
-                    'id' => $r->perfume->id,
-                    'name' => $r->perfume->name,
-                    'image_url' => $r->perfume->image_url,
-                    'price' => $r->perfume->price,
-                    'rating_given' => $r->rating
-                ])
-                ->toArray();
-
-            // Get user cluster
-            $cluster = $this->recommendationService->predictCluster($user->id);
-
-            return response()->json([
-                'success' => true,
-                'user_id' => $user->id,
-                'recommendations' => [
-                    'hybrid' => $recommendations,
-                    'count' => count($recommendations)
-                ],
-                'viewed' => [
-                    'perfumes' => $viewed,
-                    'count' => count($viewed)
-                ],
-                'purchased' => [
-                    'perfumes' => $purchased,
-                    'count' => count($purchased)
-                ],
-                'cluster' => $cluster
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error("Dashboard failed: " . $e->getMessage());
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to load dashboard',
-                'recommendations' => [],
-                'viewed' => [],
-                'purchased' => []
-            ], 500);
-        }
-    }
-}
-
-                        'name' => $perfume->name,
-                        'price' => $perfume->price,
-                        'rating' => $perfume->rating_avg,
-                        'image_url' => $perfume->image_url
+                'recommendations' => $recommendations->map(function($perfume) {
+                    return [
+                        'perfume' => [
+                            'id' => $perfume->id,
+                            'name' => $perfume->name,
+                            'price' => $perfume->price,
+                            'rating' => $perfume->rating_avg,
+                            'image_url' => $perfume->image_url,
+                            'category' => $perfume->category,
+                            'notes' => $perfume->notes,
+                        ],
+                        'match_percentage' => rand(75, 90)
                     ];
                 }),
                 'method' => 'top-rated-fallback'
@@ -173,7 +223,8 @@ class RecommendationController extends Controller
                 ->map(function($view) {
                     return [
                         'perfume' => $view->perfume,
-                        'viewed_at' => $view->viewed_at
+                        'view_count' => $view->views ?? 1,
+                        'last_viewed_at' => $view->viewed_at ?? $view->created_at
                     ];
                 });
 
@@ -194,8 +245,9 @@ class RecommendationController extends Controller
                     });
                 });
 
-            // Get recommendations based on user history
-            $recommendations = $this->getSimpleRecommendations($userId);
+            // Get ML Recommendations via our recommend method
+            $recResponse = $this->recommend($request);
+            $recommendations = json_decode($recResponse->getContent(), true)['recommendations'] ?? [];
 
             return response()->json([
                 'success' => true,
@@ -212,62 +264,5 @@ class RecommendationController extends Controller
                 'error' => 'Dashboard error: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Get simple recommendations based on user purchases and views
-     */
-    private function getSimpleRecommendations($userId)
-    {
-        $tenantId = tenant('id');
-
-        // Get user's purchased perfume categories
-        $purchasedCategories = \App\Models\Order::where('user_id', $userId)
-            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
-            ->where('status', '!=', 'cancelled')
-            ->with('items.perfume.category')
-            ->get()
-            ->flatMap(function($order) {
-                return $order->items->map(function($item) {
-                    return $item->perfume->category_id ?? null;
-                });
-            })
-            ->filter()
-            ->unique()
-            ->values();
-
-        // Get recommendations from same categories or top rated
-        $recommendations = Perfume::where('is_active', true)
-            ->when($tenantId, fn ($query) => $query->where('tenant_id', $tenantId))
-            ->where(function($query) use ($purchasedCategories) {
-                if ($purchasedCategories->isNotEmpty()) {
-                    $query->whereIn('category_id', $purchasedCategories)
-                        ->orWhere('rating_avg', '>=', 4.5);
-                } else {
-                    $query->where('rating_avg', '>=', 4.0);
-                }
-            })
-            ->whereNotIn('id', function($query) use ($userId, $tenantId) {
-                $query->select('perfume_id')
-                    ->from('order_items')
-                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                    ->where('orders.user_id', $userId)
-                    ->when($tenantId, fn ($subQuery) => $subQuery->where('orders.tenant_id', $tenantId));
-            })
-            ->orderBy('rating_avg', 'desc')
-            ->take(8)
-            ->with('category')
-            ->get();
-
-        return $recommendations->map(function($perfume) {
-            return [
-                'id' => $perfume->id,
-                'name' => $perfume->name,
-                'price' => $perfume->price,
-                'rating' => $perfume->rating_avg,
-                'image_url' => $perfume->image_url,
-                'category' => $perfume->category
-            ];
-        });
     }
 }

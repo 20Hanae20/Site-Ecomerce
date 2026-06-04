@@ -36,7 +36,7 @@ return [
     ],
 
     'ml_api' => [
-        'url' => env('ML_API_URL', 'http://127.0.0.1:8001/recommend'),
+        'url' => env('ML_API_URL', 'http://127.0.0.1:8002/recommend'),
     ],
 
     'stripe' => [

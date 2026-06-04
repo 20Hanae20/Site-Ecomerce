@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import api from '../services/api';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -30,7 +29,7 @@ const Register = () => {
         setMessage('');
 
         try {
-            await axios.post(`http://${window.location.hostname}:8000/api/register`, formData);
+            await api.post('/register', formData);
             setMessage("Compte créé avec succès");
             setTimeout(() => navigate('/login'), 2000);
         } catch (err) {

@@ -25,9 +25,22 @@ class User extends Authenticatable
     /**
      * Role checks
      */
+    public function isAnyAdmin(): bool
+    {
+        return in_array($this->role, [
+            self::ROLE_ADMIN,
+            self::ROLE_SUPER_ADMIN,
+            self::ROLE_MANAGER,
+            self::ROLE_MODERATOR,
+            'tenant_admin',
+            'manager',
+            'moderator'
+        ]) || (method_exists($this, 'hasAnyRole') && $this->hasAnyRole(['super_admin', 'tenant_admin', 'manager', 'moderator']));
+    }
+
     public function isAdmin(): bool
     {
-        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN, self::ROLE_MANAGER]);
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN, self::ROLE_MANAGER]) || (method_exists($this, 'hasAnyRole') && $this->hasAnyRole(['super_admin', 'tenant_admin', 'manager']));
     }
 
     public function isSuperAdmin(): bool

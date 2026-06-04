@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { ArrowRight, Database, Zap, ShieldCheck } from 'lucide-react';
+import api from '../services/api';
 
 const Home = () => {
     const [perfumes, setPerfumes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const apiBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`;
-
     useEffect(() => {
         const fetchPerfumes = async () => {
             try {
-                const response = await axios.get(`${apiBase}/api/perfumes?per_page=4`);
+                const response = await api.get(`/perfumes?per_page=4`);
                 setPerfumes(response.data.data || []);
             } catch (err) {
                 console.error('Erreur:', err);

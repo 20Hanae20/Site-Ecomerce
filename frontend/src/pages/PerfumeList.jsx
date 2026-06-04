@@ -1,17 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import api, { API_HOST } from '../services/api';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/useCart';
 import { Filter, Search, RotateCcw, ShoppingCart, Star, Box } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${window.location.hostname}:8000`;
 
 const getPerfumeImage = (perfume) => {
     if (perfume.image_url) {
         if (perfume.image_url.startsWith('http://') || perfume.image_url.startsWith('https://')) {
             return perfume.image_url;
         }
-        return `${API_BASE}${perfume.image_url}`;
+        return `${API_HOST}${perfume.image_url}`;
     }
     return null;
 };
@@ -38,7 +36,7 @@ const PerfumeList = () => {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_BASE}/api/categories`);
+            const response = await api.get('/categories');
             setCategories(response.data);
         } catch (err) {
             console.error("Fetch categories error:", err);
@@ -56,7 +54,7 @@ const PerfumeList = () => {
             if (filters.sort_by) params.append('sort_by', filters.sort_by);
             params.append('page', filters.page);
 
-            const response = await axios.get(`${API_BASE}/api/perfumes?${params.toString()}`);
+            const response = await api.get(`/perfumes?${params.toString()}`);
             setPerfumes(response.data.data);
             setPagination({
                 current_page: response.data.current_page,
@@ -84,7 +82,7 @@ const PerfumeList = () => {
                 return;
             }
             try {
-                const response = await axios.get(`${API_BASE}/api/perfumes?q=${filters.q}&per_page=5`);
+                const response = await api.get(`/perfumes?q=${filters.q}&per_page=5`);
                 setSuggestions(response.data.data);
                 setShowSuggestions(true);
             } catch (error) {

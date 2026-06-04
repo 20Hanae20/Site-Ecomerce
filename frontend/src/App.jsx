@@ -32,6 +32,8 @@ import OrderDetail from './pages/OrderDetail';
 
 // NOUVEAU: Recommandations (remplace le Quiz)
 import Recommendations from './pages/Recommendations';
+import Quiz from './pages/Quiz';
+import QuizResult from './pages/QuizResult';
 
 // Admin
 import AdminLogin from './pages/Admin/AdminLogin';
@@ -45,6 +47,7 @@ import AdminReviews from './pages/Admin/Reviews';
 import AdminSettings from './pages/Admin/Settings';
 import AdminLogs from './pages/Admin/Logs';
 import AdminBranding from './pages/Admin/Branding';
+import AdminAnalytics from './pages/Admin/AnalyticsDashboard';
 import AddPerfume from './pages/AddPerfume';
 
 import './App.css';
@@ -69,7 +72,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/reset-password/:token?" element={<ResetPassword />} />
 
             {/* Produits */}
             <Route path="/perfumes" element={<PerfumeList />} />
@@ -84,8 +87,10 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute component={Profile} />} />
             <Route path="/orders" element={<ProtectedRoute component={Orders} />} />
             <Route path="/orders/:id" element={<ProtectedRoute component={OrderDetail} />} />
+            <Route path="/quiz" element={<Quiz />} />
+            <Route path="/quiz/result" element={<QuizResult />} />
 
-            {/* NOUVEAU: Recommandations basées sur l'historique (remplace /quiz) */}
+            {/* NOUVEAU: Recommandations basées sur l'historique */}
             <Route path="/recommendations" element={<ProtectedRoute component={Recommendations} />} />
           </Route>
 
@@ -101,6 +106,7 @@ function App() {
             <Route path="/admin/settings" element={<ProtectedRoute component={AdminSettings} requiredRole={['admin', 'super_admin']} />} />
             <Route path="/admin/branding" element={<ProtectedRoute component={AdminBranding} requiredRole={['admin', 'super_admin']} />} />
             <Route path="/admin/logs" element={<ProtectedRoute component={AdminLogs} requiredRole={['admin', 'super_admin']} />} />
+            <Route path="/admin/analytics" element={<ProtectedRoute component={AdminAnalytics} requiredRole={['admin', 'super_admin', 'gestionnaire']} />} />
           </Route>
 
           {/* Page 404 */}

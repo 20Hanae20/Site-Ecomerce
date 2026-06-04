@@ -67,7 +67,7 @@ export const CartProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('auth_token');
+        const token = localStorage.getItem('token');
         if (token) {
             fetchCart();
         }

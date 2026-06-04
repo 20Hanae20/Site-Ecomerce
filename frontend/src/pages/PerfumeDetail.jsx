@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useCart } from '../context/useCart';
 import { Star, ShoppingBag, Truck, ShieldCheck, ChevronRight, Package, Check } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
@@ -16,15 +16,10 @@ const PerfumeDetail = () => {
     const [cartMessage, setCartMessage] = useState({ text: '', type: '' });
     const { addToCart } = useCart();
 
-    useEffect(() => {
-        fetchPerfume();
-        globalThis.scrollTo(0, 0);
-    }, [fetchPerfume]);
-
     const fetchPerfume = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`http://${globalThis.location.hostname}:8000/api/perfumes/${id}`);
+            const response = await api.get(`/perfumes/${id}`);
             setData(response.data);
             setActiveImage(response.data.perfume.image_url);
         } catch (err) {
@@ -34,6 +29,11 @@ const PerfumeDetail = () => {
             setIsLoading(false);
         }
     }, [id]);
+
+    useEffect(() => {
+        fetchPerfume();
+        window.scrollTo(0, 0);
+    }, [fetchPerfume]);
 
     const handleAddToCart = async () => {
         setIsAdding(true);
@@ -67,7 +67,7 @@ const PerfumeDetail = () => {
     const getImageUrl = (url) => {
         if (!url) return null;
         if (url.startsWith('http')) return url;
-        const apiHost = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : `http://${globalThis.location.hostname}:8000`;
+        const apiHost = API_HOST.replace(/\/api\/?$/, '');
         const path = url.startsWith('/') ? url : `/${url}`;
         return `${apiHost}${path}`;
     };

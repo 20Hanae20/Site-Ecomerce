@@ -9,11 +9,17 @@ import {
     MessageSquare,
     Users as CustomersIcon,
     ShieldAlert,
-    Clock
+    Clock,
+    Building2,
+    CreditCard,
+    BarChart3,
+    Zap
 } from 'lucide-react';
 
 const AdminDashboard = () => {
     const [user, setUser] = useState(null);
+    const [tenant, setTenant] = useState(null);
+    const [subscription, setSubscription] = useState(null);
     const [stats, setStats] = useState({
         sales: '0,00 €',
         orders: 0,
@@ -43,6 +49,8 @@ const AdminDashboard = () => {
         }
 
         setUser(parsedUser);
+        fetchTenantInfo();
+        fetchSubscriptionInfo();
         fetchStats();
     }, [navigate]);
 
@@ -56,6 +64,26 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchTenantInfo = async () => {
+        try {
+            const api = (await import('../../services/api')).default;
+            const response = await api.get('/tenant/current');
+            setTenant(response.data);
+        } catch (err) {
+            console.error("Failed to fetch tenant info", err);
+        }
+    };
+
+    const fetchSubscriptionInfo = async () => {
+        try {
+            const api = (await import('../../services/api')).default;
+            const response = await api.get('/subscription/current');
+            setSubscription(response.data);
+        } catch (err) {
+            console.error("Failed to fetch subscription info", err);
+        }
+    };
+
     if (!user) return <div className="loader">Initialisation de la Maison...</div>;
 
     return (
@@ -63,18 +91,31 @@ const AdminDashboard = () => {
             <header className="premium-header">
                 <div className="welcome-section">
                     <h1>Bonjour, <span className="gradient-text-gold">{user.name.split(' ')[0]}</span></h1>
-                    <p>Voici l'état de votre Maison aujourd'hui.</p>
+                    <p>Voici l'état de votre plateforme SaaS B2B aujourd'hui.</p>
                 </div>
                 <div className="header-actions">
+                    {tenant && (
+                        <div className="tenant-badge">
+                            <Building2 size={16} />
+                            <span>{tenant.name || 'Tenant'}</span>
+                        </div>
+                    )}
+                    {subscription && (
+                        <div className="subscription-badge">
+                            <CreditCard size={16} />
+                            <span>{subscription.plan || 'Plan Standard'}</span>
+                        </div>
+                    )}
                     <div className="date-display">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
                 </div>
             </header>
 
+            {/* SaaS B2B Info Cards */}
             <div className="stats-mosaic">
                 <div className="premium-stat-card glow-aura">
                     <div className="card-icon gold"><DollarSign size={24} /></div>
                     <div className="card-data">
-                        <span className="label">Chiffre d'Affaires</span>
+                        <span className="label">Ventes Totales</span>
                         <span className="value">{stats.sales}</span>
                     </div>
                     <TrendingUp size={40} className="card-bg-icon" />
@@ -83,7 +124,7 @@ const AdminDashboard = () => {
                 <div className="premium-stat-card">
                     <div className="card-icon blue"><ShoppingBag size={24} /></div>
                     <div className="card-data">
-                        <span className="label">Commandes Totales</span>
+                        <span className="label">Commandes</span>
                         <span className="value">{stats.orders}</span>
                     </div>
                     <ShoppingBag size={40} className="card-bg-icon" />
@@ -92,8 +133,8 @@ const AdminDashboard = () => {
                 <div className="premium-stat-card">
                     <div className="card-icon green"><CustomersIcon size={24} /></div>
                     <div className="card-data">
-                        <span className="label">Clients Fidèles</span>
-                        <span className="value">{stats.customers || 0}</span>
+                        <span className="label">Clients</span>
+                        <span className="value">{stats.customers}</span>
                     </div>
                     <CustomersIcon size={40} className="card-bg-icon" />
                 </div>
@@ -101,95 +142,139 @@ const AdminDashboard = () => {
                 <div className="premium-stat-card">
                     <div className="card-icon purple"><MessageSquare size={24} /></div>
                     <div className="card-data">
-                        <span className="label">Avis en Attente</span>
+                        <span className="label">Avis</span>
                         <span className="value">{stats.reviews}</span>
                     </div>
                     <MessageSquare size={40} className="card-bg-icon" />
                 </div>
 
-                {stats.low_stock > 0 && (
-                    <div className="premium-stat-card warning">
-                        <div className="card-icon red"><AlertCircle size={24} /></div>
-                        <div className="card-data">
-                            <span className="label">Alerte Stock Bas</span>
-                            <span className="value">{stats.low_stock} produits</span>
-                        </div>
-                        <AlertCircle size={40} className="card-bg-icon" />
-                    </div>
-                )}
-
-                <div className="premium-stat-card clickable-card gold-border-nav" onClick={() => navigate('/admin/logs')}>
-                    <div className="card-icon gold"><ShieldAlert size={24} /></div>
+                <div className="premium-stat-card">
+                    <div className="card-icon orange"><AlertCircle size={24} /></div>
                     <div className="card-data">
-                        <span className="label">Registres Archivés</span>
-                        <span className="value">Consulter</span>
+                        <span className="label">Stock Faible</span>
+                        <span className="value">{stats.low_stock}</span>
                     </div>
-                    <ShieldAlert size={40} className="card-bg-icon" />
+                    <AlertCircle size={40} className="card-bg-icon" />
+                </div>
+
+                <div className="premium-stat-card">
+                    <div className="card-icon red"><Zap size={24} /></div>
+                    <div className="card-data">
+                        <span className="label">IA Analytics</span>
+                        <span className="value">Actif</span>
+                    </div>
+                    <Zap size={40} className="card-bg-icon" />
                 </div>
             </div>
 
+            {/* SaaS B2B Features */}
             <div className="dashboard-grid">
                 <section className="glass-premium chart-panel">
                     <div className="panel-header">
-                        <h3><Star size={18} className="gold" /> Essence de la Performance</h3>
-                        <span>Top ventes</span>
+                        <h3><BarChart3 size={18} className="gold" /> Analytics IA</h3>
+                        <span>Métriques Machine Learning</span>
                     </div>
-                    <div className="top-sales-list">
-                        {stats.top_products?.length > 0 ? stats.top_products.map((p, i) => (
-                            <div key={i} className="sales-item">
-                                <div className="item-rank">#{i + 1}</div>
-                                <div className="item-info">
-                                    <span className="p-name">{p.perfume_name}</span>
-                                    <div className="p-bar-container">
-                                        <div className="p-bar" style={{ width: `${Math.min(p.total_sold * 10, 100)}%` }}></div>
-                                    </div>
+                    <div className="analytics-cta">
+                        <p>Accédez au dashboard IA complet avec KPIs ML, segmentation clients et performance des modèles.</p>
+                        <button onClick={() => navigate('/admin/analytics')} className="btn-premium">
+                            Voir Analytics IA <Zap size={16} />
+                        </button>
+                    </div>
+                </section>
+
+                <section className="glass-premium chart-panel">
+                    <div className="panel-header">
+                        <h3><Building2 size={18} /> Gestion Multi-Tenant</h3>
+                        <span>Architecture SaaS</span>
+                    </div>
+                    <div className="tenant-info">
+                        {tenant ? (
+                            <>
+                                <div className="info-row">
+                                    <span className="info-label">Nom du Tenant:</span>
+                                    <span className="info-value">{tenant.name || 'Non configuré'}</span>
                                 </div>
-                                <div className="item-qty">{p.total_sold} vendus</div>
-                            </div>
-                        )) : (
-                            <div className="empty-state">Aucun mouvement pour le moment.</div>
+                                <div className="info-row">
+                                    <span className="info-label">Domaine:</span>
+                                    <span className="info-value">{tenant.domain || 'localhost'}</span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">Statut:</span>
+                                    <span className="info-value active">Actif</span>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="loading-text">Chargement des informations tenant...</p>
                         )}
                     </div>
                 </section>
 
-                <section className="glass-premium trend-panel">
+                <section className="glass-premium chart-panel">
                     <div className="panel-header">
-                        <h3><TrendingUp size={18} /> Sillage des Ventes</h3>
-                        <span>Tendance 7 jours</span>
+                        <h3><CreditCard size={18} /> Abonnement</h3>
+                        <span>Plans SaaS</span>
                     </div>
-                    <div className="trend-visualization">
-                        {stats.sales_trend?.length > 0 ? stats.sales_trend.map((day, i) => (
-                            <div key={i} className="trend-column" title={`${day.date}: ${day.total}€`}>
-                                <div className="bar-wrapper">
-                                    <div
-                                        className="bar"
-                                        style={{ height: `${Math.min(day.total / 10, 100)}%` }}
-                                    >
-                                        <div className="bar-glow"></div>
-                                    </div>
+                    <div className="subscription-info">
+                        {subscription ? (
+                            <>
+                                <div className="info-row">
+                                    <span className="info-label">Plan Actuel:</span>
+                                    <span className="info-value">{subscription.plan || 'Standard'}</span>
                                 </div>
-                                <span className="day-label">{day.date.split('-')[2]}</span>
-                            </div>
-                        )) : (
-                            <div className="empty-state">Données en cours de collecte...</div>
+                                <div className="info-row">
+                                    <span className="info-label">Statut:</span>
+                                    <span className="info-value active">{subscription.status || 'Actif'}</span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">Fonctionnalités IA:</span>
+                                    <span className="info-value">{subscription.has_ai_features ? 'Incluses' : 'Non incluses'}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <p className="loading-text">Chargement des informations abonnement...</p>
                         )}
                     </div>
                 </section>
+            </div>
 
-                <section className="glass-premium action-panel full-width">
+            {/* Navigation vers les autres sections admin */}
+            <div className="dashboard-grid">
+                <section className="glass-premium chart-panel">
                     <div className="panel-header">
-                        <h3><ShieldAlert size={18} className="gold" /> Mouvements du Système</h3>
-                        <button className="view-all-btn" onClick={() => navigate('/admin/logs')}>Voir les archives</button>
+                        <h3><ShoppingBag size={18} /> Gestion des Commandes</h3>
+                        <span>Administration</span>
                     </div>
-                    <div className="recent-logs-preview">
-                        <div className="log-placeholder-luxury">
-                            <Clock size={40} className="gold-icon pulse" />
-                            <p>Accédez aux <strong>Registres de Sécurité</strong> pour un contrôle total sur l'intégrité de la Maison.</p>
-                            <div style={{ display: 'flex', gap: '1rem' }}>
-                                <button className="gold-button" onClick={() => navigate('/admin/logs')}>Ouvrir les Journaux</button>
-                                <button className="gold-button" onClick={() => navigate('/admin/branding')}>Branding</button>
-                            </div>
-                        </div>
+                    <div className="admin-cta">
+                        <p>Gérez toutes les commandes, suivez les livraisons et gérez les retours.</p>
+                        <button onClick={() => navigate('/admin/orders')} className="btn-premium">
+                            Gérer les Commandes
+                        </button>
+                    </div>
+                </section>
+
+                <section className="glass-premium chart-panel">
+                    <div className="panel-header">
+                        <h3><CustomersIcon size={18} /> Gestion des Utilisateurs</h3>
+                        <span>Administration</span>
+                    </div>
+                    <div className="admin-cta">
+                        <p>Gérez les comptes utilisateurs, les rôles et les permissions.</p>
+                        <button onClick={() => navigate('/admin/users')} className="btn-premium">
+                            Gérer les Utilisateurs
+                        </button>
+                    </div>
+                </section>
+
+                <section className="glass-premium chart-panel">
+                    <div className="panel-header">
+                        <h3><Star size={18} /> Gestion des Produits</h3>
+                        <span>Catalogue</span>
+                    </div>
+                    <div className="admin-cta">
+                        <p>Ajoutez, modifiez et gérez votre catalogue de parfums.</p>
+                        <button onClick={() => navigate('/admin/categories')} className="btn-premium">
+                            Gérer le Catalogue
+                        </button>
                     </div>
                 </section>
             </div>
