@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Any
 import uvicorn
-from app.recommender import load_model, predict, available_models
+from app.recommender import load_model, predict, available_models, RECOMMENDATION_SERVICE
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -51,21 +51,54 @@ async def get_recommendations(request: RecommendRequest):
     Endpoint to get recommendations.
     Accepts user_id, features, or raw query text.
     """
-    if model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded")
-
     try:
-        input_data = request.features if request.features is not None else []
+        model_name = request.model_name.lower() if request.model_name else None
         
-        recommendations = predict(
-            model,
-            input_data,
-            request.available_perfumes,
-            request.tenant_id,
-            request.model_name,
-            request.query,
-            request.top_n,
-        )
+        if model_name == 'content':
+            recommendations = RECOMMENDATION_SERVICE.recommend_by_content(
+                user_features=request.features,
+                query=request.query,
+                available_perfumes=request.available_perfumes,
+                tenant_id=request.tenant_id,
+                top_n=request.top_n
+            )
+        elif model_name == 'svd':
+            recommendations = RECOMMENDATION_SERVICE.recommend_by_svd(
+                user_id=request.user_id or 1,
+                available_perfumes=request.available_perfumes,
+                tenant_id=request.tenant_id,
+                top_n=request.top_n
+            )
+        elif model_name == 'hybrid':
+            recommendations = RECOMMENDATION_SERVICE.recommend_hybrid(
+                user_id=request.user_id or 1,
+                user_features=request.features,
+                query=request.query,
+                available_perfumes=request.available_perfumes,
+                tenant_id=request.tenant_id,
+                top_n=request.top_n
+            )
+        elif model_name in ('kmeans', 'cluster'):
+            cluster = RECOMMENDATION_SERVICE.predict_cluster(
+                user_features=request.features or [0.0]*7
+            )
+            return {
+                "success": True,
+                "cluster_id": cluster
+            }
+        else:
+            if model is None:
+                raise HTTPException(status_code=503, detail="Model not loaded")
+            input_data = request.features if request.features is not None else []
+            recommendations = predict(
+                model,
+                input_data,
+                request.available_perfumes,
+                request.tenant_id,
+                request.model_name,
+                request.query,
+                request.top_n,
+            )
         
         if isinstance(recommendations, list):
             recommendations = recommendations[:request.top_n]
