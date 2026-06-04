@@ -15,7 +15,7 @@ class TenantController extends Controller
      */
     public function current(Request $request)
     {
-        if (! tenant()) {
+        if (!tenant()) {
             return response()->json([
                 'message' => 'No tenant identified for this domain',
                 'tenant' => null,

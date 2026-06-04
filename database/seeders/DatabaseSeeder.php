@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             ReviewSeeder::class,
             PromotionSeeder::class,
             SettingSeeder::class,
+            MLTestDataSeeder::class,
         ]);
     }
 }

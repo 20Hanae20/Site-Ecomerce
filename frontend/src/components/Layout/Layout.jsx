@@ -20,196 +20,305 @@ const Layout = () => {
     };
 
     return (
-        <div className="app-shell-luxury">
-            {/* Background Effects */}
-            <div className="bg-orb orb-primary"></div>
-            <div className="bg-orb orb-secondary"></div>
-
-            <nav className="navbar-premium-luxury glass-premium">
-                <div className="container-premium navbar-flex-luxury">
-                    <Link to="/" className="brand-logo-luxury font-serif">
-                        <span className="gradient-text-gold">SITE PARFUM</span>
-                        <span className="brand-tagline">SILLAGE DE LUXE</span>
+        <div className="app-layout">
+            <nav className="saas-navbar">
+                <div className="container navbar-flex">
+                    <Link to="/" className="brand-logo">
+                        <span className="brand-icon">❖</span>
+                        <span className="brand-text">AURA SaaS</span>
                     </Link>
 
-                    <div className="nav-navigation-luxury">
-                        <Link to="/" className="nav-link-luxury">ACCUEIL</Link>
-                        <Link to="/perfumes" className="nav-link-luxury">COLLECTIONS</Link>
-                        <Link to="/about" className="nav-link-luxury">LA MAISON</Link>
-                        <Link to="/contact" className="nav-link-luxury">CONCIERGERIE</Link>
+                    <div className="nav-links">
+                        <Link to="/" className="nav-link">Tableau de bord</Link>
+                        <Link to="/perfumes" className="nav-link">Catalogue</Link>
+                        <Link to="/about" className="nav-link">À Propos</Link>
+                        <Link to="/contact" className="nav-link">Support</Link>
                     </div>
 
-                    <div className="nav-actions-luxury">
-                        <div className="search-trigger-luxury">
-                            <Search size={20} />
+                    <div className="nav-actions">
+                        <div className="nav-icon-btn" title="Rechercher">
+                            <Search size={18} />
                         </div>
 
-                        <Link to="/cart" className="luxury-action-icon" title="Votre Panier">
-                            <ShoppingBag size={22} />
+                        <Link to="/cart" className="nav-icon-btn" title="Panier">
+                            <ShoppingBag size={18} />
                         </Link>
 
                         {token && user ? (
-                            <div className="user-suite-luxury">
+                            <div className="user-menu">
                                 {(user.role === 'admin' || user.role === 'super_admin' || user.role === 'gestionnaire') && (
-                                    <Link to="/admin/dashboard" className="luxury-action-icon gold-glow-nav" title="Contrôle Total">
-                                        <ShieldAlert size={20} />
-                                        <span className="admin-status-dot pulse"></span>
+                                    <Link to="/admin/dashboard" className="nav-icon-btn admin-btn" title="Administration">
+                                        <ShieldAlert size={18} />
                                     </Link>
                                 )}
-                                <Link to="/recommendations" className="luxury-action-icon" title="Mes recommandations"><Lightbulb size={20} /></Link>
-                                <Link to="/orders" className="luxury-action-icon" title="Mes Commandes"><Package size={20} /></Link>
-                                <Link to="/profile" className="luxury-action-icon user-profile-link" title="Mon Profil">
-                                    <User size={20} />
-                                    <span className="user-name-hint">{user.name?.split(' ')[0]}</span>
+                                <Link to="/recommendations" className="nav-icon-btn" title="Recommandations">
+                                    <Lightbulb size={18} />
                                 </Link>
-                                <button onClick={handleLogout} className="btn-logout-luxury" title="Déconnexion">
+                                <Link to="/orders" className="nav-icon-btn" title="Mes Commandes">
+                                    <Package size={18} />
+                                </Link>
+                                <Link to="/profile" className="user-profile-btn" title="Profil">
+                                    <div className="avatar">
+                                        {user.name?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="user-name">{user.name?.split(' ')[0]}</span>
+                                </Link>
+                                <button onClick={handleLogout} className="nav-icon-btn text-danger" title="Se déconnecter">
                                     <LogOut size={18} />
                                 </button>
                             </div>
                         ) : (
-                            <div className="auth-suite-luxury">
-                                <Link to="/login" className="link-login-luxury">CONNEXION</Link>
-                                <Link to="/register" className="btn-premium btn-nav-register">REJOINDRE</Link>
+                            <div className="auth-buttons">
+                                <Link to="/login" className="btn btn-text">Connexion</Link>
+                                <Link to="/register" className="btn btn-primary">Créer un compte</Link>
                             </div>
                         )}
                     </div>
                 </div>
             </nav>
 
-            <main className="main-content-luxury animate-fade-in">
+            <main className="main-content animate-fade-up">
                 <Outlet />
             </main>
 
-            <footer className="footer-premium-luxury">
-                <div className="container-premium footer-grid-luxury">
-                    <div className="footer-brand-luxury">
-                        <h2 className="font-serif gradient-text-gold">SITE PARFUM</h2>
-                        <p className="footer-desc">Éveillez vos sens avec nos fragrances d'exception. Une signature olfactive unique pour des moments inoubliables.</p>
-                        <div className="footer-socials">
-                            <Instagram size={18} />
-                            <Facebook size={18} />
-                            <Twitter size={18} />
+            <footer className="saas-footer">
+                <div className="container footer-grid">
+                    <div className="footer-brand">
+                        <div className="brand-logo mb-4">
+                            <span className="brand-icon">❖</span>
+                            <span className="brand-text">AURA SaaS</span>
                         </div>
+                        <p className="text-muted">La plateforme B2B nouvelle génération pour la gestion de votre inventaire de parfumerie.</p>
                     </div>
 
-                    <div className="footer-links-luxury">
-                        <h4 className="font-serif">COLLECTIONS</h4>
-                        <Link to="/perfumes">Nouveautés</Link>
-                        <Link to="/perfumes?category=femme">Pour Elle</Link>
-                        <Link to="/perfumes?category=homme">Pour Lui</Link>
-                        <Link to="/recommendations">Sur Mesure</Link>
+                    <div className="footer-links">
+                        <h4>Produit</h4>
+                        <Link to="/perfumes">Catalogue Complet</Link>
+                        <Link to="/recommendations">Moteur IA</Link>
+                        <Link to="/pricing">Tarifs</Link>
                     </div>
 
-                    <div className="footer-links-luxury">
-                        <h4 className="font-serif">SERVICES</h4>
-                        <Link to="/contact">Conciergerie</Link>
+                    <div className="footer-links">
+                        <h4>Ressources</h4>
+                        <Link to="/docs">Documentation</Link>
+                        <Link to="/contact">Support Technique</Link>
                         <Link to="/faq">F.A.Q</Link>
-                        <Link to="/orders">Suivi de Commande</Link>
-                        <Link to="/legal">Mentions Légales</Link>
                     </div>
 
-                    <div className="footer-contact-luxury">
-                        <h4 className="font-serif">COMMUNAUTÉ</h4>
-                        <div className="contact-item-footer">
-                            <MapPin size={16} className="gold-icon" />
-                            <span>Avenue Aboubakeer AL Sedik, CASABLANCA</span>
-                        </div>
-                        <p className="newsletter-hint">Inscrivez-vous pour recevoir les secrets de notre Maison.</p>
-                        <div className="footer-newsletter-mini">
-                            <input type="email" placeholder="Votre courriel..." />
-                            <button>→</button>
+                    <div className="footer-links">
+                        <h4>Légal</h4>
+                        <Link to="/privacy">Confidentialité</Link>
+                        <Link to="/terms">CGV & CGU</Link>
+                        <div className="social-links mt-4">
+                            <Twitter size={18} />
+                            <Facebook size={18} />
+                            <Instagram size={18} />
                         </div>
                     </div>
                 </div>
-
-                <div className="footer-bottom-luxury">
-                    <p className="copyright-luxury">&copy; 2026 SITE PARFUM. TOUS DROITS RÉSERVÉS. L'IMMORTALITÉ D'UN SILLAGE.</p>
+                <div className="footer-bottom">
+                    <p>&copy; 2026 AURA SaaS. Tous droits réservés.</p>
                 </div>
             </footer>
 
             <style>{`
-                .app-shell-luxury { min-height: 100vh; display: flex; flex-direction: column; }
-                
-                .navbar-premium-luxury {
+                /* SaaS Navbar */
+                .saas-navbar {
+                    background: var(--bg-surface);
+                    border-bottom: 1px solid var(--border-light);
                     position: sticky;
                     top: 0;
-                    z-index: 1000;
-                    padding: 1.25rem 0;
-                    backdrop-filter: blur(20px);
+                    z-index: 50;
+                    padding: 0.75rem 0;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
                 }
 
-                .navbar-flex-luxury { display: flex; justify-content: space-between; align-items: center; }
+                .navbar-flex {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
 
-                .brand-logo-luxury { text-decoration: none; display: flex; flex-direction: column; }
-                .brand-logo-luxury .gradient-text-gold { font-size: 1.5rem; letter-spacing: 5px; font-weight: 800; line-height: 1; }
-                .brand-tagline { font-size: 0.55rem; color: var(--primary); letter-spacing: 4px; margin-top: 0.4rem; opacity: 0.6; font-weight: 600; }
+                .brand-logo {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    text-decoration: none;
+                    color: var(--text-main);
+                }
 
-                .nav-navigation-luxury { display: flex; gap: 3rem; }
-                .nav-link-luxury { color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; opacity: 0.6; transition: 0.3s; }
-                .nav-link-luxury:hover { opacity: 1; color: var(--primary); }
+                .brand-icon {
+                    color: var(--primary);
+                    font-size: 1.5rem;
+                }
 
-                .nav-actions-luxury { display: flex; align-items: center; gap: 2rem; }
-                .search-trigger-luxury { opacity: 0.4; cursor: pointer; transition: 0.3s; }
-                .search-trigger-luxury:hover { opacity: 1; color: var(--primary); }
-                .luxury-action-icon { color: #fff; opacity: 0.6; transition: 0.3s; text-decoration: none; }
-                .luxury-action-icon:hover { opacity: 1; color: var(--primary); transform: translateY(-2px); }
+                .brand-text {
+                    font-weight: 700;
+                    font-size: 1.25rem;
+                    letter-spacing: -0.5px;
+                }
 
-                .user-suite-luxury { display: flex; align-items: center; gap: 1.5rem; padding-left: 1.5rem; border-left: 1px solid var(--glass-border); }
-                .user-profile-link { display: flex; align-items: center; gap: 0.75rem; }
-                .user-name-hint { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; }
+                .nav-links {
+                    display: flex;
+                    gap: 2rem;
+                }
 
-                .btn-logout-luxury { background: none; border: none; color: #ef4444; opacity: 0.4; cursor: pointer; transition: 0.3s; }
-                .btn-logout-luxury:hover { opacity: 1; transform: scale(1.1); }
+                .nav-link {
+                    color: var(--text-muted);
+                    text-decoration: none;
+                    font-weight: 500;
+                    font-size: 0.875rem;
+                    transition: color var(--transition-fast);
+                }
 
-                .auth-suite-luxury { display: flex; align-items: center; gap: 2rem; }
-                .link-login-luxury { color: #fff; text-decoration: none; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; opacity: 0.6; }
-                .link-login-luxury:hover { opacity: 1; color: var(--primary); }
-                .btn-nav-register { padding: 0.7rem 1.5rem; font-size: 0.7rem; }
+                .nav-link:hover {
+                    color: var(--primary);
+                }
 
-                .gold-glow-nav { color: var(--primary) !important; opacity: 1 !important; position: relative; }
-                .admin-status-dot {
-                    position: absolute;
-                    top: -2px;
-                    right: -2px;
-                    width: 6px;
-                    height: 6px;
-                    background: #22c55e;
+                .nav-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .nav-icon-btn {
+                    color: var(--text-muted);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all var(--transition-fast);
+                    text-decoration: none;
+                }
+
+                .nav-icon-btn:hover {
+                    color: var(--primary);
+                    transform: translateY(-1px);
+                }
+
+                .admin-btn {
+                    color: var(--warning);
+                }
+
+                .text-danger {
+                    color: var(--danger);
+                }
+                .text-danger:hover {
+                    color: #b91c1c;
+                }
+
+                .user-menu {
+                    display: flex;
+                    align-items: center;
+                    gap: 1.25rem;
+                    padding-left: 1.25rem;
+                    border-left: 1px solid var(--border-light);
+                }
+
+                .user-profile-btn {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    text-decoration: none;
+                    color: var(--text-main);
+                    padding: 0.25rem 0.5rem;
+                    border-radius: var(--radius-md);
+                    transition: background var(--transition-fast);
+                }
+
+                .user-profile-btn:hover {
+                    background: var(--bg-alt);
+                }
+
+                .avatar {
+                    width: 32px;
+                    height: 32px;
                     border-radius: 50%;
+                    background: var(--primary-light);
+                    color: var(--primary);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 600;
+                    font-size: 0.875rem;
                 }
-                .pulse { animation: pulse 2s infinite; }
-                @keyframes pulse {
-                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-                    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
-                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+
+                .user-name {
+                    font-weight: 500;
+                    font-size: 0.875rem;
                 }
 
-                .main-content-luxury { flex: 1; }
-
-                .footer-premium-luxury { background: #000; padding: 8rem 0 4rem; border-top: 1px solid var(--glass-border); }
-                .footer-grid-luxury { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.2fr; gap: 4rem; margin-bottom: 6rem; }
-                
-                .footer-brand-luxury .footer-desc { font-size: 0.9rem; opacity: 0.5; margin: 2rem 0; line-height: 1.8; max-width: 300px; }
-                .footer-socials { display: flex; gap: 1.5rem; opacity: 0.4; }
-                
-                .footer-links-luxury h4, .footer-contact-luxury h4 { font-size: 0.9rem; letter-spacing: 3px; color: var(--primary); margin-bottom: 2.5rem; }
-                .footer-links-luxury a { display: block; color: #fff; text-decoration: none; font-size: 0.85rem; margin-bottom: 1.2rem; opacity: 0.4; transition: 0.3s; }
-                .footer-links-luxury a:hover { opacity: 1; color: var(--primary); padding-left: 8px; }
-
-                .contact-item-footer { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; opacity: 0.5; margin-bottom: 2rem; }
-                .newsletter-hint { font-size: 0.75rem; opacity: 0.3; font-style: italic; margin-bottom: 1.5rem; }
-                .footer-newsletter-mini { display: flex; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; }
-                .footer-newsletter-mini input { background: none; border: none; color: #fff; font-size: 0.85rem; flex: 1; outline: none; }
-                .footer-newsletter-mini button { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 1.2rem; }
-
-                .footer-bottom-luxury { text-align: center; border-top: 1px solid rgba(255,255,255,0.03); padding-top: 4rem; }
-                .copyright-luxury { font-size: 0.65rem; letter-spacing: 4px; opacity: 0.2; }
-
-                @media (max-width: 1024px) {
-                    .nav-navigation-luxury { display: none; }
-                    .footer-grid-luxury { grid-template-columns: 1fr 1fr; gap: 4rem; }
+                .auth-buttons {
+                    display: flex;
+                    gap: 0.5rem;
                 }
-                @media (max-width: 640px) {
-                    .footer-grid-luxury { grid-template-columns: 1fr; }
+
+                /* SaaS Footer */
+                .saas-footer {
+                    background: var(--bg-surface);
+                    border-top: 1px solid var(--border-light);
+                    padding: 4rem 0 0 0;
+                    margin-top: auto;
+                }
+
+                .footer-grid {
+                    display: grid;
+                    grid-template-columns: 2fr 1fr 1fr 1fr;
+                    gap: 3rem;
+                    margin-bottom: 3rem;
+                }
+
+                .footer-brand p {
+                    font-size: 0.875rem;
+                    max-width: 300px;
+                    line-height: 1.6;
+                }
+
+                .footer-links h4 {
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    margin-bottom: 1.25rem;
+                    color: var(--text-main);
+                }
+
+                .footer-links a {
+                    display: block;
+                    color: var(--text-muted);
+                    text-decoration: none;
+                    font-size: 0.875rem;
+                    margin-bottom: 0.75rem;
+                    transition: color var(--transition-fast);
+                }
+
+                .footer-links a:hover {
+                    color: var(--primary);
+                }
+
+                .social-links {
+                    display: flex;
+                    gap: 1rem;
+                    color: var(--text-muted);
+                }
+
+                .social-links svg {
+                    cursor: pointer;
+                    transition: color var(--transition-fast);
+                }
+                .social-links svg:hover {
+                    color: var(--primary);
+                }
+
+                .footer-bottom {
+                    background: var(--bg-alt);
+                    padding: 1.5rem 0;
+                    text-align: center;
+                    color: var(--text-muted);
+                    font-size: 0.875rem;
+                }
+
+                @media (max-width: 768px) {
+                    .nav-links { display: none; }
+                    .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
                 }
             `}</style>
         </div>

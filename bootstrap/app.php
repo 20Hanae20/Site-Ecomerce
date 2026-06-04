@@ -20,18 +20,18 @@ return Application::configure(basePath: dirname(__DIR__))
         /*
         if (env('APP_ENV') !== 'testing') {
             $middleware->api(prepend: [
-                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+                \App\Http\Middleware\InitializeTenancyWithFallback::class,
             ]);
 
             $middleware->web(append: [
-                \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+                \App\Http\Middleware\InitializeTenancyWithFallback::class,
             ]);
         }
         */
         
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
-            'tenant' => \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+            'tenant' => \App\Http\Middleware\InitializeTenancyWithFallback::class,
             'prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'permission' => \App\Http\Middleware\PermissionMiddleware::class,

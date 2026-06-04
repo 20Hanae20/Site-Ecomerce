@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import { useCart } from '../context/useCart';
-import { Star, ShoppingBag, Truck, ShieldCheck, ChevronRight } from 'lucide-react';
+import { Star, ShoppingBag, Truck, ShieldCheck, ChevronRight, Package, Check } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
 import ReviewForm from '../components/Reviews/ReviewForm';
 
@@ -24,7 +24,7 @@ const PerfumeDetail = () => {
             setActiveImage(response.data.perfume.image_url);
         } catch (err) {
             console.error("Fetch perfume detail error:", err);
-            setError("L'essence que vous recherchez semble s'être évanouie.");
+            setError("Le produit demandé est introuvable.");
         } finally {
             setIsLoading(false);
         }
@@ -39,7 +39,7 @@ const PerfumeDetail = () => {
         setIsAdding(true);
         const result = await addToCart(data.perfume.id, 1);
         if (result.success) {
-            setCartMessage({ text: 'PRÉCIEUX AJOUTÉ AU PANIER', type: 'success' });
+            setCartMessage({ text: 'Produit ajouté au panier avec succès', type: 'success' });
             setTimeout(() => setCartMessage({ text: '', type: '' }), 5000);
         } else {
             setCartMessage({ text: result.message, type: 'error' });
@@ -48,16 +48,17 @@ const PerfumeDetail = () => {
     };
 
     if (isLoading) return (
-        <div className="loader-container-premium">
-            <div className="premium-loader"></div>
-            <p className="loader-text-luxury">RÉVÉLATION DE L'ESSENCE...</p>
+        <div className="container py-5 text-center">
+            <div className="detail-spinner"></div>
+            <p style={{ color: 'var(--text-muted)', marginTop: '1rem' }}>Chargement du produit...</p>
         </div>
     );
 
     if (error) return (
-        <div className="container-premium error-state-luxury animate-fade-in">
-            <h1 className="font-serif">{error}</h1>
-            <Link to="/perfumes" className="btn-premium">RETOUR AU CATALOGUE</Link>
+        <div className="container py-5 text-center">
+            <Package size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />
+            <h2>{error}</h2>
+            <Link to="/perfumes" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>Retour au catalogue</Link>
         </div>
     );
 
@@ -74,105 +75,118 @@ const PerfumeDetail = () => {
     const allImages = [perfume.image_url, ...(perfume.gallery || [])].filter(Boolean);
 
     return (
-        <div className="container-premium detail-page-luxury animate-fade-in">
-            <div className="detail-layout-luxury">
-                {/* Visual Section */}
-                <div className="detail-visual-luxury">
-                    <div className="main-frame-luxury glass-premium">
-                        {new Date(perfume.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
-                            <span className="luxury-badge top-right">NOUVEAU</span>
-                        )}
+        <div className="container detail-page py-5">
+            {/* Breadcrumb */}
+            <nav className="detail-breadcrumb">
+                <Link to="/perfumes">Catalogue</Link>
+                <ChevronRight size={14} />
+                <span>{perfume.name}</span>
+            </nav>
+
+            {/* Main Product Layout */}
+            <div className="detail-grid">
+                {/* Image Section */}
+                <div className="detail-images">
+                    <div className="saas-card main-image-frame">
                         {activeImage ? (
                             <img src={getImageUrl(activeImage)} alt={perfume.name} />
                         ) : (
-                            <div className="placeholder-luxury large">🌹</div>
+                            <div className="image-placeholder">
+                                <Package size={48} style={{ color: 'var(--text-muted)' }} />
+                            </div>
+                        )}
+                        {new Date(perfume.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) && (
+                            <span className="badge badge-primary" style={{ position: 'absolute', top: '1rem', left: '1rem' }}>Nouveau</span>
                         )}
                     </div>
 
                     {allImages.length > 1 && (
-                        <div className="gallery-track-luxury">
+                        <div className="thumb-row">
                             {allImages.map((img, idx) => (
                                 <button
                                     key={idx}
-                                    className={`thumb-btn-luxury glass-premium ${activeImage === img ? 'active' : ''}`}
+                                    className={`thumb-btn ${activeImage === img ? 'active' : ''}`}
                                     onClick={() => setActiveImage(img)}
                                 >
-                                    <img src={getImageUrl(img)} alt={`Illustration ${idx}`} />
+                                    <img src={getImageUrl(img)} alt={`Vue ${idx + 1}`} />
                                 </button>
                             ))}
                         </div>
                     )}
                 </div>
 
-                {/* Content Section */}
-                <div className="detail-content-luxury">
-                    <nav className="breadcrumb-luxury">
-                        <Link to="/perfumes">CATALOGUE</Link>
-                        <ChevronRight size={14} />
-                        <span className="gradient-text-gold">{perfume.name.toUpperCase()}</span>
-                    </nav>
-
-                    <header className="detail-header-luxury">
-                        <span className="category-reveal-luxury">{perfume.category?.name || 'Fragrance d\'Exception'}</span>
-                        <h1 className="font-serif">{perfume.name}</h1>
-                        <div className="metrics-row-luxury">
-                            {perfume.rating > 0 && (
-                                <div className="rating-pill-luxury glass-premium">
-                                    <Star size={14} fill="var(--primary)" />
-                                    <span>{perfume.rating}</span>
-                                    <span className="count">({perfume.reviews_count} avis)</span>
-                                </div>
-                            )}
-                            <div className="stock-pill-luxury glass-premium">
-                                <span className={`status-dot ${perfume.stock > 0 ? 'instock' : 'outstock'}`}></span>
-                                {perfume.stock > 0 ? 'EN STOCK' : 'ÉPUISÉ'}
-                            </div>
-                        </div>
-                    </header>
-
-                    <div className="description-box-luxury">
-                        <p className="description-text">{perfume.description}</p>
-                        <div className="notes-card-luxury glass-premium">
-                            <label className="gold-label">ARCHITECTURE OLFACTIVE</label>
-                            <p className="notes-text">{perfume.notes || 'Une symphonie de notes rares et précieuses.'}</p>
-                        </div>
+                {/* Info Section */}
+                <div className="detail-info">
+                    <div className="detail-meta-row">
+                        <span className="badge badge-primary">{perfume.category?.name || 'Parfum'}</span>
+                        <span className={`stock-indicator ${perfume.stock > 0 ? 'in-stock' : 'out-stock'}`}>
+                            <span className="stock-dot"></span>
+                            {perfume.stock > 0 ? 'En stock' : 'Rupture de stock'}
+                        </span>
                     </div>
 
-                    <div className="action-card-luxury glass-premium">
-                        <div className="price-tag-luxury">
-                            <span className="price-amount">{perfume.price}</span>
+                    <h1 className="detail-title">{perfume.name}</h1>
+
+                    {perfume.rating > 0 && (
+                        <div className="detail-rating">
+                            <Star size={16} fill="var(--warning)" stroke="var(--warning)" />
+                            <span className="rating-value">{perfume.rating}</span>
+                            <span className="rating-count">({perfume.reviews_count} avis)</span>
+                        </div>
+                    )}
+
+                    <p className="detail-description">{perfume.description}</p>
+
+                    {perfume.notes && (
+                        <div className="notes-block">
+                            <h4>Notes olfactives</h4>
+                            <p>{perfume.notes}</p>
+                        </div>
+                    )}
+
+                    {/* Price & Action */}
+                    <div className="purchase-section">
+                        <div className="price-display">
+                            <span className="price-value">{perfume.price}</span>
                             <span className="price-currency">€</span>
                         </div>
 
                         <button
-                            className="btn-premium btn-purchase-luxury"
+                            className="btn btn-primary btn-purchase"
                             disabled={perfume.stock === 0 || isAdding}
                             onClick={handleAddToCart}
                         >
-                            <ShoppingBag size={20} />
-                            {isAdding ? 'AJOUT...' : perfume.stock > 0 ? 'AJOUTER AU PANIER' : 'RUPTURE DE STOCK'}
+                            {isAdding ? (
+                                <>Ajout en cours...</>
+                            ) : perfume.stock > 0 ? (
+                                <><ShoppingBag size={18} /> Ajouter au panier</>
+                            ) : (
+                                'Rupture de stock'
+                            )}
                         </button>
 
                         {cartMessage.text && (
-                            <div className={`status-alert-luxury ${cartMessage.type}`}>
+                            <div className={`alert-inline ${cartMessage.type}`}>
+                                {cartMessage.type === 'success' && <Check size={16} />}
                                 {cartMessage.text}
                             </div>
                         )}
                     </div>
 
-                    <div className="trust-badges-luxury">
+                    {/* Trust Signals */}
+                    <div className="trust-row">
                         <div className="trust-item">
-                            <Truck size={20} className="gold-icon" />
+                            <Truck size={18} style={{ color: 'var(--primary)' }} />
                             <div>
-                                <h6>Expédition Royale</h6>
-                                <p>Sous 48 heures</p>
+                                <strong>Livraison rapide</strong>
+                                <span>Sous 48h ouvrées</span>
                             </div>
                         </div>
                         <div className="trust-item">
-                            <ShieldCheck size={20} className="gold-icon" />
+                            <ShieldCheck size={18} style={{ color: 'var(--primary)' }} />
                             <div>
-                                <h6>Sillage Garanti</h6>
-                                <p>Authenticité certifiée</p>
+                                <strong>Authenticité garantie</strong>
+                                <span>Produits certifiés</span>
                             </div>
                         </div>
                     </div>
@@ -180,38 +194,39 @@ const PerfumeDetail = () => {
             </div>
 
             {/* Reviews Section */}
-            <section className="reviews-section-luxury">
-                <div className="section-title-luxury">
-                    <h5 className="gradient-text-gold font-serif">TÉMOIGNAGES</h5>
-                    <h2 className="font-serif">Leurs Impressions</h2>
+            <section className="reviews-section">
+                <div className="section-header">
+                    <h2>Avis clients</h2>
+                    {perfume.reviews_count > 0 && (
+                        <span className="badge badge-primary">{perfume.reviews_count} avis</span>
+                    )}
                 </div>
 
-                <div className="reviews-grid-luxury">
-                    <div className="reviews-list-luxury">
+                <div className="reviews-layout">
+                    <div className="reviews-list-col">
                         <ReviewList perfumeId={id} key={`list-${id}`} />
                     </div>
                     {localStorage.getItem('token') && (
-                        <div className="review-form-luxury glass-premium">
+                        <div className="review-form-col saas-card" style={{ padding: '1.5rem' }}>
                             <ReviewForm perfumeId={id} onReviewAdded={fetchPerfume} />
                         </div>
                     )}
                 </div>
             </section>
 
+            {/* Similar Products */}
             {similar && similar.length > 0 && (
-                <section className="related-section-luxury">
-                    <div className="section-title-luxury">
-                        <h2 className="font-serif">Explorations Complémentaires</h2>
-                    </div>
-                    <div className="similar-grid-luxury">
+                <section className="similar-section">
+                    <h2 className="section-header">Produits similaires</h2>
+                    <div className="similar-grid">
                         {similar.map(item => (
-                            <Link key={item.id} to={`/perfumes/${item.id}`} className="premium-card similar-card-luxury">
-                                <div className="similar-media">
+                            <Link key={item.id} to={`/perfumes/${item.id}`} className="saas-card similar-card">
+                                <div className="similar-img">
                                     <img src={getImageUrl(item.image_url)} alt={item.name} />
                                 </div>
                                 <div className="similar-info">
-                                    <h3>{item.name}</h3>
-                                    <span className="price">{item.price} €</span>
+                                    <h4>{item.name}</h4>
+                                    <span className="similar-price">{item.price} €</span>
                                 </div>
                             </Link>
                         ))}
@@ -220,165 +235,305 @@ const PerfumeDetail = () => {
             )}
 
             <style>{`
-                .detail-page-luxury { padding-top: 4rem; padding-bottom: 8rem; }
-                
-                .detail-layout-luxury {
+                .detail-page { padding-bottom: 6rem; }
+
+                .detail-breadcrumb {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.875rem;
+                    color: var(--text-muted);
+                    margin-bottom: 2rem;
+                }
+                .detail-breadcrumb a {
+                    color: var(--primary);
+                    text-decoration: none;
+                }
+                .detail-breadcrumb a:hover { text-decoration: underline; }
+
+                .detail-grid {
                     display: grid;
-                    grid-template-columns: 1.2fr 1fr;
-                    gap: 6rem;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 3rem;
                     align-items: start;
+                    margin-bottom: 4rem;
                 }
 
-                .main-frame-luxury {
+                .main-image-frame {
                     position: relative;
-                    height: 700px;
-                    border-radius: 30px;
-                    overflow: hidden;
+                    aspect-ratio: 1;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-bottom: 2rem;
+                    padding: 0;
+                    overflow: hidden;
                 }
-
-                .main-frame-luxury img {
+                .main-image-frame img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
                 }
 
-                .gallery-track-luxury {
-                    display: flex;
-                    gap: 1rem;
-                    overflow-x: auto;
-                    padding-bottom: 1rem;
-                }
-
-                .thumb-btn-luxury {
-                    width: 100px;
-                    height: 100px;
-                    border-radius: 12px;
-                    padding: 0.5rem;
-                    transition: all 0.3s;
-                    border: 1px solid transparent;
-                }
-
-                .thumb-btn-luxury.active { border-color: var(--primary); transform: translateY(-5px); }
-                .thumb-btn-luxury img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-
-                .breadcrumb-luxury {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                    font-size: 0.75rem;
-                    letter-spacing: 2px;
-                    margin-bottom: 3rem;
-                    opacity: 0.6;
-                }
-
-                .category-reveal-luxury {
-                    font-size: 0.8rem;
-                    letter-spacing: 4px;
-                    color: var(--primary);
-                    margin-bottom: 1rem;
-                    display: block;
-                    font-weight: 700;
-                }
-
-                .detail-header-luxury h1 { font-size: 4.5rem; line-height: 1; margin-bottom: 2rem; }
-
-                .metrics-row-luxury { display: flex; gap: 1.5rem; margin-bottom: 3rem; }
-                .rating-pill-luxury, .stock-pill-luxury {
-                    padding: 0.6rem 1.2rem;
-                    border-radius: 50px;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.75rem;
-                    font-size: 0.8rem;
-                }
-
-                .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-                .status-dot.instock { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
-                .status-dot.outstock { background: #ef4444; }
-
-                .description-text { font-size: 1.1rem; line-height: 1.8; opacity: 0.7; margin-bottom: 3rem; }
-
-                .notes-card-luxury { padding: 2rem; border-radius: 20px; }
-                .gold-label { font-size: 0.7rem; color: var(--primary); letter-spacing: 3px; font-weight: 800; margin-bottom: 1rem; display: block; }
-                .notes-text { font-size: 1rem; letter-spacing: 1px; }
-
-                .action-card-luxury {
-                    margin-top: 4rem;
-                    padding: 3rem;
-                    border-radius: 24px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 2rem;
-                }
-
-                .price-tag-luxury { display: flex; align-items: baseline; }
-                .price-amount { font-size: 3rem; font-weight: 800; }
-                .price-currency { font-size: 1.5rem; margin-left: 0.5rem; opacity: 0.5; }
-
-                .btn-purchase-luxury {
-                    flex: 1;
-                    padding: 1.25rem;
-                    font-size: 1rem;
+                .image-placeholder {
+                    width: 100%;
+                    height: 100%;
+                    min-height: 400px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    background: var(--bg-alt);
+                }
+
+                .thumb-row {
+                    display: flex;
+                    gap: 0.75rem;
+                    margin-top: 1rem;
+                    overflow-x: auto;
+                }
+                .thumb-btn {
+                    width: 72px;
+                    height: 72px;
+                    border-radius: var(--radius-md);
+                    border: 2px solid var(--border-light);
+                    padding: 4px;
+                    cursor: pointer;
+                    transition: all var(--transition-fast);
+                    background: var(--bg-surface);
+                    flex-shrink: 0;
+                }
+                .thumb-btn.active {
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 3px var(--primary-light);
+                }
+                .thumb-btn img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    border-radius: 4px;
+                }
+
+                .detail-meta-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1rem;
+                }
+
+                .stock-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.375rem;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                }
+                .stock-dot {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                }
+                .in-stock { color: var(--success); }
+                .in-stock .stock-dot { background: var(--success); }
+                .out-stock { color: var(--danger); }
+                .out-stock .stock-dot { background: var(--danger); }
+
+                .detail-title {
+                    font-size: 2rem;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    margin-bottom: 0.75rem;
+                }
+
+                .detail-rating {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.375rem;
+                    margin-bottom: 1.5rem;
+                }
+                .rating-value { font-weight: 700; font-size: 1rem; }
+                .rating-count { color: var(--text-muted); font-size: 0.875rem; }
+
+                .detail-description {
+                    color: var(--text-muted);
+                    line-height: 1.7;
+                    margin-bottom: 1.5rem;
+                    font-size: 0.95rem;
+                }
+
+                .notes-block {
+                    background: var(--bg-alt);
+                    border: 1px solid var(--border-light);
+                    border-radius: var(--radius-md);
+                    padding: 1.25rem;
+                    margin-bottom: 2rem;
+                }
+                .notes-block h4 {
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: var(--primary);
+                    margin-bottom: 0.5rem;
+                }
+                .notes-block p {
+                    color: var(--text-muted);
+                    font-size: 0.9rem;
+                    line-height: 1.6;
+                }
+
+                .purchase-section {
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border-light);
+                    border-radius: var(--radius-lg);
+                    padding: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .price-display {
+                    display: flex;
+                    align-items: baseline;
+                    gap: 0.25rem;
+                    margin-bottom: 1rem;
+                }
+                .price-value { font-size: 2.25rem; font-weight: 800; }
+                .price-currency { font-size: 1.25rem; color: var(--text-muted); }
+
+                .btn-purchase {
+                    width: 100%;
+                    padding: 0.875rem;
+                    font-size: 1rem;
+                }
+
+                .alert-inline {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-top: 0.75rem;
+                    padding: 0.625rem 1rem;
+                    border-radius: var(--radius-md);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                }
+                .alert-inline.success {
+                    background: var(--success-bg);
+                    color: var(--success);
+                }
+                .alert-inline.error {
+                    background: var(--danger-bg);
+                    color: var(--danger);
+                }
+
+                .trust-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
                     gap: 1rem;
                 }
+                .trust-item {
+                    display: flex;
+                    gap: 0.75rem;
+                    align-items: flex-start;
+                    padding: 1rem;
+                    border: 1px solid var(--border-light);
+                    border-radius: var(--radius-md);
+                    background: var(--bg-surface);
+                }
+                .trust-item strong {
+                    display: block;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    margin-bottom: 0.125rem;
+                }
+                .trust-item span {
+                    font-size: 0.75rem;
+                    color: var(--text-muted);
+                }
 
-                .trust-badges-luxury { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 4rem; }
-                .trust-item { display: flex; gap: 1.5rem; align-items: start; }
-                .trust-item h6 { font-size: 0.9rem; margin-bottom: 0.25rem; }
-                .trust-item p { font-size: 0.75rem; opacity: 0.5; }
-                .gold-icon { color: var(--primary); }
+                .reviews-section {
+                    margin-top: 4rem;
+                    padding-top: 3rem;
+                    border-top: 1px solid var(--border-light);
+                }
+                .section-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+                .section-header h2 {
+                    font-size: 1.5rem;
+                }
 
-                .reviews-section-luxury { margin-top: 10rem; }
-                .section-title-luxury { text-align: center; margin-bottom: 5rem; }
-                .section-title-luxury h5 { letter-spacing: 4px; margin-bottom: 1rem; }
-                .section-title-luxury h2 { font-size: 3rem; }
+                .reviews-layout {
+                    display: grid;
+                    grid-template-columns: 1fr 380px;
+                    gap: 2rem;
+                    align-items: start;
+                }
 
-                .reviews-grid-luxury { display: grid; grid-template-columns: 1fr 400px; gap: 4rem; }
-                .review-form-luxury { padding: 3rem; border-radius: 24px; height: fit-content; }
+                .similar-section {
+                    margin-top: 4rem;
+                    padding-top: 3rem;
+                    border-top: 1px solid var(--border-light);
+                }
 
-                .related-section-luxury { margin-top: 10rem; }
-                .similar-grid-luxury {
+                .similar-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
-                    gap: 2rem;
-                    margin-top: 3rem;
+                    gap: 1.5rem;
+                    margin-top: 1.5rem;
                 }
 
-                .similar-card-luxury { border-radius: 20px; overflow: hidden; text-decoration: none; color: #fff; }
-                .similar-media { height: 300px; overflow: hidden; }
-                .similar-media img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
-                .similar-card-luxury:hover img { transform: scale(1.1); }
-                .similar-info { padding: 1.5rem; text-align: center; }
-                .similar-info h3 { font-size: 1rem; margin-bottom: 0.5rem; }
-                .similar-info .price { color: var(--primary); font-weight: 700; }
+                .similar-card {
+                    text-decoration: none;
+                    color: var(--text-main);
+                    padding: 0;
+                }
+                .similar-img {
+                    height: 200px;
+                    overflow: hidden;
+                }
+                .similar-img img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s;
+                }
+                .similar-card:hover .similar-img img {
+                    transform: scale(1.05);
+                }
+                .similar-info {
+                    padding: 1rem;
+                }
+                .similar-info h4 {
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    margin-bottom: 0.25rem;
+                }
+                .similar-price {
+                    color: var(--primary);
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                }
+
+                .detail-spinner {
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid var(--border-light);
+                    border-top-color: var(--primary);
+                    border-radius: 50%;
+                    animation: detailSpin 1s linear infinite;
+                    margin: 3rem auto;
+                }
+                @keyframes detailSpin { to { transform: rotate(360deg); } }
 
                 @media (max-width: 1024px) {
-                    .detail-layout-luxury { grid-template-columns: 1fr; gap: 4rem; }
-                    .reviews-grid-luxury { grid-template-columns: 1fr; }
-                    .similar-grid-luxury { grid-template-columns: repeat(2, 1fr); }
+                    .detail-grid { grid-template-columns: 1fr; gap: 2rem; }
+                    .reviews-layout { grid-template-columns: 1fr; }
+                    .similar-grid { grid-template-columns: repeat(2, 1fr); }
                 }
 
-                .status-alert-luxury {
-                    position: absolute;
-                    bottom: -3rem;
-                    left: 0;
-                    right: 0;
-                    text-align: center;
-                    font-size: 0.75rem;
-                    letter-spacing: 2px;
-                    padding: 0.5rem;
-                    border-radius: 5px;
+                @media (max-width: 640px) {
+                    .similar-grid { grid-template-columns: 1fr; }
+                    .trust-row { grid-template-columns: 1fr; }
                 }
-                .status-alert-luxury.success { color: #22c55e; }
-                .status-alert-luxury.error { color: #ef4444; }
             `}</style>
         </div>
     );

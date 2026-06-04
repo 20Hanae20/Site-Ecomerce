@@ -157,7 +157,9 @@ class PerfumeSeeder extends Seeder
             ],
         ];
 
+        $tenantId = \App\Models\Tenant::first()->id;
         foreach ($perfumes as $p) {
+            $p['tenant_id'] = $tenantId;
             \App\Models\Perfume::create($p);
         }
 
