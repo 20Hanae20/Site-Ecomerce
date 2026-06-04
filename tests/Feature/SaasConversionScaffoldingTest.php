@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SaasConversionScaffoldingTest extends TestCase
 {
+    use RefreshDatabase;
     public function test_tenancy_uses_application_tenant_model(): void
     {
         $this->assertSame(Tenant::class, config('tenancy.tenant_model'));
@@ -15,6 +17,12 @@ class SaasConversionScaffoldingTest extends TestCase
 
     public function test_subscription_plans_expose_stripe_billing_scaffold(): void
     {
+        $tenant = Tenant::create([
+            'id' => 2,
+            'name' => 'Test Tenant',
+        ]);
+        $tenant->domains()->create(['domain' => 'localhost']);
+
         $response = $this->getJson('/api/subscription/plans');
 
         $response->assertOk()

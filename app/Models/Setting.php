@@ -9,4 +9,9 @@ class Setting extends Model
     use \App\Models\Traits\BelongsToTenant;
 
     protected $fillable = ['tenant_id', 'key', 'value'];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 }

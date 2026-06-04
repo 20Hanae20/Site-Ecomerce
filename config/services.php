@@ -37,6 +37,7 @@ return [
 
     'ml_api' => [
         'url' => env('ML_API_URL', 'http://127.0.0.1:8002/recommend'),
+        'timeout' => env('ML_API_TIMEOUT', 5),
     ],
 
     'stripe' => [

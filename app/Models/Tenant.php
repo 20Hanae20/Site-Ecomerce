@@ -21,20 +21,36 @@ if (trait_exists('\\Laravel\\Cashier\\Billable')) {
         {
             return $this->hasMany(Domain::class);
         }
+
+        public function getAttribute($key)
+        {
+            if ($key === 'domains') {
+                return $this->getRelationValue($key);
+            }
+            return parent::getAttribute($key);
+        }
     }
 } else {
     class Tenant extends BaseTenant
     {
         protected $guarded = [];
 
-    protected $casts = [
-        'data' => 'array',
-        'trial_ends_at' => 'datetime',
-    ];
+        protected $casts = [
+            'data' => 'array',
+            'trial_ends_at' => 'datetime',
+        ];
 
         public function domains(): HasMany
         {
             return $this->hasMany(Domain::class);
+        }
+
+        public function getAttribute($key)
+        {
+            if ($key === 'domains') {
+                return $this->getRelationValue($key);
+            }
+            return parent::getAttribute($key);
         }
     }
 }

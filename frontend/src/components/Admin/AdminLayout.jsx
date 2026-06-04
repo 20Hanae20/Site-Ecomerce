@@ -3,7 +3,6 @@ import { useNavigate, Link, useLocation, Outlet } from 'react-router-dom';
 import {
     LayoutDashboard,
     Package,
-    PlusCircle,
     Layers,
     ShoppingBag,
     Tag,
@@ -12,7 +11,13 @@ import {
     Settings,
     ShieldAlert,
     LogOut,
-    Home
+    Home,
+    TrendingUp,
+    Activity,
+    Bell,
+    PieChart,
+    Award,
+    Brain
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -75,6 +80,12 @@ const AdminLayout = () => {
     const menuItems = [
         { label: 'Centre de Contrôle', icon: <ShieldAlert size={20} />, path: '/admin/dashboard', roles: ['super_admin', 'admin'] },
         { label: 'Tableau de bord', icon: <LayoutDashboard size={20} />, path: '/admin/dashboard', roles: ['*'] },
+        { label: 'Analytics IA', icon: <TrendingUp size={20} />, path: '/admin/analytics-full', roles: ['super_admin', 'admin', 'gestionnaire'] },
+        { label: 'Segmentation Clients', icon: <PieChart size={20} />, path: '/admin/segmentation', roles: ['super_admin', 'admin', 'gestionnaire'] },
+        { label: 'Super Admin SaaS', icon: <Award size={20} />, path: '/admin/saas', roles: ['super_admin'] },
+        { label: 'Console IA Plateforme', icon: <Brain size={20} />, path: '/admin/ia', roles: ['super_admin'] },
+        { label: 'Monitoring SaaS', icon: <Activity size={20} />, path: '/admin/monitoring', roles: ['super_admin', 'admin'] },
+        { label: 'Centre Notifications', icon: <Bell size={20} />, path: '/admin/notifications', roles: ['super_admin', 'admin', 'gestionnaire'] },
         { label: 'Produits', icon: <Package size={20} />, path: '/perfumes', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
         { label: 'Catégories', icon: <Layers size={20} />, path: '/admin/categories', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
         { label: 'Commandes', icon: <ShoppingBag size={20} />, path: '/admin/orders', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
@@ -110,9 +121,9 @@ const AdminLayout = () => {
                 </div>
 
                 <nav className="admin-nav-luxury">
-                    {filteredMenu.map((item, index) => (
+                    {filteredMenu.map((item) => (
                         <Link
-                            key={index}
+                            key={`${item.path}-${item.label}`}
                             to={item.path}
                             className={`admin-nav-item ${location.pathname === item.path ? 'active' : ''}`}
                         >

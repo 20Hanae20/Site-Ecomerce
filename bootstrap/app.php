@@ -15,10 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Laravel 11 uses built-in CORS via config/cors.php
         // Custom CorsMiddleware removed to avoid conflicts
 
-        // Register tenancy middleware only when not running tests. Tests use in-memory DB.
-        // Temporarily disabled for testing
-        /*
-        if (env('APP_ENV') !== 'testing') {
+        // Register tenancy middleware for API and web routes when not running unit tests.
+        if (! app()->runningUnitTests()) {
             $middleware->api(prepend: [
                 \App\Http\Middleware\InitializeTenancyWithFallback::class,
             ]);
@@ -27,10 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 \App\Http\Middleware\InitializeTenancyWithFallback::class,
             ]);
         }
-        */
         
         $middleware->alias([
-            'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
             'tenant' => \App\Http\Middleware\InitializeTenancyWithFallback::class,
             'prevent-central' => \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,

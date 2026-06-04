@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 import api from '../services/api';
 
 const Login = () => {

@@ -3,12 +3,31 @@
 namespace Tests\Feature;
 
 use App\Models\Promotion;
+use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PromotionControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tenant = Tenant::first();
+        if (!$this->tenant) {
+            $this->tenant = Tenant::create([
+                'name' => 'Test Tenant',
+            ]);
+        }
+
+        if ($this->tenant->domains()->count() === 0) {
+            $this->tenant->domains()->create(['domain' => 'localhost']);
+        }
+
+        tenancy()->initialize($this->tenant);
+    }
 
     public function test_apply_endpoint_returns_error_for_invalid_code(): void
     {

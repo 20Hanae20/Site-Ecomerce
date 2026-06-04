@@ -69,25 +69,23 @@ class RecommendationController extends Controller
      */
     public function recommend(Request $request)
     {
-        $userId = $request->user()?->id;
-        $method = $request->query('method', 'hybrid');
-        $perfumeId = $request->query('perfume_id');
-        $topN = min((int)$request->query('top_n', 8), 50); // Cap at 50
+        $tenantId = tenant('id');
+        if (! $tenantId) {
+            return response()->json(['success' => false, 'error' => 'Tenant not initialized'], 400);
+        }
+
+        $userId = $request->user()?->id ?? $request->input('user_id');
+        $topN = max(1, min((int)$request->input('top_n', 8), 50));
+        $modelName = $request->input('model_name', 'hybrid');
+        $query = $request->input('query');
+        $userFeatures = $request->input('features');
 
         try {
-            $tenantId = tenant('id');
-            $topN = $request->input('top_n', 8);
-            $modelName = $request->input('model_name', 'hybrid');
-            $query = $request->input('query');
-            
-            $userId = $request->user() ? $request->user()->id : $request->input('user_id');
-            $userFeatures = $request->input('features');
-
-            if (!$userFeatures && $userId) {
+            if (! $userFeatures && $userId) {
                 $userFeatures = $this->getUserFeatures($userId, $tenantId);
             }
 
-            if (!$userFeatures) {
+            if (! $userFeatures) {
                 $userFeatures = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
             }
 
@@ -104,34 +102,44 @@ class RecommendationController extends Controller
                     ];
                 })->toArray();
 
-            // Ask FastAPI
+            $mlUrl = config('services.ml_api.url', env('ML_API_URL', 'http://127.0.0.1:8001/recommend'));
+            $timeout = config('services.ml_api.timeout', 5);
+
+            Log::info('Sending ML recommendation request', [
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'model_name' => $modelName,
+                'top_n' => $topN,
+                'ml_url' => $mlUrl,
+            ]);
+
             try {
-                $mlUrl = config('services.ml_api.url', env('ML_API_URL', 'http://127.0.0.1:8001/recommend'));
-                $response = Http::timeout(5)->post($mlUrl, [
-                    'user_id' => $userId,
-                    'features' => $userFeatures,
-                    'available_perfumes' => $availablePerfumes,
-                    'tenant_id' => $tenantId,
-                    'model_name' => $modelName,
-                    'query' => $query,
-                    'top_n' => $topN,
-                ]);
+                $response = Http::timeout($timeout)
+                    ->retry(2, 200)
+                    ->post($mlUrl, [
+                        'user_id' => $userId,
+                        'features' => $userFeatures,
+                        'available_perfumes' => $availablePerfumes,
+                        'tenant_id' => $tenantId,
+                        'model_name' => $modelName,
+                        'query' => $query,
+                        'top_n' => $topN,
+                    ]);
 
                 if ($response->successful()) {
                     $recommendationIds = $response->json('recommendations', []);
-                    
-                    // Fetch perfumes from database preserving order
+
                     if (!empty($recommendationIds)) {
                         $perfumes = Perfume::whereIn('id', $recommendationIds)
+                            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                             ->with('category')
                             ->get()
-                            ->sortBy(function($perfume) use ($recommendationIds) {
-                                return array_search($perfume->id, $recommendationIds);
-                            })->values();
+                            ->sortBy(fn ($perfume) => array_search($perfume->id, $recommendationIds))
+                            ->values();
 
                         return response()->json([
                             'success' => true,
-                            'recommendations' => $perfumes->map(function($p) use ($recommendationIds) {
+                            'recommendations' => $perfumes->map(function($p) {
                                 return [
                                     'perfume' => [
                                         'id' => $p->id,
@@ -145,9 +153,11 @@ class RecommendationController extends Controller
                                     'match_percentage' => rand(80, 99)
                                 ];
                             }),
-                            'method' => 'ml-api-' . $modelName
+                            'method' => 'ml-api-' . $modelName,
                         ]);
                     }
+
+                    Log::warning('ML API returned no recommendations', ['tenant_id' => $tenantId, 'response' => $response->body()]);
                 } else {
                     Log::warning('ML API responded with non-success', [
                         'url' => $mlUrl,
@@ -161,15 +171,15 @@ class RecommendationController extends Controller
                     'user_id' => $userId,
                     'tenant_id' => $tenantId,
                 ]);
-                // Keep moving, fallback will handle it
             }
 
-            // Get top rated perfumes as fallback recommendations
             $recommendations = Perfume::where('is_active', true)
                 ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                 ->orderBy('rating_avg', 'desc')
                 ->take($topN)
                 ->get();
+
+            Log::info('Returning fallback recommendations', ['tenant_id' => $tenantId, 'count' => $recommendations->count()]);
 
             return response()->json([
                 'success' => true,
@@ -187,10 +197,10 @@ class RecommendationController extends Controller
                         'match_percentage' => rand(75, 90)
                     ];
                 }),
-                'method' => 'top-rated-fallback'
+                'method' => 'top-rated-fallback',
             ]);
-            
         } catch (\Exception $e) {
+            Log::error('Recommendation controller error', ['message' => $e->getMessage(), 'tenant_id' => $tenantId]);
             return response()->json([
                 'success' => false,
                 'error' => 'Recommendation service error: ' . $e->getMessage()

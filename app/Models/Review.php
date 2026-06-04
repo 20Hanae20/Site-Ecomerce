@@ -41,6 +41,11 @@ class Review extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     // Scopes
     public function scopeApproved($query)
     {

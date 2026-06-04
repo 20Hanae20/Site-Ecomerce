@@ -38,6 +38,11 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);

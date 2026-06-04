@@ -37,6 +37,50 @@ class SubscriptionController extends Controller
     }
 
     /**
+     * Check subscription status (simplified for frontend)
+     * GET /subscription/status
+     * 
+     * Returns whether subscription is active and what plan is active
+     * Used to verify tenant can access paid features
+     */
+    public function status(Request $request)
+    {
+        if (!tenant()) {
+            return response()->json([
+                'active' => false,
+                'plan' => 'free',
+                'message' => 'No tenant context'
+            ], 400);
+        }
+
+        $tenant = tenant();
+        $subscription = $tenant->data['subscription'] ?? [];
+
+        // Determine if subscription is active
+        $isActive = ($subscription['is_active'] ?? false) && 
+                   in_array($subscription['status'] ?? 'active', ['active', 'trialing']);
+
+        // Check if expired
+        $isExpired = false;
+        if ($subscription['current_period_end'] ?? null) {
+            $isExpired = strtotime($subscription['current_period_end']) < time();
+        }
+
+        $isActive = $isActive && !$isExpired;
+
+        return response()->json([
+            'active' => $isActive,
+            'plan' => $subscription['plan'] ?? 'free',
+            'status' => $subscription['status'] ?? 'active',
+            'features' => $subscription['features'] ?? ['basic_catalog', 'reviews'],
+            'current_period_end' => $subscription['current_period_end'] ?? null,
+            'trial_ends_at' => $subscription['trial_end'] ?? null,
+            'is_trial' => ($subscription['status'] ?? null) === 'trialing',
+            'stripe_customer_id' => $subscription['stripe_customer_id'] ?? null,
+        ], 200);
+    }
+
+    /**
      * Check if a feature is available in current plan
      */
     public function hasFeature(Request $request)

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Tenant;
 use Stancl\Tenancy\Database\Models\Domain;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Tenant Management Service
@@ -94,19 +95,34 @@ class TenantService
         $cacheKey = "tenant:metrics:{$tenantId}";
 
         return Cache::remember($cacheKey, 3600, function() use ($tenantId) {
-            // Initialize tenant context
-            \tenancy()->initialize(Tenant::find($tenantId));
+            $tenant = Tenant::findOrFail($tenantId);
+            $alreadyInitialized = tenancy()->initialized;
+            $currentTenant = $alreadyInitialized ? tenant() : null;
 
-            return [
-                'user_count' => \App\Models\User::count(),
-                'order_count' => \App\Models\Order::count(),
-                'revenue' => \App\Models\Order::sum('total') ?? 0,
-                'product_count' => \App\Models\Perfume::count(),
-                'review_count' => \App\Models\Review::count(),
-                'avg_order_value' => \App\Models\Order::avg('total') ?? 0,
-                'conversion_rate' => $this->calculateConversionRate($tenantId),
-                'active_users' => $this->getActiveUsersCount($tenantId)
-            ];
+            if (! $alreadyInitialized || $currentTenant->id !== $tenant->id) {
+                tenancy()->initialize($tenant);
+            }
+
+            try {
+                $metrics = [
+                    'user_count' => \App\Models\User::count(),
+                    'order_count' => \App\Models\Order::count(),
+                    'revenue' => \App\Models\Order::sum('total') ?? 0,
+                    'product_count' => \App\Models\Perfume::count(),
+                    'review_count' => \App\Models\Review::count(),
+                    'avg_order_value' => \App\Models\Order::avg('total') ?? 0,
+                    'conversion_rate' => $this->calculateConversionRate($tenantId),
+                    'active_users' => $this->getActiveUsersCount($tenantId)
+                ];
+
+                Log::info('Tenant metrics generated', ['tenant_id' => $tenantId, 'metrics' => $metrics]);
+
+                return $metrics;
+            } finally {
+                if (! $alreadyInitialized) {
+                    tenancy()->end();
+                }
+            }
         });
     }
 

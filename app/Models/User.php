@@ -84,6 +84,8 @@ class User extends Authenticatable
         'status',
         'first_name',
         'last_name',
+        'phone',
+        'email_verified_at',
     ];
 
     /**

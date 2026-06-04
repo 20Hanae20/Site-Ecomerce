@@ -23,4 +23,9 @@ class Promotion extends Model
                (!$this->start_date || $this->start_date <= $now) &&
                (!$this->end_date || $this->end_date >= $now);
     }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 }

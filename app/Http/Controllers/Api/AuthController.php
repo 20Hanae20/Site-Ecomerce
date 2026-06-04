@@ -8,15 +8,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        $tenantId = tenant('id');
+        if (! $tenantId) {
+            return response()->json(['message' => 'Tenant non initialisé'], 400);
+        }
+
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -27,7 +39,7 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'tenant_id' => tenant('id'),
+            'tenant_id' => $tenantId,
             'name' => $request->first_name . ' ' . $request->last_name,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -51,6 +63,11 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $tenantId = tenant('id');
+        if (! $tenantId) {
+            return response()->json(['message' => 'Tenant non initialisé'], 400);
+        }
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email',
             'password' => 'required|string',
@@ -60,13 +77,22 @@ class AuthController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $credentials = [
+            'email' => $request->email,
+            'password' => $request->password,
+            'tenant_id' => $tenantId,
+            'status' => User::STATUS_ACTIVE,
+        ];
+
+        if (!Auth::attempt($credentials)) {
             return response()->json([
                 'message' => 'Identifiants invalides'
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = User::where('email', $request->email)
+            ->where('tenant_id', $tenantId)
+            ->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -104,9 +130,16 @@ class AuthController extends Controller
      */
     public function resendVerification(Request $request)
     {
+        $tenantId = tenant('id');
+        if (! $tenantId) {
+            return response()->json(['message' => 'Tenant non initialisé'], 400);
+        }
+
         $request->validate(['email' => 'required|email']);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $request->email)
+            ->where('tenant_id', $tenantId)
+            ->first();
 
         if (!$user) {
             return response()->json(['message' => 'Utilisateur non trouvé'], 404);
@@ -126,9 +159,20 @@ class AuthController extends Controller
      */
     public function verifyEmail(Request $request)
     {
-        $user = User::find($request->route('id'));
+        $tenantId = tenant('id');
+        if (! $tenantId) {
+            return response()->json(['message' => 'Tenant non initialisé'], 400);
+        }
 
-        if (!hash_equals((string)$request->route('hash'), sha1($user->getEmailForVerification()))) {
+        $user = User::where('id', $request->route('id'))
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if (! $user) {
+            return response()->json(['message' => 'Utilisateur non trouvé'], 404);
+        }
+
+        if (! hash_equals((string)$request->route('hash'), sha1($user->getEmailForVerification()))) {
             return response()->json(['message' => 'Lien de vérification invalide'], 403);
         }
 

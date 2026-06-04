@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\poste\Desktop\Site-Ecomerce\ml-api\.venv311
+set VIRTUAL_ENV=C:\Users\Hanae\Desktop\Project Hanae TS FS-202\Site-Ecomerce\ml-api\.venv311
 
 if not defined PROMPT set PROMPT=$P$G
 

@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\poste\Desktop\Site-Ecomerce\ml-api\.venv311"
+VIRTUAL_ENV="C:\Users\Hanae\Desktop\Project Hanae TS FS-202\Site-Ecomerce\ml-api\.venv311"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

@@ -10,7 +10,17 @@ trait BelongsToTenant
     public static function bootBelongsToTenant(): void
     {
         static::creating(function ($model) {
-            if (empty($model->tenant_id) && tenancy()->initialized) {
+            if (tenancy()->initialized) {
+                if (empty($model->tenant_id)) {
+                    $model->tenant_id = tenant()->id;
+                } elseif ($model->tenant_id !== tenant()->id) {
+                    throw new \RuntimeException('Tenant ID mismatch on model creation.');
+                }
+            }
+        });
+
+        static::saving(function ($model) {
+            if (tenancy()->initialized && empty($model->tenant_id)) {
                 $model->tenant_id = tenant()->id;
             }
         });
