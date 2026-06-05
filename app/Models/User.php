@@ -119,6 +119,14 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Address::class);
     }
 
+    /**
+     * Get the user's orders.
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
