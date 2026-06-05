@@ -1,17 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import api, { API_HOST } from '../../services/api';
+import api from '../../services/api';
+import { getImageUrl } from '../../utils/getImageUrl';
 import { useCart } from '../../context/useCart';
 import { Filter, Search, RotateCcw, ShoppingCart, Star, Box, Compass } from 'lucide-react';
 
 const getPerfumeImage = (perfume) => {
-    if (perfume.image_url) {
-        if (perfume.image_url.startsWith('http://') || perfume.image_url.startsWith('https://')) {
-            return perfume.image_url;
-        }
-        return `${API_HOST}${perfume.image_url}`;
-    }
-    return null;
+    return getImageUrl(perfume.image_url);
 };
 
 const ClientCatalog = () => {

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/useCart';
 import { Link, useNavigate } from 'react-router-dom';
-import api, { API_HOST } from '../services/api';
-import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, ChevronRight } from 'lucide-react';
+import api from '../services/api';
+import { getImageUrl } from '../utils/getImageUrl';
+import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, Gift, Shield, ChevronRight } from 'lucide-react';
 
 const Cart = () => {
     const { cart, total, loading, error, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -10,14 +11,8 @@ const Cart = () => {
     const [selectedAddress, setSelectedAddress] = useState('');
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [recommendations, setRecommendations] = useState([]);
+    const [recommendationsUnavailable, setRecommendationsUnavailable] = useState(false);
     const navigate = useNavigate();
-
-    const getImageUrl = (imageUrl) => {
-        if (!imageUrl) return null;
-        if (imageUrl.startsWith('http')) return imageUrl;
-        const apiHost = API_HOST.replace(/\/api\/?$/, '');
-        return `${apiHost}${imageUrl}`;
-    };
 
     useEffect(() => {
         fetchAddresses();
@@ -30,9 +25,15 @@ const Cart = () => {
 
         try {
             const response = await api.get('/recommendations/dashboard');
-            setRecommendations(response.data.data.recommendations || []);
+            setRecommendations(response.data.data?.recommendations || []);
         } catch (err) {
+            if (err.response?.status === 403) {
+                setRecommendations([]);
+                setRecommendationsUnavailable(true);
+                return;
+            }
             console.error('Error fetching recommendations in cart:', err);
+            setRecommendations([]);
         }
     };
 
@@ -236,6 +237,15 @@ const Cart = () => {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </section>
+            )}
+
+            {recommendationsUnavailable && (
+                <section className="cart-recs-unavailable">
+                    <div className="saas-card rec-unavailable-card">
+                        <h2>Recommandations indisponibles</h2>
+                        <p>Votre compte ne dispose pas de l’accès aux recommandations pour le moment.</p>
                     </div>
                 </section>
             )}

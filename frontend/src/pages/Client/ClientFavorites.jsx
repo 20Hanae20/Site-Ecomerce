@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../context/useCart';
-import api, { API_HOST } from '../../services/api';
+import api from '../../services/api';
+import { getImageUrl } from '../../utils/getImageUrl';
 import { Heart, ShoppingCart, Trash2, Box, Compass } from 'lucide-react';
 
 const getPerfumeImage = (perfume) => {
-    if (perfume.image_url) {
-        if (perfume.image_url.startsWith('http://') || perfume.image_url.startsWith('https://')) {
-            return perfume.image_url;
-        }
-        return `${API_HOST}${perfume.image_url}`;
-    }
-    return null;
+    return getImageUrl(perfume.image_url);
 };
 
 const ClientFavorites = () => {

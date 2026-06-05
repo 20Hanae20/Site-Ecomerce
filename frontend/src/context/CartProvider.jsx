@@ -8,6 +8,7 @@ export const CartProvider = ({ children }) => {
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [notification, setNotification] = useState(null);
 
     const fetchCart = async () => {
         setLoading(true);
@@ -29,9 +30,14 @@ export const CartProvider = ({ children }) => {
             const data = await CartService.addToCart(perfume_id, quantity);
             setCart(data.cart);
             setTotal(data.total);
-            return { success: true };
+            const successMessage = 'Produit ajouté au panier avec succès.';
+            setNotification({ type: 'success', text: successMessage });
+            window.setTimeout(() => setNotification(null), 4000);
+            return { success: true, message: successMessage };
         } catch (err) {
             const message = err.response?.data?.message || 'Erreur lors de l’ajout au panier';
+            setNotification({ type: 'error', text: message });
+            window.setTimeout(() => setNotification(null), 6000);
             return { success: false, message };
         }
     };
@@ -78,12 +84,13 @@ export const CartProvider = ({ children }) => {
         total,
         loading,
         error,
+        notification,
         fetchCart,
         addToCart,
         updateQuantity,
         removeFromCart,
         clearCart
-    }), [cart, total, loading, error]);
+    }), [cart, total, loading, error, notification]);
 
     return (
         <CartContext.Provider value={value}>

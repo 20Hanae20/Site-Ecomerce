@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { Plus, Search, Edit2, Trash2, Box } from 'lucide-react';
+import { getImageUrl } from '../../utils/getImageUrl';
+import { Plus, Search, Edit2, Trash2, Box, Upload, Image as ImageIcon } from 'lucide-react';
 
 const AdminProducts = () => {
     const [perfumes, setPerfumes] = useState([]);
@@ -14,7 +15,10 @@ const AdminProducts = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [currentId, setCurrentId] = useState(null);
-    const [formData, setFormData] = useState({ name: '', brand: '', description: '', price: '', stock_quantity: '', notes: '', category_id: '' });
+    const [formData, setFormData] = useState({ name: '', brand: '', description: '', price: '', stock_quantity: '', notes: '', category_id: '', image_url: '' });
+    const [imageType, setImageType] = useState('file');
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
@@ -58,7 +62,10 @@ const AdminProducts = () => {
     const openAddModal = () => {
         setModalMode('add');
         setCurrentId(null);
-        setFormData({ name: '', brand: '', description: '', price: '', stock_quantity: '', notes: '', category_id: categories[0]?.id || '' });
+        setFormData({ name: '', brand: '', description: '', price: '', stock_quantity: '', notes: '', category_id: categories[0]?.id || '', image_url: '' });
+        setImageType('file');
+        setImageFile(null);
+        setImagePreview(null);
         setErrorMsg('');
         setShowModal(true);
     };
@@ -74,9 +81,29 @@ const AdminProducts = () => {
             stock_quantity: perfume.stock_quantity?.toString() || '0',
             notes: perfume.notes || '',
             category_id: perfume.category_id?.toString() || categories[0]?.id || '',
+            image_url: perfume.image_url || '',
         });
+        setImageType(perfume.image_url ? 'url' : 'file');
+        setImageFile(null);
+        setImagePreview(perfume.image_url ? getImageUrl(perfume.image_url) : null);
         setErrorMsg('');
         setShowModal(true);
+    };
+
+    const handleImageFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setImageType('file');
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
+
+    const handleImageUrlChange = (e) => {
+        const url = e.target.value;
+        setFormData({ ...formData, image_url: url });
+        setImageType('url');
+        setImageFile(null);
+        setImagePreview(url);
     };
 
     const handleDelete = async (id) => {
@@ -97,23 +124,30 @@ const AdminProducts = () => {
         setErrorMsg('');
         setSuccessMsg('');
 
-        const payload = {
-            name: formData.name,
-            brand: formData.brand,
-            description: formData.description,
-            price: parseFloat(formData.price) || 0,
-            stock_quantity: parseInt(formData.stock_quantity, 10) || 0,
-            notes: formData.notes,
-            category_id: parseInt(formData.category_id, 10) || null,
-            is_active: true,
-        };
+        const data = new FormData();
+        data.append('name', formData.name);
+        data.append('brand', formData.brand);
+        data.append('description', formData.description);
+        data.append('price', formData.price);
+        data.append('stock_quantity', formData.stock_quantity);
+        data.append('notes', formData.notes);
+        if (formData.category_id) {
+            data.append('category_id', formData.category_id);
+        }
+        data.append('is_active', '1');
+
+        if (imageType === 'file' && imageFile) {
+            data.append('image', imageFile);
+        } else if (imageType === 'url' && formData.image_url) {
+            data.append('image_url', formData.image_url);
+        }
 
         try {
             if (modalMode === 'add') {
-                await api.post('/perfumes', payload);
+                await api.post('/perfumes', data, { headers: { 'Content-Type': 'multipart/form-data' } });
                 setSuccessMsg('Produit créé avec succès.');
             } else {
-                await api.put(`/perfumes/${currentId}`, payload);
+                await api.put(`/perfumes/${currentId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
                 setSuccessMsg('Produit mis à jour avec succès.');
             }
             setShowModal(false);
@@ -267,6 +301,27 @@ const AdminProducts = () => {
                                         <option key={category.id} value={category.id}>{category.name}</option>
                                     ))}
                                 </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Photo principale</label>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <button type="button" className={imageType === 'file' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'} onClick={() => setImageType('file')}>
+                                        Fichier
+                                    </button>
+                                    <button type="button" className={imageType === 'url' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'} onClick={() => setImageType('url')}>
+                                        URL
+                                    </button>
+                                </div>
+                                {imageType === 'file' ? (
+                                    <input type="file" accept="image/*" onChange={handleImageFileChange} />
+                                ) : (
+                                    <input type="url" value={formData.image_url} onChange={handleImageUrlChange} placeholder="https://..." />
+                                )}
+                                {imagePreview && (
+                                    <div style={{ marginTop: '1rem', borderRadius: '18px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', maxWidth: '320px' }}>
+                                        <img src={imagePreview} alt="Aperçu du produit" style={{ width: '100%', display: 'block', objectFit: 'contain' }} />
+                                    </div>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Description</label>

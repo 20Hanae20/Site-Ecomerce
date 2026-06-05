@@ -7,6 +7,7 @@ const AdminLogs = () => {
     const [actionLogs, setActionLogs] = useState([]);
     const [activeTab, setActiveTab] = useState('login');
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
 
     useEffect(() => {
         if (activeTab === 'login') fetchLoginLogs();
@@ -15,21 +16,25 @@ const AdminLogs = () => {
 
     const fetchLoginLogs = async () => {
         setIsLoading(true);
+        setApiError(null);
         try {
             const response = await api.get('/admin/logs');
             setLoginLogs(response.data.data);
         } catch (err) {
             console.error(err);
+            setApiError('Impossible de récupérer les logs de connexion. Vérifiez vos permissions ou réessayez plus tard.');
         } finally { setIsLoading(false); }
     };
 
     const fetchActionLogs = async () => {
         setIsLoading(true);
+        setApiError(null);
         try {
             const response = await api.get('/admin/action-logs');
             setActionLogs(response.data.data);
         } catch (err) {
             console.error(err);
+            setApiError('Impossible de récupérer les actions administratives. Vérifiez vos permissions ou réessayez plus tard.');
         } finally { setIsLoading(false); }
     };
 
@@ -73,6 +78,11 @@ const AdminLogs = () => {
 
             {isLoading ? <div className="loader">Décryptage des Archives...</div> : (
                 <div className="admin-table-container">
+                    {apiError && (
+                        <div className="saas-card error-card" style={{ marginBottom: '1.5rem', padding: '1rem', borderLeft: '4px solid var(--danger)' }}>
+                            <strong>Erreur :</strong> {apiError}
+                        </div>
+                    )}
                     {activeTab === 'login' ? (
                         <table className="premium-table-refined">
                             <thead>

@@ -31,8 +31,13 @@ const Recommendations = () => {
             setData(response.data.data);
             setError(null);
         } catch (err) {
-            console.error('Error fetching recommendations:', err);
-            setError('VOTRE VOYAGE OLFACTIF EST MOMENTANÉMENT INTERROMPU.');
+            if (err.response?.status === 403) {
+                setData({ viewed_perfumes: [], recommendations: [] });
+                setError('Les recommandations ne sont pas disponibles pour votre abonnement actuel.');
+            } else {
+                console.error('Error fetching recommendations:', err);
+                setError('Une erreur est survenue lors du chargement des recommandations.');
+            }
         } finally {
             setLoading(false);
         }

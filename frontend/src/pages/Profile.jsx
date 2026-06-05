@@ -8,6 +8,9 @@ import {
     Plus,
     Trash2,
     Check,
+    CheckCircle2,
+    AlertCircle,
+    XCircle,
     ExternalLink,
     Calendar,
     Phone,
@@ -53,14 +56,15 @@ const Profile = () => {
     const fetchProfile = async () => {
         try {
             const response = await api.get('/profile');
-            setUser(response.data);
+            const data = response.data?.user || response.data?.data?.user || response.data?.data || response.data || {};
+            setUser(data);
             setProfileData({
-                name: response.data.name || '',
-                first_name: response.data.first_name || '',
-                last_name: response.data.last_name || '',
-                phone: response.data.phone || '',
+                name: data.name || '',
+                first_name: data.first_name || '',
+                last_name: data.last_name || '',
+                phone: data.phone || '',
             });
-            setAddresses(response.data.addresses || []);
+            setAddresses(response.data?.addresses || response.data?.data?.addresses || data.addresses || []);
         } catch (err) {
             console.error("Failed to fetch profile", err);
         } finally {
@@ -75,7 +79,8 @@ const Profile = () => {
         try {
             const response = await api.put('/profile', profileData);
             setMessage({ text: 'VOTRE PROFIL A ÉTÉ MIS À JOUR.', type: 'success' });
-            setUser(response.data.user);
+            const updated = response.data?.user || response.data?.data?.user || response.data?.data || response.data || {};
+            setUser(updated);
             setTimeout(() => setMessage({ text: '', type: '' }), 5000);
         } catch {
             setMessage({ text: 'ÉCHEC DE LA MISE À JOUR.', type: 'error' });
@@ -423,14 +428,26 @@ const Profile = () => {
 
                 .profile-layout-luxury {
                     display: grid;
-                    grid-template-columns: 1fr 400px;
+                    grid-template-columns: minmax(0, 1fr) 360px;
                     gap: 3rem;
                     align-items: start;
                 }
 
+                .container-premium.profile-page-luxury {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                }
+
                 .profile-column-main, .profile-column-side { display: flex; flex-direction: column; gap: 3rem; }
 
-                .profile-card-luxury { padding: 3rem; border-radius: 24px; transition: 0.4s ease; }
+                .profile-card-luxury {
+                    padding: 3rem;
+                    border-radius: 24px;
+                    transition: 0.4s ease;
+                    background: rgba(255,255,255,0.08);
+                    border: 1px solid rgba(255,255,255,0.14);
+                    box-shadow: 0 28px 80px rgba(0,0,0,0.08);
+                }
                 .profile-card-luxury:hover { transform: translateY(-5px); border-color: var(--gold-border); }
                 
                 .card-header-luxury { display: flex; align-items: center; gap: 1rem; margin-bottom: 2.5rem; }
@@ -452,16 +469,20 @@ const Profile = () => {
                 .gold-label-luxury { font-size: 0.65rem; color: var(--primary); letter-spacing: 2px; font-weight: 800; display: block; }
 
                 .input-luxury {
-                    background: rgba(255,255,255,0.02);
-                    border: 1px solid var(--glass-border);
+                    width: 100%;
+                    min-width: 0;
+                    background: #ffffff;
+                    border: 1px solid rgba(16,24,32,0.08);
                     border-radius: 12px;
                     padding: 1.2rem;
-                    color: #fff;
+                    color: rgba(10,25,40,0.92);
                     font-family: 'Inter', sans-serif;
                     font-size: 0.95rem;
-                    transition: 0.3s;
+                    transition: 0.18s ease;
+                    box-shadow: 0 6px 18px rgba(12,20,28,0.04);
                 }
-                .input-luxury:focus { outline: none; border-color: var(--primary); background: rgba(255,255,255,0.05); box-shadow: 0 0 20px var(--glass-glow); }
+                .input-luxury::placeholder { color: rgba(10,25,40,0.35); }
+                .input-luxury:focus { outline: none; border-color: rgba(34,120,255,0.9); background: #fff; box-shadow: 0 6px 24px rgba(34,120,255,0.06); }
                 .input-luxury.small { padding: 0.9rem; font-size: 0.85rem; border-radius: 10px; }
 
                 .input-row-luxury { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }

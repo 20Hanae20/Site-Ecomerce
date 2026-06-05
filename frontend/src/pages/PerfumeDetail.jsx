@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { getImageUrl } from '../utils/getImageUrl';
 import { useCart } from '../context/useCart';
 import { Star, ShoppingBag, Truck, ShieldCheck, ChevronRight, Package, Check } from 'lucide-react';
 import ReviewList from '../components/Reviews/ReviewList';
@@ -63,14 +64,6 @@ const PerfumeDetail = () => {
     );
 
     const { perfume, similar } = data;
-
-    const getImageUrl = (url) => {
-        if (!url) return null;
-        if (url.startsWith('http')) return url;
-        const apiHost = API_HOST.replace(/\/api\/?$/, '');
-        const path = url.startsWith('/') ? url : `/${url}`;
-        return `${apiHost}${path}`;
-    };
 
     const allImages = [perfume.image_url, ...(perfume.gallery || [])].filter(Boolean);
 

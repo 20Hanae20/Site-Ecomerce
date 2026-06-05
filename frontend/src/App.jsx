@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { TenantProvider } from './context/TenantContext';
 import { CartProvider } from './context/CartProvider';
+import { useCart } from './context/useCart';
 
 // Pages de base
 import Home from './pages/Home';
@@ -92,12 +93,48 @@ import OnboardingSuccess from './pages/OnboardingSuccess';
 
 import './App.css';
 
+function CartNotification() {
+  const { notification } = useCart();
+  if (!notification) return null;
+
+  const baseStyle = {
+    position: 'fixed',
+    right: '1rem',
+    bottom: '1rem',
+    zIndex: 1200,
+    minWidth: '260px',
+    padding: '1rem 1.25rem',
+    borderRadius: '1rem',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
+    color: '#fff',
+    fontWeight: 600,
+    backdropFilter: 'blur(8px)',
+  };
+
+  const successStyle = {
+    ...baseStyle,
+    backgroundColor: 'rgba(46, 204, 113, 0.95)',
+  };
+
+  const errorStyle = {
+    ...baseStyle,
+    backgroundColor: 'rgba(231, 76, 60, 0.95)',
+  };
+
+  return (
+    <div style={notification.type === 'error' ? errorStyle : successStyle}>
+      {notification.text}
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
       <AuthProvider>
         <CartProvider>
           <TenantProvider>
+            <CartNotification />
             <Routes>
               {/* Routes Onboarding SaaS (publiques) */}
               <Route path="/onboarding/company" element={<CreateCompany />} />
