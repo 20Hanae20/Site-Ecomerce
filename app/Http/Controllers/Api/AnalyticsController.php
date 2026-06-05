@@ -5,9 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\RecommendationService;
+use App\Models\Perfume;
 
 class AnalyticsController extends Controller
 {
+    protected $recommendationService;
+
+    public function __construct(RecommendationService $recommendationService)
+    {
+        $this->recommendationService = $recommendationService;
+    }
+
     /**
      * Get ML Analytics Dashboard Data
      */
@@ -164,4 +173,74 @@ class AnalyticsController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Test recommendation model in playground
+     */
+    public function mlTest(Request $request)
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'nullable|integer',
+            'model_name' => 'required|string',
+            'query' => 'nullable|string',
+            'top_n' => 'nullable|integer|min:1|max:50'
+        ]);
+
+        $userId = $request->input('user_id', 1);
+        $modelName = $request->input('model_name', 'hybrid');
+        $query = $request->input('query');
+        $topN = (int)$request->input('top_n', 5);
+
+        $result = $this->recommendationService->testRecommendation($modelName, $userId, $query, $topN);
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'data' => $result
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => $result['error'] ?? 'Test recommendation failed'
+        ], 500);
+    }
+
+    /**
+     * Retrain a recommendation model
+     */
+    public function mlTrainModel(Request $request)
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        $request->validate([
+            'model_name' => 'required|string',
+            'parameters' => 'nullable|array'
+        ]);
+
+        $modelName = $request->input('model_name');
+        $parameters = $request->input('parameters', []);
+
+        $result = $this->recommendationService->trainModel($modelName, $parameters);
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'] ?? 'Training job started successfully',
+                'job_id' => $result['job_id'] ?? null
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => $result['error'] ?? 'Model training failed'
+        ], 500);
+    }
 }
+

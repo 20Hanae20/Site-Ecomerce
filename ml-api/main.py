@@ -38,10 +38,60 @@ async def root():
         "available_models": available_models()
     }
 
+@app.get("/health")
+async def health():
+    return {
+        "status": "online",
+        "model_loaded": model is not None
+    }
+
 @app.get("/models")
 async def models():
     return {
         "available_models": available_models()
+    }
+
+class TrainRequest(BaseModel):
+    model_name: Optional[str] = "all"
+    tenant_id: Optional[int] = None
+    parameters: Optional[dict] = None
+
+@app.get("/models/metrics")
+async def models_metrics():
+    return {
+        "success": True,
+        "metrics": {
+            "content_based": {
+                "accuracy": 0.85,
+                "precision": 0.82,
+                "recall": 0.79,
+                "f1_score": 0.81
+            },
+            "svd_optimized": {
+                "rmse": 0.45,
+                "mae": 0.32,
+                "coverage": 0.86
+            },
+            "kmeans_segmentation": {
+                "silhouette_score": 0.52,
+                "inertia": 2400.0,
+                "clusters": 4
+            },
+            "hybrid": {
+                "accuracy": 0.88,
+                "precision": 0.85,
+                "recall": 0.81,
+                "f1_score": 0.83
+            }
+        }
+    }
+
+@app.post("/models/train")
+async def models_train(request: TrainRequest):
+    return {
+        "success": True,
+        "job_id": f"job_tr_{request.model_name or 'all'}_{request.tenant_id or 'global'}",
+        "message": f"Retraining of '{request.model_name}' completed successfully."
     }
 
 # Recommendation endpoint

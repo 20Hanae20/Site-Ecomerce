@@ -21,10 +21,15 @@ use Illuminate\Support\Facades\Log;
  */
 class RecommendationService
 {
-    private const ML_API_URL = 'http://127.0.0.1:8001';
+    private $ML_API_URL;
     private const ML_TIMEOUT = 3;
     private const CACHE_TTL = 3600; // 1 hour
     private const TOP_N_DEFAULT = 8;
+
+    public function __construct()
+    {
+        $this->ML_API_URL = rtrim(env('ML_API_URL', 'http://127.0.0.1:8000'), '/');
+    }
 
     /**
      * Get Content-Based Filtering recommendations using TF-IDF + Embeddings
@@ -267,8 +272,8 @@ class RecommendationService
         try {
             $response = Http::timeout(10)->post("{$this->ML_API_URL}/models/train", [
                 'model_name' => $modelName,
-                'tenant_id' => tenant('id'),
-                'parameters' => $parameters
+                'tenant_id' => is_numeric(tenant('id')) ? (int) tenant('id') : null,
+                'parameters' => (object) $parameters
             ]);
 
             if ($response->successful()) {
@@ -279,10 +284,111 @@ class RecommendationService
                 ];
             }
 
-            return ['success' => false, 'error' => 'Training failed'];
+            return ['success' => false, 'error' => 'Training failed: ' . $response->body()];
         } catch (\Exception $e) {
             Log::error("Model training error: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Test recommendations directly from ML-API (bypassing cache)
+     */
+    public function testRecommendation($modelName, $userId, $query = null, $topN = 5)
+    {
+        try {
+            $tenantId = tenant('id');
+            // Get user olfactory profile features or build it
+            $userFeatures = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+            
+            // If we have a user, we can calculate their profile
+            if ($userId) {
+                $features = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+                $families = ['floral', 'boisé', 'oriental', 'frais', 'épicé', 'fruité', 'aromatique'];
+                
+                $views = \App\Models\PerfumeView::where('user_id', $userId)
+                    ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+                    ->with('perfume')
+                    ->get();
+                foreach ($views as $view) {
+                    if ($view->perfume) {
+                        $family = strtolower($view->perfume->olfactory_family ?? '');
+                        foreach ($families as $idx => $f) {
+                            if (str_contains($family, $f)) {
+                                $features[$idx] += 1.0;
+                            }
+                        }
+                    }
+                }
+                
+                if (array_sum($features) > 0) {
+                    $userFeatures = $features;
+                }
+            }
+
+            $availablePerfumes = Perfume::where('is_active', true)
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+                ->get()
+                ->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'rating' => $p->rating_avg ?? 4.0,
+                    'olfactory_family' => $p->olfactory_family,
+                    'tenant_id' => $p->tenant_id,
+                ])->toArray();
+
+            $response = Http::timeout(self::ML_TIMEOUT)->post("{$this->ML_API_URL}/recommend", [
+                'user_id' => $userId,
+                'features' => $userFeatures,
+                'available_perfumes' => $availablePerfumes,
+                'tenant_id' => is_numeric($tenantId) ? (int) $tenantId : null,
+                'model_name' => $modelName,
+                'query' => $query,
+                'top_n' => $topN,
+            ]);
+
+            if ($response->successful()) {
+                $recommendationIds = $response->json('recommendations', []);
+                if (!empty($recommendationIds)) {
+                    $perfumeIds = $this->extractPerfumeIds($recommendationIds);
+                    
+                    $perfumes = Perfume::whereIn('id', $perfumeIds)
+                        ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+                        ->get()
+                        ->sortBy(fn ($perfume) => array_search($perfume->id, $perfumeIds))
+                        ->values()
+                        ->map(fn($p) => [
+                            'id' => $p->id,
+                            'name' => $p->name,
+                            'price' => $p->price,
+                            'rating' => $p->rating_avg,
+                            'image_url' => $p->image_url,
+                            'notes' => $p->notes,
+                            'olfactory_family' => $p->olfactory_family,
+                        ])
+                        ->toArray();
+                    
+                    return [
+                        'success' => true,
+                        'model_name' => $modelName,
+                        'recommendations' => $perfumes,
+                        'raw_response' => $response->json()
+                    ];
+                }
+            }
+            
+            return [
+                'success' => false,
+                'error' => 'ML API did not return recommendations',
+                'status' => $response->status(),
+                'body' => $response->body()
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
         }
     }
 

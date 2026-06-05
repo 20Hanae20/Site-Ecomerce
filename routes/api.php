@@ -116,6 +116,8 @@ Route::middleware('tenant')->group(function () {
             // AI Analytics Dashboard
             Route::get('/analytics/ml-dashboard', [AnalyticsController::class, 'mlDashboard']);
             Route::get('/analytics/ml-performance', [AnalyticsController::class, 'mlPerformance']);
+            Route::post('/analytics/ml-test', [AnalyticsController::class, 'mlTest']);
+            Route::post('/analytics/ml-train', [AnalyticsController::class, 'mlTrainModel']);
 
             // Category Management
             Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);

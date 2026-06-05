@@ -65,40 +65,6 @@ const AdminLogin = () => {
                     </button>
                 </form>
             </div>
-
-            <style>{`
-                .admin-login-page {
-                    min-height: 80vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: radial-gradient(circle at center, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
-                }
-                .admin-login-card {
-                    background: var(--glass);
-                    border: 1px solid var(--glass-border);
-                    padding: 3rem;
-                    border-radius: 1.5rem;
-                    width: 100%;
-                    max-width: 450px;
-                    backdrop-filter: blur(20px);
-                }
-                .admin-login-card header {
-                    text-align: center;
-                    margin-bottom: 3rem;
-                }
-                .admin-login-card h1 {
-                    font-size: 2.5rem;
-                    color: var(--primary);
-                    margin-bottom: 0.5rem;
-                }
-                .admin-login-card p {
-                    color: var(--text-muted);
-                    font-size: 0.9rem;
-                    letter-spacing: 0.1em;
-                    text-transform: uppercase;
-                }
-            `}</style>
         </div>
     );
 };
