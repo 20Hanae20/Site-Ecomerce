@@ -17,20 +17,20 @@ return new class extends Migration
                 $table->foreignId('category_id')->nullable()->after('id');
             }
 
-            if (! Schema::hasColumn('perfumes', 'stock')) {
-                $table->integer('stock')->default(0)->after('price');
+            if (! Schema::hasColumn('perfumes', 'stock_quantity')) {
+                $table->integer('stock_quantity')->default(0)->after('price');
             }
 
             if (! Schema::hasColumn('perfumes', 'is_active')) {
-                $table->boolean('is_active')->default(true)->after('stock');
+                $table->boolean('is_active')->default(true)->after('stock_quantity');
             }
 
-            if (! Schema::hasColumn('perfumes', 'rating')) {
-                $table->decimal('rating', 3, 2)->default(0)->after('is_active');
+            if (! Schema::hasColumn('perfumes', 'rating_avg')) {
+                $table->decimal('rating_avg', 3, 2)->default(0)->after('is_active');
             }
 
             if (! Schema::hasColumn('perfumes', 'views')) {
-                $table->integer('views')->default(0)->after('rating');
+                $table->integer('views')->default(0)->after('rating_avg');
             }
 
             if (! Schema::hasColumn('perfumes', 'sales_count')) {
@@ -62,7 +62,7 @@ return new class extends Migration
                 $table->dropColumn('category_id');
             }
 
-            $columns = array_filter(['stock', 'is_active', 'rating', 'views', 'sales_count'], fn ($column) => Schema::hasColumn('perfumes', $column));
+            $columns = array_filter(['stock_quantity', 'is_active', 'rating_avg', 'views', 'sales_count'], fn ($column) => Schema::hasColumn('perfumes', $column));
 
             if (! empty($columns)) {
                 $table->dropColumn($columns);

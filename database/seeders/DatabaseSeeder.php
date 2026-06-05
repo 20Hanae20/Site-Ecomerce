@@ -16,6 +16,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             TenantSeeder::class,
+        ]);
+
+        $tenant = \App\Models\Tenant::first();
+        if ($tenant) {
+            tenancy()->initialize($tenant);
+        }
+
+        $this->call([
             AdminSeeder::class,
             UsersDemoSeeder::class,
             CategorySeeder::class,

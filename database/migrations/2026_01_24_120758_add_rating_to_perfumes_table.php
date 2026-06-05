@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('perfumes', function (Blueprint $table) {
-            $table->integer('reviews_count')->unsigned()->default(0)->after('rating');
+            $table->integer('rating_count')->unsigned()->default(0)->after('rating_avg');
         });
     }
 
     public function down(): void
     {
         Schema::table('perfumes', function (Blueprint $table) {
-            $table->dropColumn(['rating', 'reviews_count']);
+            $table->dropColumn(['rating_count']);
         });
     }
 };
