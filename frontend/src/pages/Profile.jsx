@@ -49,6 +49,13 @@ const Profile = () => {
         is_default: false,
     });
 
+    const inputStyle = {
+        color: '#0a1928',
+        backgroundColor: '#ffffff',
+        WebkitTextFillColor: '#0a1928',
+        caretColor: '#0a1928',
+    };
+
     useEffect(() => {
         fetchProfile();
     }, []);
@@ -197,6 +204,7 @@ const Profile = () => {
                                 <input
                                     type="text"
                                     className="input-luxury"
+                                    style={inputStyle}
                                     value={profileData.name}
                                     onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
                                 />
@@ -208,6 +216,7 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         className="input-luxury"
+                                        style={inputStyle}
                                         value={profileData.first_name}
                                         onChange={(e) => setProfileData({ ...profileData, first_name: e.target.value })}
                                     />
@@ -217,6 +226,7 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         className="input-luxury"
+                                        style={inputStyle}
                                         value={profileData.last_name}
                                         onChange={(e) => setProfileData({ ...profileData, last_name: e.target.value })}
                                     />
@@ -230,6 +240,7 @@ const Profile = () => {
                                     <input
                                         type="text"
                                         className="input-luxury"
+                                        style={inputStyle}
                                         value={profileData.phone}
                                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                                         placeholder="+212 600..."
@@ -252,6 +263,7 @@ const Profile = () => {
                                 <input
                                     type="password"
                                     className="input-luxury"
+                                    style={inputStyle}
                                     value={passwordData.current_password}
                                     onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
                                     required
@@ -263,6 +275,7 @@ const Profile = () => {
                                     <input
                                         type="password"
                                         className="input-luxury"
+                                        style={inputStyle}
                                         value={passwordData.new_password}
                                         onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
                                         required
@@ -273,6 +286,7 @@ const Profile = () => {
                                     <input
                                         type="password"
                                         className="input-luxury"
+                                        style={inputStyle}
                                         value={passwordData.new_password_confirmation}
                                         onChange={(e) => setPasswordData({ ...passwordData, new_password_confirmation: e.target.value })}
                                         required
@@ -306,20 +320,20 @@ const Profile = () => {
                                 <div className="input-row-luxury">
                                     <div className="input-group-luxury">
                                         <label className="gold-label-luxury">VILLE</label>
-                                        <input type="text" className="input-luxury small" required onChange={(e) => setAddressData({ ...addressData, city: e.target.value })} />
+                                        <input type="text" className="input-luxury small" style={inputStyle} required onChange={(e) => setAddressData({ ...addressData, city: e.target.value })} />
                                     </div>
                                     <div className="input-group-luxury">
                                         <label className="gold-label-luxury">ZIP</label>
-                                        <input type="text" className="input-luxury small" required onChange={(e) => setAddressData({ ...addressData, zip_code: e.target.value })} />
+                                        <input type="text" className="input-luxury small" style={inputStyle} required onChange={(e) => setAddressData({ ...addressData, zip_code: e.target.value })} />
                                     </div>
                                 </div>
                                 <div className="input-group-luxury">
                                     <label className="gold-label-luxury">QUARTIER</label>
-                                    <input type="text" className="input-luxury small" required onChange={(e) => setAddressData({ ...addressData, neighborhood: e.target.value })} />
+                                    <input type="text" className="input-luxury small" style={inputStyle} required onChange={(e) => setAddressData({ ...addressData, neighborhood: e.target.value })} />
                                 </div>
                                 <div className="input-group-luxury">
                                     <label className="gold-label-luxury">RÉSIDENCE / APPARTEMENT</label>
-                                    <textarea className="input-luxury small" rows="2" required onChange={(e) => setAddressData({ ...addressData, full_address: e.target.value })} />
+                                    <textarea className="input-luxury small" style={inputStyle} rows="2" required onChange={(e) => setAddressData({ ...addressData, full_address: e.target.value })} />
                                 </div>
                                 <label className="luxury-checkbox">
                                     <input type="checkbox" onChange={(e) => setAddressData({ ...addressData, is_default: e.target.checked })} />
@@ -475,13 +489,15 @@ const Profile = () => {
                     border: 1px solid rgba(16,24,32,0.08);
                     border-radius: 12px;
                     padding: 1.2rem;
-                    color: rgba(10,25,40,0.92);
+                    color: rgba(10,25,40,0.92) !important;
                     font-family: 'Inter', sans-serif;
                     font-size: 0.95rem;
                     transition: 0.18s ease;
                     box-shadow: 0 6px 18px rgba(12,20,28,0.04);
+                    opacity: 1 !important;
+                    -webkit-text-fill-color: rgba(10,25,40,0.92) !important;
                 }
-                .input-luxury::placeholder { color: rgba(10,25,40,0.35); }
+                .input-luxury::placeholder { color: rgba(10,25,40,0.35) !important; }
                 .input-luxury:focus { outline: none; border-color: rgba(34,120,255,0.9); background: #fff; box-shadow: 0 6px 24px rgba(34,120,255,0.06); }
                 .input-luxury.small { padding: 0.9rem; font-size: 0.85rem; border-radius: 10px; }
 
