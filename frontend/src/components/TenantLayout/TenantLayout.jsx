@@ -32,15 +32,15 @@ const TenantLayout = () => {
 
     const menuItems = [
         { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/tenant/dashboard', roles: ['*'] },
-        { label: 'Produits', icon: <Package size={20} />, path: '/tenant/products', roles: ['admin', 'manager', 'seller'] },
-        { label: 'Commandes', icon: <ShoppingCart size={20} />, path: '/tenant/orders', roles: ['admin', 'manager', 'seller'] },
-        { label: 'Clients', icon: <Users size={20} />, path: '/tenant/customers', roles: ['admin', 'manager'] },
-        { label: 'Promotions', icon: <Tag size={20} />, path: '/tenant/promotions', roles: ['admin', 'manager'] },
-        { label: 'Équipe', icon: <Users size={20} />, path: '/tenant/team', roles: ['admin', 'owner'] },
-        { label: 'Analytics', icon: <BarChart3 size={20} />, path: '/tenant/analytics', roles: ['admin', 'manager'] },
-        { label: 'IA', icon: <Brain size={20} />, path: '/tenant/ai', roles: ['admin', 'manager'] },
-        { label: 'Facturation', icon: <CreditCard size={20} />, path: '/tenant/billing', roles: ['admin', 'owner'] },
-        { label: 'Paramètres', icon: <Settings size={20} />, path: '/tenant/settings', roles: ['admin', 'owner'] },
+        { label: 'Produits', icon: <Package size={20} />, path: '/tenant/products', roles: ['admin', 'super_admin', 'gestionnaire', 'owner', 'moderateur'] },
+        { label: 'Commandes', icon: <ShoppingCart size={20} />, path: '/tenant/orders', roles: ['admin', 'super_admin', 'gestionnaire', 'owner', 'moderateur'] },
+        { label: 'Clients', icon: <Users size={20} />, path: '/tenant/customers', roles: ['admin', 'super_admin', 'gestionnaire', 'owner'] },
+        { label: 'Promotions', icon: <Tag size={20} />, path: '/tenant/promotions', roles: ['admin', 'super_admin', 'gestionnaire', 'owner'] },
+        { label: 'Équipe', icon: <Users size={20} />, path: '/tenant/team', roles: ['admin', 'super_admin', 'owner'] },
+        { label: 'Analytics', icon: <BarChart3 size={20} />, path: '/tenant/analytics', roles: ['admin', 'super_admin', 'gestionnaire', 'owner'] },
+        { label: 'IA', icon: <Brain size={20} />, path: '/tenant/ai', roles: ['admin', 'super_admin', 'gestionnaire', 'owner'] },
+        { label: 'Facturation', icon: <CreditCard size={20} />, path: '/tenant/billing', roles: ['admin', 'super_admin', 'owner'] },
+        { label: 'Paramètres', icon: <Settings size={20} />, path: '/tenant/settings', roles: ['admin', 'super_admin', 'owner'] },
     ];
 
     const filteredMenu = menuItems.filter(item =>

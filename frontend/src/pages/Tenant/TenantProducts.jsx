@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api, { API_HOST } from '../../services/api';
 import { Plus, Search, Filter, Edit2, Trash2, Download, Upload, Box, ShieldAlert } from 'lucide-react';
 
@@ -18,6 +19,7 @@ const TenantProducts = () => {
     const [formData, setFormData] = useState({ name: '', brand: '', price: '', stock_quantity: '', notes: '', category_id: '' });
     const [actionLoading, setActionLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    const navigate = useNavigate();
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -79,7 +81,7 @@ const TenantProducts = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Supprimer ce parfum définitivement ?')) return;
         try {
-            await api.delete(`/admin/perfumes/${id}`);
+            await api.delete(`/perfumes/${id}`);
             fetchProducts();
         } catch (err) {
             console.error('Failed to delete product', err);
@@ -103,9 +105,9 @@ const TenantProducts = () => {
             };
 
             if (modalMode === 'add') {
-                await api.post('/admin/perfumes', payload);
+                await api.post('/perfumes', payload);
             } else {
-                await api.put(`/admin/perfumes/${currentId}`, payload);
+                await api.put(`/perfumes/${currentId}`, payload);
             }
             setShowModal(false);
             fetchProducts();

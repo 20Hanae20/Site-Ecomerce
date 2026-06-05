@@ -1,0 +1,294 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import { Plus, Search, Edit2, Trash2, Box } from 'lucide-react';
+
+const AdminProducts = () => {
+    const [perfumes, setPerfumes] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [catFilter, setCatFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState({ current_page: 1, last_page: 1 });
+    const [showModal, setShowModal] = useState(false);
+    const [modalMode, setModalMode] = useState('add');
+    const [currentId, setCurrentId] = useState(null);
+    const [formData, setFormData] = useState({ name: '', brand: '', description: '', price: '', stock_quantity: '', notes: '', category_id: '' });
+    const [actionLoading, setActionLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
+    const navigate = useNavigate();
+
+    const fetchCategories = useCallback(async () => {
+        try {
+            const res = await api.get('/categories');
+            setCategories(res.data || []);
+        } catch (err) {
+            console.error('Erreur récupération catégories', err);
+        }
+    }, []);
+
+    const fetchProducts = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams();
+            if (search) params.append('q', search);
+            if (catFilter) params.append('category_id', catFilter);
+            params.append('page', page);
+
+            const res = await api.get(`/perfumes?${params.toString()}`);
+            setPerfumes(res.data.data || []);
+            setPagination({
+                current_page: res.data.current_page || 1,
+                last_page: res.data.last_page || 1,
+            });
+        } catch (err) {
+            console.error('Erreur récupération produits', err);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [search, catFilter, page]);
+
+    useEffect(() => {
+        fetchCategories();
+        fetchProducts();
+    }, [fetchCategories, fetchProducts]);
+
+    const openAddModal = () => {
+        setModalMode('add');
+        setCurrentId(null);
+        setFormData({ name: '', brand: '', description: '', price: '', stock_quantity: '', notes: '', category_id: categories[0]?.id || '' });
+        setErrorMsg('');
+        setShowModal(true);
+    };
+
+    const openEditModal = (perfume) => {
+        setModalMode('edit');
+        setCurrentId(perfume.id);
+        setFormData({
+            name: perfume.name || '',
+            brand: perfume.brand || '',
+            description: perfume.description || '',
+            price: perfume.price || '',
+            stock_quantity: perfume.stock_quantity?.toString() || '0',
+            notes: perfume.notes || '',
+            category_id: perfume.category_id?.toString() || categories[0]?.id || '',
+        });
+        setErrorMsg('');
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Voulez-vous vraiment supprimer ce produit ?')) return;
+        try {
+            await api.delete(`/perfumes/${id}`);
+            setSuccessMsg('Produit supprimé avec succès.');
+            fetchProducts();
+        } catch (err) {
+            console.error('Erreur suppression produit', err);
+            setErrorMsg('Impossible de supprimer ce produit. Vérifiez vos droits ou réessayez plus tard.');
+        }
+    };
+
+    const handleSave = async (e) => {
+        e.preventDefault();
+        setActionLoading(true);
+        setErrorMsg('');
+        setSuccessMsg('');
+
+        const payload = {
+            name: formData.name,
+            brand: formData.brand,
+            description: formData.description,
+            price: parseFloat(formData.price) || 0,
+            stock_quantity: parseInt(formData.stock_quantity, 10) || 0,
+            notes: formData.notes,
+            category_id: parseInt(formData.category_id, 10) || null,
+            is_active: true,
+        };
+
+        try {
+            if (modalMode === 'add') {
+                await api.post('/perfumes', payload);
+                setSuccessMsg('Produit créé avec succès.');
+            } else {
+                await api.put(`/perfumes/${currentId}`, payload);
+                setSuccessMsg('Produit mis à jour avec succès.');
+            }
+            setShowModal(false);
+            fetchProducts();
+        } catch (err) {
+            console.error('Erreur sauvegarde produit', err);
+            setErrorMsg(err.response?.data?.message || "Impossible d'enregistrer le produit.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    return (
+        <div className="admin-content-inner">
+            <header className="premium-header">
+                <div className="welcome-section">
+                    <h1>Gestion des <span className="gradient-text-gold">Produits</span></h1>
+                    <p>Ajoutez, modifiez et supprimez les parfums directement depuis l'espace admin.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button className="gold-button" onClick={openAddModal}>
+                        <Plus size={16} /> Ajouter un produit
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => navigate('/admin/products/add')}>
+                        <Plus size={16} /> Page ajout complète
+                    </button>
+                </div>
+            </header>
+
+            <div className="admin-action-bar">
+                <div className="search-box">
+                    <Search size={18} />
+                    <input
+                        type="text"
+                        placeholder="Rechercher un produit..."
+                        value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                    />
+                </div>
+                <select className="filter-select" value={catFilter} onChange={(e) => { setCatFilter(e.target.value); setPage(1); }}>
+                    <option value="">Toutes les catégories</option>
+                    {categories.map((category) => (
+                        <option value={category.id} key={category.id}>{category.name}</option>
+                    ))}
+                </select>
+            </div>
+
+            {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
+            {successMsg && <div className="alert alert-success">{successMsg}</div>}
+
+            {isLoading ? (
+                <div className="analytics-loader"><div className="loader-spinner" /><p>Chargement des produits...</p></div>
+            ) : perfumes.length === 0 ? (
+                <div className="glass-premium empty-state-panel">
+                    <Box size={48} />
+                    <h3>Aucun produit trouvé</h3>
+                    <p>Créez un produit en utilisant le bouton ci-dessus.</p>
+                </div>
+            ) : (
+                <div className="glass-premium" style={{ padding: '1.5rem', borderRadius: '24px' }}>
+                    <div className="table-responsive">
+                        <table className="premium-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Marque</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix</th>
+                                    <th>Stock</th>
+                                    <th style={{ textAlign: 'right' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {perfumes.map((product) => (
+                                    <tr key={product.id}>
+                                        <td><strong>{product.name}</strong></td>
+                                        <td>{product.brand}</td>
+                                        <td>{product.category?.name || 'Général'}</td>
+                                        <td>{parseFloat(product.price).toFixed(2)} €</td>
+                                        <td>
+                                            <span style={{ color: product.stock_quantity === 0 ? '#ef4444' : product.stock_quantity < 5 ? '#f59e0b' : '#10b981' }}>
+                                                {product.stock_quantity}
+                                            </span>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button className="btn-action" onClick={() => openEditModal(product)} title="Modifier">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button className="btn-action btn-delete" onClick={() => handleDelete(product.id)} title="Supprimer">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {pagination.last_page > 1 && (
+                        <div className="pagination-controls">
+                            <button className="btn btn-secondary btn-sm" disabled={page === 1} onClick={() => setPage(page - 1)}>Précédent</button>
+                            {[...Array(pagination.last_page).keys()].map((index) => (
+                                <button
+                                    key={index}
+                                    className={`btn btn-sm ${page === index + 1 ? 'btn-primary' : 'btn-secondary'}`}
+                                    onClick={() => setPage(index + 1)}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                            <button className="btn btn-secondary btn-sm" disabled={page === pagination.last_page} onClick={() => setPage(page + 1)}>Suivant</button>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {showModal && (
+                <div className="modal-overlay">
+                    <div className="glass-premium modal-card">
+                        <div className="modal-header">
+                            <h3>{modalMode === 'add' ? 'Ajouter un produit' : 'Modifier le produit'}</h3>
+                            <button type="button" onClick={() => setShowModal(false)}>×</button>
+                        </div>
+
+                        <form onSubmit={handleSave} className="admin-product-form">
+                            <div className="grid-two-columns">
+                                <div className="form-group">
+                                    <label>Nom du produit</label>
+                                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Maison / Marque</label>
+                                    <input type="text" value={formData.brand} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
+                                </div>
+                            </div>
+                            <div className="grid-two-columns">
+                                <div className="form-group">
+                                    <label>Prix (€)</label>
+                                    <input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Stock</label>
+                                    <input type="number" value={formData.stock_quantity} onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })} required />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Catégorie</label>
+                                <select value={formData.category_id} onChange={(e) => setFormData({ ...formData, category_id: e.target.value })} required>
+                                    <option value="">Sélectionnez une catégorie</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>{category.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" required />
+                            </div>
+                            <div className="form-group">
+                                <label>Notes olfactives</label>
+                                <textarea value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} rows="3" />
+                            </div>
+
+                            <div className="modal-actions">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Annuler</button>
+                                <button type="submit" className="btn btn-primary" disabled={actionLoading}>
+                                    {actionLoading ? 'Sauvegarde...' : 'Enregistrer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default AdminProducts;

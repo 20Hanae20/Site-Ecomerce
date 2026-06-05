@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
@@ -37,7 +38,6 @@ const AnalyticsDashboardFull = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const api = (await import('../../services/api')).default;
             const [dashRes, kpiRes] = await Promise.all([
                 api.get('/admin/analytics/dashboard'),
                 api.get('/admin/analytics/kpis'),
@@ -63,7 +63,6 @@ const AnalyticsDashboardFull = () => {
     const handleExport = async (type) => {
         setExporting(type);
         try {
-            const api = (await import('../../services/api')).default;
             const response = await api.get(`/admin/analytics/export/${type}`, { responseType: 'blob' });
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');

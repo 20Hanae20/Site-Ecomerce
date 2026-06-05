@@ -14,7 +14,6 @@ const CustomerSegmentation = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const api = (await import('../../services/api')).default;
             const res = await api.get('/admin/analytics/customers');
             setSegments(res.data.data.segments || []);
             setTotal(res.data.data.total || 0);

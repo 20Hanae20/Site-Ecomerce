@@ -122,7 +122,7 @@ class AdminController extends Controller
             ->get();
 
         // 7 Day Sales Trend
-        $salesTrend = \App\Models\Order::select(\DB::raw('DATE(created_at) as date'), \DB::raw('SUM(total_amount) as total'))
+        $salesTrend = \App\Models\Order::select(\DB::raw('DATE(created_at) as date'), \DB::raw('SUM(total) as total'))
             ->where('created_at', '>=', now()->subDays(7))
             ->where('status', '!=', 'cancelled')
             ->groupBy('date')

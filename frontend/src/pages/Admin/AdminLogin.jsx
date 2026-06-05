@@ -17,7 +17,9 @@ const AdminLogin = () => {
         try {
             const response = await api.post('/admin/login', { email, password });
             localStorage.setItem('admin_token', response.data.access_token);
+            localStorage.setItem('token', response.data.access_token);
             localStorage.setItem('admin_user', JSON.stringify(response.data.user));
+            localStorage.setItem('user', JSON.stringify(response.data.user));
             navigate('/admin/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur de connexion');

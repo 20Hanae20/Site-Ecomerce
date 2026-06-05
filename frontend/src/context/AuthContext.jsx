@@ -45,7 +45,9 @@ export const AuthProvider = ({ children }) => {
                     await fetchSubscriptionData();
                 }
             } catch (err) {
-                console.error('Auth initialization error:', err);
+                if (import.meta.env.DEV) {
+                    console.error('Auth initialization error:', err);
+                }
             } finally {
                 setLoading(false);
             }
@@ -61,7 +63,9 @@ export const AuthProvider = ({ children }) => {
             setTenant(tenantData);
             localStorage.setItem('tenant', JSON.stringify(tenantData));
         } catch (err) {
-            console.error('Error fetching tenant data:', err);
+            if (import.meta.env.DEV) {
+                console.error('Error fetching tenant data:', err);
+            }
         }
     }, []);
 
@@ -72,7 +76,9 @@ export const AuthProvider = ({ children }) => {
             setSubscription(subscriptionData);
             localStorage.setItem('subscription', JSON.stringify(subscriptionData));
         } catch (err) {
-            console.error('Error fetching subscription data:', err);
+            if (import.meta.env.DEV) {
+                console.error('Error fetching subscription data:', err);
+            }
         }
     }, []);
 

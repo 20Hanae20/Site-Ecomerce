@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ component, requiredRole = null, ...rest }) => {
     const Comp = component;
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('admin_token');
     let user = {};
     try {
         user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -12,8 +12,10 @@ const ProtectedRoute = ({ component, requiredRole = null, ...rest }) => {
         localStorage.removeItem('user');
     }
 
+    const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+
     if (!token) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={loginPath} replace />;
     }
 
     if (requiredRole) {

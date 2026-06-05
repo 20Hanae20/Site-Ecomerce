@@ -42,7 +42,7 @@ const AdminLayout = () => {
         const token = localStorage.getItem('token') || localStorage.getItem('admin_token');
 
         if (!user || !token) {
-            navigate('/login');
+            navigate('/admin/login');
             return;
         }
 
@@ -86,7 +86,7 @@ const AdminLayout = () => {
         { label: 'Console IA Plateforme', icon: <Brain size={20} />, path: '/admin/ia', roles: ['super_admin'] },
         { label: 'Monitoring SaaS', icon: <Activity size={20} />, path: '/admin/monitoring', roles: ['super_admin', 'admin'] },
         { label: 'Centre Notifications', icon: <Bell size={20} />, path: '/admin/notifications', roles: ['super_admin', 'admin', 'gestionnaire'] },
-        { label: 'Produits', icon: <Package size={20} />, path: '/perfumes', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
+        { label: 'Produits', icon: <Package size={20} />, path: '/admin/products', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
         { label: 'Catégories', icon: <Layers size={20} />, path: '/admin/categories', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
         { label: 'Commandes', icon: <ShoppingBag size={20} />, path: '/admin/orders', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },
         { label: 'Promotions', icon: <Tag size={20} />, path: '/admin/promotions', roles: ['super_admin', 'admin', 'gestionnaire', 'moderateur'] },

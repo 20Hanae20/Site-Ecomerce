@@ -61,6 +61,7 @@ import TenantAnalytics from './pages/Tenant/TenantAnalytics';
 import TenantAI from './pages/Tenant/TenantAI';
 import TenantBilling from './pages/Tenant/TenantBilling';
 import TenantSettings from './pages/Tenant/TenantSettings';
+import AddPerfume from './pages/AddPerfume';
 
 // Admin / Super Admin Pages
 import AdminLogin from './pages/Admin/AdminLogin';
@@ -68,6 +69,7 @@ import AdminLayout from './components/Admin/AdminLayout';
 import AdminDashboard from './pages/Admin/Dashboard';
 import AdminCategories from './pages/Admin/Categories';
 import AdminOrders from './pages/Admin/Orders';
+import AdminProducts from './pages/Admin/Products';
 import AdminUsers from './pages/Admin/Users';
 import AdminPromotions from './pages/Admin/Promotions';
 import AdminReviews from './pages/Admin/Reviews';
@@ -171,6 +173,8 @@ function App() {
               <Route element={<AdminLayout />}>
                 <Route path="/admin/dashboard" element={<ProtectedRoute component={AdminDashboard} requiredRole={['admin', 'super_admin', 'gestionnaire']} />} />
                 <Route path="/admin/categories" element={<ProtectedRoute component={AdminCategories} requiredRole={['admin', 'super_admin', 'gestionnaire']} />} />
+                <Route path="/admin/products" element={<ProtectedRoute component={AdminProducts} requiredRole={['admin', 'super_admin', 'gestionnaire', 'moderateur']} />} />
+                <Route path="/admin/products/add" element={<ProtectedRoute component={AddPerfume} requiredRole={['admin', 'super_admin', 'gestionnaire', 'moderateur']} />} />
                 <Route path="/admin/orders" element={<ProtectedRoute component={AdminOrders} requiredRole={['admin', 'super_admin', 'gestionnaire']} />} />
                 <Route path="/admin/users" element={<ProtectedRoute component={AdminUsers} requiredRole={['admin', 'super_admin']} />} />
                 <Route path="/admin/promotions" element={<ProtectedRoute component={AdminPromotions} requiredRole={['admin', 'super_admin', 'gestionnaire']} />} />

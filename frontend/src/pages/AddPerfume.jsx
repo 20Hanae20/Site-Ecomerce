@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Plus, Image as ImageIcon, Link as LinkIcon, Trash2, Sparkles, Upload } from 'lucide-react';
 
@@ -8,9 +8,12 @@ const AddPerfume = () => {
         description: '',
         notes: '',
         price: '',
+        stock_quantity: '0',
+        category_id: '',
         image_url: '',
         gallery_urls: '',
     });
+    const [categories, setCategories] = useState([]);
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState(null);
     const [galleryImages, setGalleryImages] = useState([]);
@@ -58,6 +61,21 @@ const AddPerfume = () => {
         setImage(null);
     };
 
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const res = await api.get('/categories');
+                setCategories(res.data || []);
+            } catch (err) {
+                if (import.meta.env.DEV) {
+                    console.error('Unable to load categories for AddPerfume', err);
+                }
+            }
+        };
+
+        loadCategories();
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
@@ -69,6 +87,10 @@ const AddPerfume = () => {
         data.append('description', formData.description);
         data.append('notes', formData.notes);
         data.append('price', formData.price);
+        data.append('stock_quantity', formData.stock_quantity);
+        if (formData.category_id) {
+            data.append('category_id', formData.category_id);
+        }
 
         if (imageType === 'file' && image) {
             data.append('image', image);
@@ -92,7 +114,7 @@ const AddPerfume = () => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setMessage({ text: response.data.message, type: 'success' });
-            setFormData({ name: '', description: '', notes: '', price: '', image_url: '', gallery_urls: '' });
+            setFormData({ name: '', description: '', notes: '', price: '', stock_quantity: '0', category_id: '', image_url: '', gallery_urls: '' });
             setImage(null); setPreview(null); setGalleryImages([]); setGalleryPreviews([]);
         } catch (err) {
             if (err.response?.data?.errors) {
@@ -146,6 +168,23 @@ const AddPerfume = () => {
                                 <label>Prix d'Exception (€)</label>
                                 <input id="price" type="number" step="0.01" name="price" value={formData.price} onChange={handleChange} placeholder="0.00" required />
                                 {errors.price && <span className="error-text">{errors.price[0]}</span>}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Stock disponible</label>
+                                <input id="stock_quantity" type="number" name="stock_quantity" value={formData.stock_quantity} onChange={handleChange} placeholder="0" min="0" />
+                                {errors.stock_quantity && <span className="error-text">{errors.stock_quantity[0]}</span>}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Catégorie</label>
+                                <select name="category_id" value={formData.category_id} onChange={handleChange}>
+                                    <option value="">Aucune catégorie</option>
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>{category.name}</option>
+                                    ))}
+                                </select>
+                                {errors.category_id && <span className="error-text">{errors.category_id[0]}</span>}
                             </div>
                         </div>
 

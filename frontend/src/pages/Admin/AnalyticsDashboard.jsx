@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import {
     Brain,
     TrendingUp,
@@ -45,7 +46,6 @@ const AnalyticsDashboard = () => {
 
     const fetchAnalyticsData = async () => {
         try {
-            const api = (await import('../../services/api')).default;
             
             const [mlResponse, perfResponse] = await Promise.all([
                 api.get('/admin/analytics/ml-dashboard'),

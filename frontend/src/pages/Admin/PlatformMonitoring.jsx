@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import {
     Server, Database, Cpu, Wifi, WifiOff,
     RefreshCw, Clock, CheckCircle, AlertTriangle, XCircle
@@ -51,7 +52,6 @@ const PlatformMonitoring = () => {
     const fetchMonitoring = useCallback(async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
         try {
-            const api = (await import('../../services/api')).default;
             const res = await api.get('/admin/saas/monitoring');
             setMonitorData(res.data.data);
             setLastRefresh(new Date());

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import {
     TrendingUp,
     Star,
@@ -36,7 +37,7 @@ const AdminDashboard = () => {
         const token = localStorage.getItem('token') || localStorage.getItem('admin_token');
 
         if (!storedUser || !token) {
-            navigate('/login');
+            navigate('/admin/login');
             return;
         }
 
@@ -56,31 +57,34 @@ const AdminDashboard = () => {
 
     const fetchStats = async () => {
         try {
-            const api = (await import('../../services/api')).default;
             const response = await api.get('/admin/stats');
             setStats(response.data);
         } catch (err) {
-            console.error("Failed to fetch admin stats", err);
+            if (import.meta.env.DEV) {
+                console.error("Failed to fetch admin stats", err);
+            }
         }
     };
 
     const fetchTenantInfo = async () => {
         try {
-            const api = (await import('../../services/api')).default;
             const response = await api.get('/tenant/current');
             setTenant(response.data);
         } catch (err) {
-            console.error("Failed to fetch tenant info", err);
+            if (import.meta.env.DEV) {
+                console.error("Failed to fetch tenant info", err);
+            }
         }
     };
 
     const fetchSubscriptionInfo = async () => {
         try {
-            const api = (await import('../../services/api')).default;
             const response = await api.get('/subscription/current');
             setSubscription(response.data);
         } catch (err) {
-            console.error("Failed to fetch subscription info", err);
+            if (import.meta.env.DEV) {
+                console.error("Failed to fetch subscription info", err);
+            }
         }
     };
 

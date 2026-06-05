@@ -23,7 +23,6 @@ const SaasDashboard = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const api = (await import('../../services/api')).default;
             const [dashRes, tenantsRes] = await Promise.all([
                 api.get('/admin/saas/dashboard'),
                 api.get('/admin/saas/tenants'),
@@ -50,7 +49,6 @@ const SaasDashboard = () => {
         if (action === 'delete' && !window.confirm('Supprimer ce tenant définitivement ? Cette action est irréversible.')) return;
         setActionLoading(`${id}-${action}`);
         try {
-            const api = (await import('../../services/api')).default;
             await api.put(`/admin/saas/tenants/${id}/status`, { action });
             await fetchData();
         } catch (err) {
