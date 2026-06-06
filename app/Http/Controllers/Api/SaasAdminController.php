@@ -693,6 +693,84 @@ class SaasAdminController extends Controller
             return response()->json(['message' => 'Type d\'export invalide'], 400);
         }
 
+        if ($request->input('format') === 'json') {
+            $data = [];
+            switch ($type) {
+                case 'orders':
+                    $orders = Order::with('user:id,name,email')->orderByDesc('created_at')->get();
+                    foreach ($orders as $o) {
+                        $data[] = [
+                            'order_number' => $o->order_number,
+                            'client_name' => $o->user?->name ?? 'N/A',
+                            'client_email' => $o->user?->email ?? 'N/A',
+                            'total' => number_format($o->total, 2, '.', ''),
+                            'status' => $o->status,
+                            'payment_status' => $o->payment_status,
+                            'created_at' => $o->created_at->format('d/m/Y H:i'),
+                        ];
+                    }
+                    break;
+
+                case 'customers':
+                    $users = User::where('role', 'user')
+                        ->withCount(['orders as order_count'])
+                        ->withSum(['orders as total_spent' => fn($q) => $q->where('status', '!=', 'cancelled')], 'total')
+                        ->orderByDesc('created_at')
+                        ->get();
+                    foreach ($users as $u) {
+                        $data[] = [
+                            'name' => $u->name,
+                            'email' => $u->email,
+                            'role' => $u->role,
+                            'status' => $u->status,
+                            'order_count' => $u->order_count ?? 0,
+                            'total_spent' => number_format($u->total_spent ?? 0, 2, '.', ''),
+                            'created_at' => $u->created_at->format('d/m/Y'),
+                        ];
+                    }
+                    break;
+
+                case 'products':
+                    $perfumes = Perfume::with('category:id,name')->orderBy('name')->get();
+                    foreach ($perfumes as $p) {
+                        $data[] = [
+                            'name' => $p->name,
+                            'price' => number_format($p->price, 2, '.', ''),
+                            'stock_quantity' => $p->stock_quantity,
+                            'rating_avg' => $p->rating_avg ?? 0,
+                            'rating_count' => $p->rating_count ?? 0,
+                            'is_active' => $p->is_active ? 'Oui' : 'Non',
+                            'category' => $p->category?->name ?? 'N/A',
+                        ];
+                    }
+                    break;
+
+                case 'analytics':
+                    $trend = Order::select(
+                            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"),
+                            DB::raw('SUM(total) as revenue'),
+                            DB::raw('COUNT(*) as orders'),
+                            DB::raw('AVG(total) as avg_order')
+                        )
+                        ->where('status', '!=', 'cancelled')
+                        ->where('created_at', '>=', now()->subMonths(12))
+                        ->groupBy('month')
+                        ->orderBy('month')
+                        ->get();
+
+                    foreach ($trend as $row) {
+                        $data[] = [
+                            'month' => $row->month,
+                            'revenue' => number_format($row->revenue, 2, '.', ''),
+                            'orders' => $row->orders,
+                            'avg_order' => number_format($row->avg_order, 2, '.', ''),
+                        ];
+                    }
+                    break;
+            }
+            return response()->json(['success' => true, 'data' => $data]);
+        }
+
         $filename = $type . '_export_' . now()->format('Y-m-d_His') . '.csv';
 
         $headers = [

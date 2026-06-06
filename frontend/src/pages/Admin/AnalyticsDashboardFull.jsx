@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { exportToPDF } from '../../utils/pdfExport';
 import {
-    LineChart, Line, BarChart, Bar, PieChart, Pie, AreaChart, Area,
+    BarChart, Bar, PieChart, Pie, AreaChart, Area,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell
 } from 'recharts';
 import {
@@ -63,17 +64,16 @@ const AnalyticsDashboardFull = () => {
     const handleExport = async (type) => {
         setExporting(type);
         try {
-            const response = await api.get(`/admin/analytics/export/${type}`, { responseType: 'blob' });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `${type}_export_${new Date().toISOString().slice(0, 10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            const response = await api.get(`/admin/analytics/export/${type}?format=json`);
+            if (response.data && response.data.success) {
+                exportToPDF(type, response.data.data);
+            } else {
+                console.error('Failed to get valid export data', response.data);
+                alert('Erreur lors du chargement des données pour l\'export.');
+            }
         } catch (err) {
             console.error('Export failed', err);
+            alert('Impossible de générer le rapport PDF.');
         } finally {
             setExporting('');
         }
@@ -96,7 +96,7 @@ const AnalyticsDashboardFull = () => {
                     {['orders', 'customers', 'products', 'analytics'].map(type => (
                         <button key={type} className="btn-export" onClick={() => handleExport(type)} disabled={exporting === type}>
                             <Download size={14} />
-                            {exporting === type ? '...' : type.charAt(0).toUpperCase() + type.slice(1)}
+                            {exporting === type ? '...' : `${type.charAt(0).toUpperCase() + type.slice(1)} PDF`}
                         </button>
                     ))}
                 </div>
@@ -253,22 +253,6 @@ const AnalyticsDashboardFull = () => {
                 </div>
             </div>
 
-            {/* KPI SaaS Section */}
-            {kpis && (
-                <div className="saas-kpis-section">
-                    <h2>📈 KPIs SaaS</h2>
-                    <div className="saas-kpi-grid">
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.mrr?.toLocaleString('fr-FR')} €</span><span className="saas-kpi-label">MRR</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.arr?.toLocaleString('fr-FR')} €</span><span className="saas-kpi-label">ARR</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.arpu?.toLocaleString('fr-FR')} €</span><span className="saas-kpi-label">ARPU</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.ltv?.toLocaleString('fr-FR')} €</span><span className="saas-kpi-label">LTV</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.churn_rate}%</span><span className="saas-kpi-label">Churn Rate</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.conversion_rate}%</span><span className="saas-kpi-label">Conversion</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.growth_rate}%</span><span className="saas-kpi-label">Croissance</span></div>
-                        <div className="saas-kpi"><span className="saas-kpi-val">{kpis.total_customers}</span><span className="saas-kpi-label">Clients</span></div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

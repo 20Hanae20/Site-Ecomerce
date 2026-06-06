@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api, { API_HOST } from '../../services/api';
-import { Plus, Search, Filter, Edit2, Trash2, Download, Upload, Box, ShieldAlert } from 'lucide-react';
+import api from '../../services/api';
+import { exportToPDF } from '../../utils/pdfExport';
+import { Plus, Search, Edit2, Trash2, Download, Upload, Box } from 'lucide-react';
 
 const TenantProducts = () => {
     const [perfumes, setPerfumes] = useState([]);
@@ -19,7 +19,6 @@ const TenantProducts = () => {
     const [formData, setFormData] = useState({ name: '', brand: '', price: '', stock_quantity: '', notes: '', category_id: '' });
     const [actionLoading, setActionLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
-    const navigate = useNavigate();
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -119,11 +118,20 @@ const TenantProducts = () => {
         }
     };
 
-    // Native CSV Export
-    const handleExportCSV = () => {
-        // Stream the CSV using the backend route
-        const token = localStorage.getItem('token') || localStorage.getItem('admin_token');
-        window.open(`${API_HOST}/api/admin/analytics/export/products?token=${token}`, '_blank');
+    // Native PDF Export
+    const handleExportPDF = async () => {
+        try {
+            const response = await api.get('/admin/analytics/export/products?format=json');
+            if (response.data && response.data.success) {
+                exportToPDF('products', response.data.data);
+            } else {
+                console.error('Failed to get valid export data', response.data);
+                alert('Erreur lors du chargement des données pour l\'export.');
+            }
+        } catch (err) {
+            console.error('Export failed', err);
+            alert('Impossible de générer le rapport PDF.');
+        }
     };
 
     // Simulated CSV Import
@@ -160,8 +168,8 @@ const TenantProducts = () => {
                     </select>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button className="btn btn-secondary" onClick={handleExportCSV} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Download size={16} /> Exporter CSV
+                    <button className="btn btn-secondary" onClick={handleExportPDF} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Download size={16} /> Exporter PDF
                     </button>
                     <label className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                         <Upload size={16} /> Importer CSV
