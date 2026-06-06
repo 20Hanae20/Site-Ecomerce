@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Tenant;
+use App\Models\Category;
+use App\Models\Perfume;
 
 class PerfumeSeeder extends Seeder
 {
@@ -157,11 +160,29 @@ class PerfumeSeeder extends Seeder
             ],
         ];
 
-        $tenantId = \App\Models\Tenant::first()->id;
+        $tenantId = tenant('id') ?? Tenant::first()?->id;
+        $categoryMapping = [
+            1 => 'hommes',
+            2 => 'femmes',
+            3 => 'unisex',
+            4 => 'luxe',
+            5 => 'coffrets',
+            6 => 'enfants',
+        ];
+
+        // Fetch categories scoped for current tenant
+        $categoriesMap = Category::all()->pluck('id', 'slug')->toArray();
+
         foreach ($perfumes as $p) {
             $p['tenant_id'] = $tenantId;
-            \App\Models\Perfume::create($p);
-        }
 
+            // Map standard category ID to the current tenant's Category
+            $baseSlug = $categoryMapping[$p['category_id'] ?? 1];
+            $suffixedSlug = $baseSlug . '-' . $tenantId;
+
+            $p['category_id'] = $categoriesMap[$suffixedSlug] ?? ($categoriesMap[$baseSlug] ?? null);
+
+            Perfume::create($p);
+        }
     }
 }

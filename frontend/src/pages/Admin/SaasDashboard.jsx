@@ -173,7 +173,7 @@ const SaasDashboard = () => {
                 </div>
 
                 {/* Revenue per Tenant */}
-                <div className="chart-card luxury-chart-card">
+                <div className="chart-card wide luxury-chart-card">
                     <div className="chart-header">
                         <h3>Revenus par Tenant</h3>
                         <span className="chart-badge luxury-badge">Classement Top 6</span>

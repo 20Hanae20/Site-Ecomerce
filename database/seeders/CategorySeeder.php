@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Category;
 
 class CategorySeeder extends Seeder
 {
@@ -21,8 +22,13 @@ class CategorySeeder extends Seeder
             ['name' => 'Enfants', 'slug' => 'enfants', 'description' => 'Parfums doux et hypoallergéniques pour les plus petits.', 'is_active' => true],
         ];
 
+        $tenantId = tenant('id') ?? \App\Models\Tenant::first()?->id;
+        $tenantSuffix = $tenantId ? '-' . $tenantId : '';
+
         foreach ($categories as $cat) {
-            \App\Models\Category::updateOrCreate(['slug' => $cat['slug']], $cat);
+            $slug = $cat['slug'] . $tenantSuffix;
+            $catData = array_merge($cat, ['slug' => $slug]);
+            Category::updateOrCreate(['slug' => $slug], $catData);
         }
     }
 }

@@ -29,6 +29,49 @@ if (trait_exists('\\Laravel\\Cashier\\Billable')) {
             }
             return parent::getAttribute($key);
         }
+
+        public function getDataAttribute()
+        {
+            if (isset($this->dataEncoded) && $this->dataEncoded) {
+                $raw = $this->attributes['data'] ?? [];
+                if (is_string($raw)) {
+                    $decoded = json_decode($raw, true);
+                    return is_array($decoded) ? $decoded : [];
+                }
+                return is_array($raw) ? $raw : [];
+            }
+
+            $customColumns = ['id'];
+            $data = [];
+            foreach ($this->attributes as $key => $value) {
+                if (! in_array($key, $customColumns) && $key !== 'data') {
+                    $data[$key] = $value;
+                }
+            }
+            return $data;
+        }
+
+        public function setDataAttribute($value)
+        {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+            $isEncoding = false;
+            foreach ($trace as $step) {
+                if (isset($step['function']) && $step['function'] === 'encodeAttributes') {
+                    $isEncoding = true;
+                    break;
+                }
+            }
+
+            if ($isEncoding) {
+                $this->attributes['data'] = $this->asJson($value);
+            } else {
+                if (is_array($value)) {
+                    foreach ($value as $k => $v) {
+                        $this->setAttribute($k, $v);
+                    }
+                }
+            }
+        }
     }
 } else {
     class Tenant extends BaseTenant
@@ -51,6 +94,49 @@ if (trait_exists('\\Laravel\\Cashier\\Billable')) {
                 return $this->getRelationValue($key);
             }
             return parent::getAttribute($key);
+        }
+
+        public function getDataAttribute()
+        {
+            if (isset($this->dataEncoded) && $this->dataEncoded) {
+                $raw = $this->attributes['data'] ?? [];
+                if (is_string($raw)) {
+                    $decoded = json_decode($raw, true);
+                    return is_array($decoded) ? $decoded : [];
+                }
+                return is_array($raw) ? $raw : [];
+            }
+
+            $customColumns = ['id'];
+            $data = [];
+            foreach ($this->attributes as $key => $value) {
+                if (! in_array($key, $customColumns) && $key !== 'data') {
+                    $data[$key] = $value;
+                }
+            }
+            return $data;
+        }
+
+        public function setDataAttribute($value)
+        {
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
+            $isEncoding = false;
+            foreach ($trace as $step) {
+                if (isset($step['function']) && $step['function'] === 'encodeAttributes') {
+                    $isEncoding = true;
+                    break;
+                }
+            }
+
+            if ($isEncoding) {
+                $this->attributes['data'] = $this->asJson($value);
+            } else {
+                if (is_array($value)) {
+                    foreach ($value as $k => $v) {
+                        $this->setAttribute($k, $v);
+                    }
+                }
+            }
         }
     }
 }
