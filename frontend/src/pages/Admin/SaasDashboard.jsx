@@ -8,10 +8,12 @@ import {
 import {
     Building2, DollarSign, Users, ShoppingBag, Package,
     TrendingUp, Search, Filter, Power, Trash2, Play,
-    AlertCircle, CheckCircle
+    AlertCircle, CheckCircle, Download
 } from 'lucide-react';
+import { exportToPDF } from '../../utils/pdfExport';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+// Luxury Burgundy & Gold color scheme for chart segments
+const COLORS = ['#7f1d1d', '#d97706', '#991b1b', '#b28844', '#475569', '#8b5cf6'];
 
 const SaasDashboard = () => {
     const [dashData, setDashData] = useState(null);
@@ -20,6 +22,7 @@ const SaasDashboard = () => {
     const [planFilter, setPlanFilter] = useState('');
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState('');
+    const [exporting, setExporting] = useState(false);
     const navigate = useNavigate();
 
     const fetchData = useCallback(async () => {
@@ -59,6 +62,18 @@ const SaasDashboard = () => {
         }
     };
 
+    const handleExportPDF = () => {
+        setExporting(true);
+        try {
+            exportToPDF('saas', filteredTenants);
+        } catch (err) {
+            console.error('Export failed', err);
+            alert('Impossible de générer le rapport PDF.');
+        } finally {
+            setExporting(false);
+        }
+    };
+
     const filteredTenants = tenants.filter(t => {
         const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.domain.toLowerCase().includes(search.toLowerCase());
         const matchPlan = !planFilter || t.plan === planFilter;
@@ -70,111 +85,127 @@ const SaasDashboard = () => {
     const kpis = dashData?.kpis || {};
 
     return (
-        <div className="analytics-full-page">
+        <div className="analytics-full-page saas-dashboard-luxury animate-fade-up">
             {/* Header */}
             <div className="analytics-header">
                 <div>
                     <h1>🏢 Super Admin SaaS</h1>
-                    <p>Gestion centralisée de la plateforme multi-tenant</p>
+                    <p className="subtitle-desc">Gestion centralisée et supervision de la plateforme multi-tenant</p>
+                </div>
+                <div className="export-buttons">
+                    <button className="btn-export-luxury" onClick={handleExportPDF} disabled={exporting}>
+                        <Download size={16} />
+                        {exporting ? 'Génération...' : 'Rapport PDF'}
+                    </button>
                 </div>
             </div>
 
             {/* Global KPIs */}
             <div className="analytics-kpi-grid">
-                <div className="analytics-kpi-card">
-                    <div className="kpi-icon gold"><DollarSign size={22} /></div>
+                <div className="analytics-kpi-card luxury-card">
+                    <div className="kpi-icon burgundy"><DollarSign size={22} /></div>
                     <div className="kpi-content">
                         <span className="kpi-label">MRR</span>
                         <span className="kpi-value">{(kpis.mrr || 0).toLocaleString('fr-FR')} €</span>
+                        <span className="kpi-subtext">Revenu mensuel récurrent</span>
                     </div>
                 </div>
-                <div className="analytics-kpi-card">
-                    <div className="kpi-icon blue"><TrendingUp size={22} /></div>
+                <div className="analytics-kpi-card luxury-card">
+                    <div className="kpi-icon gold"><TrendingUp size={22} /></div>
                     <div className="kpi-content">
                         <span className="kpi-label">ARR</span>
                         <span className="kpi-value">{(kpis.arr || 0).toLocaleString('fr-FR')} €</span>
+                        <span className="kpi-subtext">Revenu annuel récurrent</span>
                     </div>
                 </div>
-                <div className="analytics-kpi-card">
-                    <div className="kpi-icon green"><Building2 size={22} /></div>
+                <div className="analytics-kpi-card luxury-card">
+                    <div className="kpi-icon slate"><Building2 size={22} /></div>
                     <div className="kpi-content">
                         <span className="kpi-label">Tenants Actifs</span>
                         <span className="kpi-value">{kpis.active_tenants || 0} / {kpis.total_tenants || 0}</span>
+                        <span className="kpi-subtext">Espaces déployés</span>
                     </div>
                 </div>
-                <div className="analytics-kpi-card">
-                    <div className="kpi-icon purple"><Users size={22} /></div>
+                <div className="analytics-kpi-card luxury-card">
+                    <div className="kpi-icon burgundy"><Users size={22} /></div>
                     <div className="kpi-content">
                         <span className="kpi-label">Utilisateurs</span>
                         <span className="kpi-value">{kpis.total_users || 0}</span>
+                        <span className="kpi-subtext">Comptes enregistrés</span>
                     </div>
                 </div>
-                <div className="analytics-kpi-card">
-                    <div className="kpi-icon cyan"><ShoppingBag size={22} /></div>
+                <div className="analytics-kpi-card luxury-card">
+                    <div className="kpi-icon gold"><ShoppingBag size={22} /></div>
                     <div className="kpi-content">
                         <span className="kpi-label">Commandes</span>
                         <span className="kpi-value">{kpis.total_orders || 0}</span>
+                        <span className="kpi-subtext">Transactions totales</span>
                     </div>
                 </div>
-                <div className="analytics-kpi-card">
-                    <div className="kpi-icon orange"><AlertCircle size={22} /></div>
+                <div className="analytics-kpi-card luxury-card">
+                    <div className="kpi-icon slate"><AlertCircle size={22} /></div>
                     <div className="kpi-content">
                         <span className="kpi-label">Churn Rate</span>
                         <span className="kpi-value">{kpis.churn_rate || 0}%</span>
+                        <span className="kpi-subtext">Taux d'attrition estimé</span>
                     </div>
                 </div>
             </div>
 
             {/* MRR Trend Chart */}
             <div className="analytics-charts-grid">
-                <div className="chart-card wide">
+                <div className="chart-card wide luxury-chart-card">
                     <div className="chart-header">
                         <h3>Évolution MRR</h3>
-                        <span className="chart-badge">6 derniers mois</span>
+                        <span className="chart-badge luxury-badge">6 derniers mois</span>
                     </div>
-                    <ResponsiveContainer width="100%" height={280}>
-                        <LineChart data={dashData?.mrr_trend || []}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                            <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                            <Tooltip formatter={(val) => [`${Number(val).toLocaleString('fr-FR')} €`, 'MRR']} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} />
-                            <Line type="monotone" dataKey="mrr" stroke="#3b82f6" strokeWidth={3} dot={{ r: 5, fill: '#3b82f6' }} />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <div style={{ width: '100%', height: 280 }}>
+                        <ResponsiveContainer>
+                            <LineChart data={dashData?.mrr_trend || []}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748b' }} stroke="#cbd5e1" />
+                                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} stroke="#cbd5e1" />
+                                <Tooltip formatter={(val) => [`${Number(val).toLocaleString('fr-FR')} €`, 'MRR']} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff' }} />
+                                <Line type="monotone" dataKey="mrr" stroke="#7f1d1d" strokeWidth={3} dot={{ r: 5, fill: '#d97706', stroke: '#7f1d1d', strokeWidth: 2 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
                 {/* Revenue per Tenant */}
-                <div className="chart-card">
+                <div className="chart-card luxury-chart-card">
                     <div className="chart-header">
                         <h3>Revenus par Tenant</h3>
-                        <span className="chart-badge">Top tenants</span>
+                        <span className="chart-badge luxury-badge">Classement Top 6</span>
                     </div>
-                    <ResponsiveContainer width="100%" height={280}>
-                        <BarChart data={tenants.sort((a, b) => (b.stats?.revenue || 0) - (a.stats?.revenue || 0)).slice(0, 6)}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
-                            <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
-                            <Tooltip formatter={(val) => [`${Number(val).toLocaleString('fr-FR')} €`, 'Revenus']} contentStyle={{ borderRadius: '8px' }} />
-                            <Bar dataKey="stats.revenue" radius={[6, 6, 0, 0]}>
-                                {tenants.slice(0, 6).map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <div style={{ width: '100%', height: 280 }}>
+                        <ResponsiveContainer>
+                            <BarChart data={[...tenants].sort((a, b) => (b.stats?.revenue || 0) - (a.stats?.revenue || 0)).slice(0, 6)}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} stroke="#cbd5e1" />
+                                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} stroke="#cbd5e1" />
+                                <Tooltip formatter={(val) => [`${Number(val).toLocaleString('fr-FR')} €`, 'Revenus']} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff' }} />
+                                <Bar dataKey="stats.revenue" radius={[6, 6, 0, 0]}>
+                                    {[...tenants].sort((a, b) => (b.stats?.revenue || 0) - (a.stats?.revenue || 0)).slice(0, 6).map((_, i) => (
+                                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             </div>
 
             {/* Tenants List */}
-            <div className="table-card">
+            <div className="table-card luxury-table-card">
                 <div className="table-header">
-                    <h3><Building2 size={18} /> Gestion des Tenants</h3>
+                    <h3><Building2 size={18} className="luxury-icon" /> Gestion des Tenants</h3>
                     <div className="table-actions">
-                        <div className="search-box">
+                        <div className="search-box luxury-search">
                             <Search size={16} />
-                            <input type="text" placeholder="Rechercher..." value={search} onChange={e => setSearch(e.target.value)} />
+                            <input type="text" placeholder="Rechercher un tenant..." value={search} onChange={e => setSearch(e.target.value)} />
                         </div>
-                        <select className="filter-select" value={planFilter} onChange={e => setPlanFilter(e.target.value)}>
+                        <select className="filter-select luxury-filter" value={planFilter} onChange={e => setPlanFilter(e.target.value)}>
                             <option value="">Tous les plans</option>
                             <option value="free">Free</option>
                             <option value="starter">Starter</option>
@@ -184,16 +215,16 @@ const SaasDashboard = () => {
                     </div>
                 </div>
                 <div className="table-responsive">
-                    <table className="premium-table">
+                    <table className="premium-table luxury-table">
                         <thead>
                             <tr>
                                 <th>Tenant</th>
                                 <th>Domaine</th>
                                 <th>Plan</th>
                                 <th>Statut</th>
-                                <th>Users</th>
+                                <th>Membres</th>
                                 <th>Commandes</th>
-                                <th>Revenus</th>
+                                <th>Chiffre d'Affaires</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -202,9 +233,9 @@ const SaasDashboard = () => {
                                 <tr key={t.id}>
                                     <td className="tenant-name-cell">
                                         <strong>{t.name}</strong>
-                                        <small>{t.contact_email}</small>
+                                        <span className="tenant-email">{t.contact_email}</span>
                                     </td>
-                                    <td><code className="domain-code">{t.domain}</code></td>
+                                    <td><code className="domain-code-luxury">{t.domain}</code></td>
                                     <td><span className={`badge badge-plan ${t.plan}`}>{t.plan}</span></td>
                                     <td>
                                         {t.is_active
@@ -214,7 +245,7 @@ const SaasDashboard = () => {
                                     </td>
                                     <td>{t.stats?.users || 0}</td>
                                     <td>{t.stats?.orders || 0}</td>
-                                    <td><strong>{(t.stats?.revenue || 0).toLocaleString('fr-FR')} €</strong></td>
+                                    <td><strong className="revenue-text">{(t.stats?.revenue || 0).toLocaleString('fr-FR')} €</strong></td>
                                     <td className="action-cell">
                                         {t.is_active ? (
                                             <button className="btn-action suspend" onClick={() => handleTenantAction(t.id, 'suspend')} disabled={actionLoading === `${t.id}-suspend`} title="Suspendre">
@@ -237,6 +268,177 @@ const SaasDashboard = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Custom Embedded Premium Styles */}
+            <style>{`
+                .saas-dashboard-luxury {
+                    font-family: 'Inter', system-ui, sans-serif;
+                }
+
+                .subtitle-desc {
+                    color: var(--text-muted);
+                    font-size: 0.95rem;
+                    margin-top: 0.25rem;
+                }
+
+                /* Luxury Export Button */
+                .btn-export-luxury {
+                    background: #7f1d1d;
+                    color: #ffffff;
+                    border: 1px solid #7f1d1d;
+                    border-radius: var(--radius-md);
+                    padding: 0.6rem 1.2rem;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    cursor: pointer;
+                    transition: all var(--transition-fast);
+                    box-shadow: 0 4px 12px rgba(127, 29, 29, 0.15);
+                }
+
+                .btn-export-luxury:hover {
+                    background: #991b1b;
+                    border-color: #991b1b;
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 16px rgba(127, 29, 29, 0.25);
+                }
+
+                .btn-export-luxury:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                    transform: none;
+                }
+
+                /* Luxury KPI Cards */
+                .luxury-card {
+                    background: #ffffff;
+                    border: 1px solid #f1f5f9;
+                    border-radius: var(--radius-lg);
+                    transition: all var(--transition-smooth);
+                }
+
+                .luxury-card:hover {
+                    transform: translateY(-4px);
+                    border-color: #d97706; /* Gold accent on hover */
+                    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+                }
+
+                .kpi-icon.burgundy {
+                    background: rgba(127, 29, 29, 0.08);
+                    color: #7f1d1d;
+                }
+
+                .kpi-icon.gold {
+                    background: rgba(217, 119, 6, 0.08);
+                    color: #d97706;
+                }
+
+                .kpi-icon.slate {
+                    background: rgba(71, 85, 105, 0.08);
+                    color: #475569;
+                }
+
+                .kpi-subtext {
+                    font-size: 0.75rem;
+                    color: #94a3b8;
+                    margin-top: 0.1rem;
+                }
+
+                /* Luxury Charts */
+                .luxury-chart-card {
+                    background: #ffffff;
+                    border: 1px solid #f1f5f9;
+                    border-radius: var(--radius-lg);
+                    box-shadow: var(--shadow-sm);
+                    transition: all var(--transition-smooth);
+                }
+
+                .luxury-chart-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+                    border-color: #f1f5f9;
+                }
+
+                .luxury-badge {
+                    background: rgba(217, 119, 6, 0.08);
+                    color: #d97706;
+                    font-weight: 600;
+                }
+
+                /* Table Styling */
+                .luxury-table-card {
+                    background: #ffffff;
+                    border: 1px solid #f1f5f9;
+                    border-radius: var(--radius-lg);
+                    box-shadow: var(--shadow-sm);
+                }
+
+                .luxury-icon {
+                    color: #7f1d1d;
+                }
+
+                .luxury-search input {
+                    border: 1px solid #cbd5e1;
+                    padding-left: 2.25rem !important;
+                }
+
+                .luxury-search input:focus {
+                    border-color: #7f1d1d;
+                    box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.1);
+                }
+
+                .luxury-filter {
+                    border: 1px solid #cbd5e1;
+                }
+
+                .luxury-filter:focus {
+                    border-color: #7f1d1d;
+                    outline: none;
+                }
+
+                .luxury-table th {
+                    border-bottom: 2px solid #f1f5f9;
+                    color: #475569;
+                    font-weight: 600;
+                    background: #fafbfd;
+                }
+
+                .luxury-table tbody tr {
+                    background: #ffffff;
+                    border-bottom: 1px solid #f1f5f9;
+                    box-shadow: none;
+                    border-radius: 0;
+                }
+
+                .luxury-table tbody tr:hover {
+                    background: #fafbfd;
+                    transform: none;
+                    box-shadow: none;
+                }
+
+                .tenant-email {
+                    display: block;
+                    font-size: 0.75rem;
+                    color: #94a3b8;
+                    margin-top: 0.15rem;
+                }
+
+                .domain-code-luxury {
+                    font-family: monospace;
+                    background: #f1f5f9;
+                    color: #334155;
+                    padding: 0.2rem 0.5rem;
+                    border-radius: 6px;
+                    font-size: 0.85rem;
+                }
+
+                .revenue-text {
+                    color: #7f1d1d;
+                    font-size: 0.95rem;
+                }
+            `}</style>
         </div>
     );
 };

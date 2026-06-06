@@ -136,6 +136,29 @@ export const exportToPDF = (type, data) => {
             };
             break;
 
+        case 'saas':
+            title = 'Rapport d\'Exportation - Administration SaaS';
+            headers = [['Tenant', 'Domaine', 'Plan', 'Statut', 'Utilisateurs', 'Commandes', 'Revenus']];
+            rows = data.map(item => [
+                item.name || 'N/A',
+                item.domain || 'N/A',
+                (item.plan || 'free').toUpperCase(),
+                item.is_active ? 'ACTIF' : 'SUSPENDU',
+                item.stats?.users || 0,
+                item.stats?.orders || 0,
+                formatCurrency(item.stats?.revenue)
+            ]);
+            columnStyles = {
+                0: { halign: 'left' },
+                1: { halign: 'left' },
+                2: { halign: 'center' },
+                3: { halign: 'center' },
+                4: { halign: 'right' },
+                5: { halign: 'right' },
+                6: { halign: 'right' }
+            };
+            break;
+
         default:
             title = 'Rapport d\'Exportation';
             headers = [[]];
@@ -204,6 +227,15 @@ export const exportToPDF = (type, data) => {
             { label: 'Chiffre d\'Affaires Total', value: formatCurrency(totalRevenue) },
             { label: 'Commandes Validées', value: `${totalOrders}` },
             { label: 'Panier Moyen Global', value: formatCurrency(avgBasket) }
+        ];
+    } else if (type === 'saas') {
+        const totalUsers = data.reduce((sum, item) => sum + Number.parseInt(item.stats?.users || 0, 10), 0);
+        const totalRevenue = data.reduce((sum, item) => sum + Number.parseFloat(item.stats?.revenue || 0), 0);
+        const activeCount = data.filter(item => item.is_active).length;
+        kpis = [
+            { label: 'Tenants Actifs', value: `${activeCount} / ${data.length}` },
+            { label: 'Utilisateurs Totaux', value: `${totalUsers}` },
+            { label: 'Revenus Cumulés', value: formatCurrency(totalRevenue) }
         ];
     }
 
