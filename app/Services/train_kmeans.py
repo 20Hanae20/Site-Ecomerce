@@ -69,7 +69,7 @@ def train_model(perfumes, n_clusters=5):
         perfume['cluster'] = int(clusters[i])
         perfume['score'] = 1.0  # Default score
     
-    print(f"\n✅ Model trained successfully")
+    print(f"\n[OK] Model trained successfully")
     print(f"   - Cluster distribution: {np.bincount(clusters)}")
     
     return kmeans, scaler, perfumes
@@ -95,7 +95,7 @@ def save_model(kmeans, scaler, perfumes, output_path):
     with open(output_path, 'wb') as f:
         pickle.dump(model_data, f)
     
-    print(f"\n✅ Model saved to: {output_path}")
+    print(f"\n[OK] Model saved to: {output_path}")
     print(f"   - File size: {output_path.stat().st_size / 1024:.2f} KB")
     
     return True
@@ -118,17 +118,17 @@ def main():
 
         # Load training data
         if args.perfumes_json:
-            print(f"\n📥 Loading perfumes data from: {args.perfumes_json}")
+            print(f"\n[LOAD] Loading perfumes data from: {args.perfumes_json}")
             with open(args.perfumes_json, 'r', encoding='utf-8') as pf:
                 perfumes = json.load(pf)
-            print(f"✅ Loaded {len(perfumes)} perfume profiles from JSON")
+            print(f"[OK] Loaded {len(perfumes)} perfume profiles from JSON")
         else:
-            print("\n📊 Creating synthetic training data...")
+            print("\n[DATA] Creating synthetic training data...")
             perfumes = create_training_data()
-            print(f"✅ Generated {len(perfumes)} synthetic perfume profiles")
+            print(f"[OK] Generated {len(perfumes)} synthetic perfume profiles")
 
         # Train model
-        print("\n🤖 Training K-Means model...")
+        print("\n[ML] Training K-Means model...")
         kmeans, scaler, perfumes_with_clusters = train_model(perfumes, n_clusters=args.n_clusters)
 
         # Determine output path
@@ -140,11 +140,11 @@ def main():
             model_path = Path(__file__).parent.parent.parent / 'storage' / 'app' / 'perfume_recommender_model.pkl'
 
         # Save model
-        print("\n💾 Saving model...")
+        print("\n[SAVE] Saving model...")
         save_model(kmeans, scaler, perfumes_with_clusters, model_path)
         
         print("\n" + "=" * 60)
-        print("✅ Training completed successfully!")
+        print("Success: Training completed successfully!")
         print("=" * 60)
         print("\nModel ready for use at:")
         print(f"  {model_path}")
@@ -153,7 +153,7 @@ def main():
         return 0
     
     except Exception as e:
-        print(f"\n❌ Error during training: {e}")
+        print(f"\n[ERROR] Error during training: {e}")
         import traceback
         traceback.print_exc()
         return 1

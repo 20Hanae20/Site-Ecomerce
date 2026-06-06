@@ -45,12 +45,12 @@ class MLTestDataSeeder extends Seeder
             'first_name' => 'Client',
             'last_name' => 'Fidèle',
             'password' => Hash::make('password'),
-            'role' => 'client',
+            'role' => 'user',
             'status' => 'active',
             'email_verified_at' => now(),
         ]);
 
-        // 2. Profil Saisonnier : Achète seulement pendant les fêtes (Novembre/Décembre, Février)
+        // 2. Profil Saisonnier : Achète seulement pendant les fêtes
         $seasonalUser = User::firstOrCreate([
             'email' => 'seasonal@mltest.com'
         ], [
@@ -59,7 +59,7 @@ class MLTestDataSeeder extends Seeder
             'first_name' => 'Client',
             'last_name' => 'Saisonnier',
             'password' => Hash::make('password'),
-            'role' => 'client',
+            'role' => 'user',
             'status' => 'active',
             'email_verified_at' => now(),
         ]);
@@ -73,7 +73,7 @@ class MLTestDataSeeder extends Seeder
             'first_name' => 'Client',
             'last_name' => 'Perdu',
             'password' => Hash::make('password'),
-            'role' => 'client',
+            'role' => 'user',
             'status' => 'active',
             'email_verified_at' => now(),
         ]);
@@ -81,6 +81,90 @@ class MLTestDataSeeder extends Seeder
         $this->generateLoyalHistory($loyalUser, $perfumes, $tenantId);
         $this->generateSeasonalHistory($seasonalUser, $perfumes, $tenantId);
         $this->generateChurnerHistory($churnerUser, $perfumes, $tenantId);
+
+        // 4. Generate 5 VIP Clients (> 5 orders or > 500 € total spent)
+        for ($i = 1; $i <= 5; $i++) {
+            $user = User::firstOrCreate([
+                'email' => "vip{$i}@mltest.com"
+            ], [
+                'tenant_id' => $tenantId,
+                'name' => "VIP Client {$i}",
+                'first_name' => 'VIP',
+                'last_name' => "Client {$i}",
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]);
+
+            // Seed 6 to 10 orders spread over the last 12 months
+            $numOrders = rand(6, 10);
+            for ($o = 0; $o < $numOrders; $o++) {
+                $date = Carbon::now()->subDays(rand(5, 360));
+                // High price perfumes to reach >500€ easily
+                $this->createOrder($user, $perfumes->random(rand(2, 3)), $date, $tenantId, true);
+            }
+        }
+
+        // 5. Generate 8 Premium Clients (3 to 5 orders or > 200 € total spent)
+        for ($i = 1; $i <= 8; $i++) {
+            $user = User::firstOrCreate([
+                'email' => "premium{$i}@mltest.com"
+            ], [
+                'tenant_id' => $tenantId,
+                'name' => "Premium Client {$i}",
+                'first_name' => 'Premium',
+                'last_name' => "Client {$i}",
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]);
+
+            $numOrders = rand(3, 4);
+            for ($o = 0; $o < $numOrders; $o++) {
+                $date = Carbon::now()->subDays(rand(5, 360));
+                $this->createOrder($user, $perfumes->random(rand(1, 2)), $date, $tenantId, false);
+            }
+        }
+
+        // 6. Generate 12 Occasional Clients (1 to 2 orders)
+        for ($i = 1; $i <= 12; $i++) {
+            $user = User::firstOrCreate([
+                'email' => "occasional{$i}@mltest.com"
+            ], [
+                'tenant_id' => $tenantId,
+                'name' => "Occasional Client {$i}",
+                'first_name' => 'Occasional',
+                'last_name' => "Client {$i}",
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]);
+
+            $numOrders = rand(1, 2);
+            for ($o = 0; $o < $numOrders; $o++) {
+                $date = Carbon::now()->subDays(rand(10, 360));
+                $this->createOrder($user, $perfumes->random(1), $date, $tenantId, false);
+            }
+        }
+
+        // 7. Generate 10 New Clients (0 orders)
+        for ($i = 1; $i <= 10; $i++) {
+            User::firstOrCreate([
+                'email' => "newclient{$i}@mltest.com"
+            ], [
+                'tenant_id' => $tenantId,
+                'name' => "New Client {$i}",
+                'first_name' => 'New',
+                'last_name' => "Client {$i}",
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'status' => 'active',
+                'email_verified_at' => now(),
+            ]);
+        }
 
         $this->command->info('ML Test Data Seeded successfully!');
     }
@@ -111,7 +195,7 @@ class MLTestDataSeeder extends Seeder
         }
     }
 
-    private function createOrder($user, $selectedPerfumes, $date, $tenantId)
+    private function createOrder($user, $selectedPerfumes, $date, $tenantId, $isHighValue = false)
     {
         $order = Order::create([
             'tenant_id' => $tenantId,
@@ -122,9 +206,9 @@ class MLTestDataSeeder extends Seeder
             'tax' => 0,
             'shipping_cost' => 5.00,
             'total' => 0,
-            'payment_method' => 'card', // usually credit_card or stripe
+            'payment_method' => 'card',
             'payment_status' => 'completed',
-            'shipping_address_id' => null, // Optionnel pour le test
+            'shipping_address_id' => null,
             'created_at' => $date,
             'updated_at' => $date,
         ]);
@@ -132,7 +216,7 @@ class MLTestDataSeeder extends Seeder
         $subtotal = 0;
 
         foreach ($selectedPerfumes as $perfume) {
-            $quantity = rand(1, 2);
+            $quantity = $isHighValue ? rand(2, 3) : rand(1, 2);
             $itemSubtotal = $perfume->price * $quantity;
             $subtotal += $itemSubtotal;
 
