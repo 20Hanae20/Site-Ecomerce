@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_HOST = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080';
+export const API_HOST = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 export const API_BASE_URL = API_HOST.endsWith('/api') ? API_HOST : `${API_HOST}/api`;
 
 const api = axios.create({
