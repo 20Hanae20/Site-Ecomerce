@@ -51,6 +51,7 @@
   --transition-smooth: 420ms cubic-bezier(0.16, 1, 0.3, 1);
 
   --gradient-accent: linear-gradient(135deg, #d4a558 0%, #b28844 100%);
+  --grad-gold: linear-gradient(135deg, #d4a558 0%, #b28844 100%);
   --gradient-primary: linear-gradient(135deg, #1f4d8b 0%, #1b3e75 100%);
 }
 

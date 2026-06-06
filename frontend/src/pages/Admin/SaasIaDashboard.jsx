@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import { Brain, Sparkles, Server, Play, RefreshCw, AlertCircle, CheckCircle2, User, Search, Award, Activity } from 'lucide-react';
 
 const SaasIaDashboard = () => {
@@ -368,12 +368,13 @@ const SaasIaDashboard = () => {
                                         <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.05)" />
-                                <XAxis dataKey="epoch" stroke="#9ca3af" fontSize={12} tickLine={false} />
-                                <YAxis domain={[0, 'auto']} stroke="#9ca3af" fontSize={12} tickLine={false} />
-                                <Tooltip contentStyle={{ background: '#131b2e', borderColor: 'rgba(255,255,255,0.08)' }} />
-                                <Area type="monotone" dataKey="rmse" name="Erreur RMSE" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorRmse)" />
-                                <Area type="monotone" dataKey="mae" name="Erreur MAE" stroke="#d4a853" strokeWidth={2} fill="none" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(15, 23, 42, 0.08)" />
+                                <XAxis dataKey="epoch" stroke="#475569" fontSize={12} tickLine={false} />
+                                <YAxis domain={[0, 'auto']} stroke="#475569" fontSize={12} tickLine={false} />
+                                <Tooltip contentStyle={{ background: '#ffffff', color: '#0f172a', borderColor: '#d8dde3', borderRadius: '8px' }} />
+                                <Legend verticalAlign="top" height={36} />
+                                <Area type="monotone" dataKey="rmse" name="Erreur RMSE (Précision)" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorRmse)" />
+                                <Area type="monotone" dataKey="mae" name="Erreur MAE (Moyenne)" stroke="#d4a853" strokeWidth={2} fill="none" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -385,15 +386,14 @@ const SaasIaDashboard = () => {
                     <div style={{ width: '100%', height: 260 }}>
                         <ResponsiveContainer>
                             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
-                                <XAxis type="number" dataKey="x" name="Intensité" unit="%" stroke="#9ca3af" fontSize={10} />
-                                <YAxis type="number" dataKey="y" name="Fidélité" unit="%" stroke="#9ca3af" fontSize={10} />
-                                <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#131b2e', borderColor: 'rgba(255,255,255,0.08)' }} />
-                                <Scatter name="Profils Clients" data={iaData?.cluster_points || clusterData} fill="#8b5cf6">
-                                    {(iaData?.cluster_points || clusterData).map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={clusterColors[entry.cluster] || '#8b5cf6'} />
-                                    ))}
-                                </Scatter>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(15, 23, 42, 0.08)" />
+                                <XAxis type="number" dataKey="x" name="Pref. Frais" unit="%" stroke="#475569" fontSize={10} />
+                                <YAxis type="number" dataKey="y" name="Pref. Boisé" unit="%" stroke="#475569" fontSize={10} />
+                                <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ background: '#ffffff', color: '#0f172a', borderColor: '#d8dde3', borderRadius: '8px' }} />
+                                <Legend verticalAlign="top" height={36} />
+                                <Scatter name="Boisés (Cluster 1)" data={(iaData?.cluster_points || clusterData).filter(p => p.cluster === 1)} fill="#d97706" />
+                                <Scatter name="Frais (Cluster 2)" data={(iaData?.cluster_points || clusterData).filter(p => p.cluster === 2)} fill="#2563eb" />
+                                <Scatter name="Floraux (Cluster 3)" data={(iaData?.cluster_points || clusterData).filter(p => p.cluster === 3)} fill="#8b5cf6" />
                             </ScatterChart>
                         </ResponsiveContainer>
                     </div>
@@ -500,24 +500,24 @@ const SaasIaDashboard = () => {
                         )}
                         {!testing && !testError && testResults && testResults.length > 0 && (
                             <div style={{ width: '100%' }}>
-                                <h4 style={{ fontSize: '0.875rem', fontWeight: 700, marginBottom: '0.75rem', color: '#60a5fa' }}>Recommandations générées :</h4>
+                                <h4 style={{ fontSize: '0.875rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--admin-primary)' }}>Recommandations générées :</h4>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                     {testResults.map((perfume, idx) => (
-                                        <div key={perfume.id || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                                        <div key={perfume.id || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'var(--admin-bg-surface)', border: '1px solid var(--admin-border)' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                                 {perfume.image_url ? (
                                                     <img src={perfume.image_url} alt={perfume.name} style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }} />
                                                 ) : (
-                                                    <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>🧪</div>
+                                                    <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--admin-surface-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>🧪</div>
                                                 )}
                                                 <div>
-                                                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{perfume.name}</div>
+                                                    <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>{perfume.name}</div>
                                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{perfume.olfactory_family || 'Famille olfactive non spécifiée'}</div>
                                                 </div>
                                             </div>
                                             <div style={{ textHeading: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--primary)' }}>{perfume.price} €</span>
-                                                <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>★ {perfume.rating || '4.0'}</span>
+                                                <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--admin-primary)' }}>{perfume.price} €</span>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--admin-success)', fontWeight: 600 }}>★ {perfume.rating || '4.0'}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -528,26 +528,26 @@ const SaasIaDashboard = () => {
                 </div>
 
                 {/* Training Console */}
-                <div className="glass-premium" style={{ borderRadius: '24px', padding: '2rem', background: 'rgba(17, 24, 39, 0.4)', border: '1px solid rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="glass-premium" style={{ borderRadius: '24px', padding: '2rem', background: 'var(--admin-bg-surface)', border: '1px solid var(--admin-border)', display: 'flex', flexDirection: 'column', gap: '1.5rem', boxShadow: 'var(--admin-shadow-sm)' }}>
                     <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <RefreshCw size={20} style={{ color: '#8b5cf6' }} /> Console de Réentraînement des Modèles
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--admin-text-primary)' }}>
+                            <RefreshCw size={20} style={{ color: '#7c3aed' }} /> Console de Réentraînement des Modèles
                         </h3>
                         <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Gérez le cycle de vie de l'apprentissage des différents modèles de recommandation.</p>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
                         {/* Model 1: Hybrid */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'var(--admin-bg-base)', border: '1px solid var(--admin-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                                    <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>Fusion Hybride (`hybrid`)</span>
+                                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>Fusion Hybride (`hybrid`)</span>
                                 </div>
                                 <button 
                                     onClick={() => handleTrainModel('hybrid')}
                                     disabled={trainingLoading['hybrid']}
-                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(139, 92, 246, 0.3)', cursor: trainingLoading['hybrid'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(124, 58, 237, 0.08)', color: '#7c3aed', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(124, 58, 237, 0.2)', cursor: trainingLoading['hybrid'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                                 >
                                     <RefreshCw className={trainingLoading['hybrid'] ? "animate-spin" : ""} size={12} style={{ animation: trainingLoading['hybrid'] ? 'spin 1.5s linear infinite' : 'none' }} />
                                     <span>Réentraîner</span>
@@ -567,16 +567,16 @@ const SaasIaDashboard = () => {
                         </div>
 
                         {/* Model 2: SVD */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'var(--admin-bg-base)', border: '1px solid var(--admin-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                                    <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>Collaborative Filtering (`svd_optimized`)</span>
+                                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>Collaborative Filtering (`svd_optimized`)</span>
                                 </div>
                                 <button 
                                     onClick={() => handleTrainModel('svd_optimized')}
                                     disabled={trainingLoading['svd_optimized']}
-                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(139, 92, 246, 0.3)', cursor: trainingLoading['svd_optimized'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(124, 58, 237, 0.08)', color: '#7c3aed', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(124, 58, 237, 0.2)', cursor: trainingLoading['svd_optimized'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                                 >
                                     <RefreshCw className={trainingLoading['svd_optimized'] ? "animate-spin" : ""} size={12} style={{ animation: trainingLoading['svd_optimized'] ? 'spin 1.5s linear infinite' : 'none' }} />
                                     <span>Réentraîner</span>
@@ -596,16 +596,16 @@ const SaasIaDashboard = () => {
                         </div>
 
                         {/* Model 3: Content-based */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'var(--admin-bg-base)', border: '1px solid var(--admin-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                                    <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>Content-Based Filtering (`content_based`)</span>
+                                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>Content-Based Filtering (`content_based`)</span>
                                 </div>
                                 <button 
                                     onClick={() => handleTrainModel('content_based')}
                                     disabled={trainingLoading['content_based']}
-                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(139, 92, 246, 0.3)', cursor: trainingLoading['content_based'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(124, 58, 237, 0.08)', color: '#7c3aed', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(124, 58, 237, 0.2)', cursor: trainingLoading['content_based'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                                 >
                                     <RefreshCw className={trainingLoading['content_based'] ? "animate-spin" : ""} size={12} style={{ animation: trainingLoading['content_based'] ? 'spin 1.5s linear infinite' : 'none' }} />
                                     <span>Réentraîner</span>
@@ -625,16 +625,16 @@ const SaasIaDashboard = () => {
                         </div>
 
                         {/* Model 4: K-Means */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', borderRadius: '12px', background: 'var(--admin-bg-base)', border: '1px solid var(--admin-border)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-                                    <span style={{ fontWeight: 700, fontSize: '0.875rem' }}>Segmentation Clients (`kmeans_segmentation`)</span>
+                                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--admin-text-primary)' }}>Segmentation Clients (`kmeans_segmentation`)</span>
                                 </div>
                                 <button 
                                     onClick={() => handleTrainModel('kmeans_segmentation')}
                                     disabled={trainingLoading['kmeans_segmentation']}
-                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(139, 92, 246, 0.3)', cursor: trainingLoading['kmeans_segmentation'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', background: 'rgba(124, 58, 237, 0.08)', color: '#7c3aed', fontSize: '0.75rem', fontWeight: 600, border: '1px solid rgba(124, 58, 237, 0.2)', cursor: trainingLoading['kmeans_segmentation'] ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                                 >
                                     <RefreshCw className={trainingLoading['kmeans_segmentation'] ? "animate-spin" : ""} size={12} style={{ animation: trainingLoading['kmeans_segmentation'] ? 'spin 1.5s linear infinite' : 'none' }} />
                                     <span>Réentraîner</span>

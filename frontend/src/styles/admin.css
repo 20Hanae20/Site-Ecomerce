@@ -18,6 +18,7 @@
     --admin-accent: #d4a558;
     --admin-accent-hover: #b28844;
     --admin-accent-glow: rgba(212, 165, 88, 0.16);
+    --grad-gold: linear-gradient(135deg, #d4a558 0%, #b28844 100%);
     --admin-surface-muted: #eef3f8;
 
     /* Text colors */

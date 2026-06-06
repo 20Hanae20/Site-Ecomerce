@@ -48,15 +48,18 @@ const AdminLogs = () => {
                     </div>
                     <p>Gardez un œil sur l'intégrité et les mouvements secrets de votre Maison.</p>
                 </div>
-                <div className="admin-toolbar-refined" style={{ padding: '0.4rem', gap: '0.4rem', marginBottom: 0 }}>
+                <div className="admin-toolbar-refined" style={{ padding: '0.4rem', gap: '0.4rem', marginBottom: 0, background: 'var(--admin-bg-base)', border: '1px solid var(--admin-border)', borderRadius: '12px' }}>
                     <button
                         className={`gold-button ${activeTab === 'login' ? '' : 'inactive'}`}
                         onClick={() => setActiveTab('login')}
                         style={{
                             padding: '0.75rem 1.5rem',
                             fontSize: '0.8rem',
+                            borderRadius: '8px',
                             background: activeTab === 'login' ? 'var(--grad-gold)' : 'transparent',
-                            border: activeTab === 'login' ? 'none' : '1px solid rgba(255,255,255,0.05)'
+                            color: activeTab === 'login' ? '#000' : 'var(--admin-text-secondary)',
+                            border: 'none',
+                            fontWeight: 600
                         }}
                     >
                         <Key size={16} /> Connexions
@@ -67,8 +70,11 @@ const AdminLogs = () => {
                         style={{
                             padding: '0.75rem 1.5rem',
                             fontSize: '0.8rem',
+                            borderRadius: '8px',
                             background: activeTab === 'action' ? 'var(--grad-gold)' : 'transparent',
-                            border: activeTab === 'action' ? 'none' : '1px solid rgba(255,255,255,0.05)'
+                            color: activeTab === 'action' ? '#000' : 'var(--admin-text-secondary)',
+                            border: 'none',
+                            fontWeight: 600
                         }}
                     >
                         <Activity size={16} /> Actions Admin
@@ -98,12 +104,12 @@ const AdminLogs = () => {
                                     <tr key={log.id}>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                <div className="avatar-refined" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', width: '38px', height: '38px', fontSize: '0.9rem' }}>
-                                                    {log.user?.name[0] || '?'}
+                                                <div className="avatar-refined" style={{ background: 'var(--admin-primary-soft)', border: '1px solid var(--admin-border)', color: 'var(--admin-primary)', width: '38px', height: '38px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                                                    {log.user?.name ? log.user.name[0].toUpperCase() : '?'}
                                                 </div>
                                                 <div>
-                                                    <span style={{ display: 'block', fontWeight: '600', color: 'white', fontSize: '0.9rem' }}>{log.user?.name || 'Inconnu'}</span>
-                                                    <span style={{ display: 'block', opacity: 0.4, fontSize: '0.75rem' }}>{log.user?.email || '-'}</span>
+                                                    <span style={{ display: 'block', fontWeight: '600', color: 'var(--admin-text-primary)', fontSize: '0.9rem' }}>{log.user?.name || 'Inconnu'}</span>
+                                                    <span style={{ display: 'block', color: 'var(--admin-text-secondary)', opacity: 0.7, fontSize: '0.75rem' }}>{log.user?.email || '-'}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -160,10 +166,10 @@ const AdminLogs = () => {
                                     <tr key={log.id}>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                <div className="avatar-refined" style={{ width: '38px', height: '38px', background: 'var(--grad-gold)', color: '#000', fontWeight: '700', fontSize: '0.9rem' }}>
-                                                    {log.user?.name[0].toUpperCase()}
+                                                <div className="avatar-refined" style={{ width: '38px', height: '38px', background: 'var(--grad-gold)', color: '#000', fontWeight: '700', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    {log.user?.name ? log.user.name[0].toUpperCase() : '?'}
                                                 </div>
-                                                <span style={{ fontWeight: 600, color: 'white' }}>{log.user?.name}</span>
+                                                <span style={{ fontWeight: 600, color: 'var(--admin-text-primary)' }}>{log.user?.name || 'Inconnu'}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -171,27 +177,27 @@ const AdminLogs = () => {
                                                 fontWeight: 800,
                                                 textTransform: 'uppercase',
                                                 fontSize: '0.7rem',
-                                                color: 'var(--primary)',
+                                                color: 'var(--admin-primary)',
                                                 letterSpacing: '1px',
-                                                background: 'rgba(212, 175, 55, 0.05)',
-                                                padding: '0.2rem 0.6rem',
+                                                background: 'var(--admin-primary-soft)',
+                                                padding: '0.25rem 0.6rem',
                                                 borderRadius: '6px'
                                             }}>{log.action}</span>
                                         </td>
                                         <td>
                                             <code style={{
-                                                background: 'rgba(255,255,255,0.02)',
+                                                background: 'var(--admin-bg-base)',
                                                 padding: '0.3rem 0.6rem',
                                                 borderRadius: '8px',
                                                 fontSize: '0.75rem',
-                                                border: '1px solid rgba(255,255,255,0.05)',
-                                                color: 'white',
-                                                opacity: 0.8
+                                                border: '1px solid var(--admin-border)',
+                                                color: 'var(--admin-text-primary)',
+                                                opacity: 0.9
                                             }}>
                                                 {log.target_type}
                                             </code>
                                         </td>
-                                        <td><small style={{ opacity: 0.4, fontSize: '0.8rem' }}>{log.ip_address}</small></td>
+                                        <td><small style={{ color: 'var(--admin-text-secondary)', opacity: 0.8, fontSize: '0.8rem' }}>{log.ip_address}</small></td>
                                         <td style={{ textAlign: 'right', opacity: 0.5, fontSize: '0.85rem' }}>
                                             {new Date(log.created_at).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                         </td>

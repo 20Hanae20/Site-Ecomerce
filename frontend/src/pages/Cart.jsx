@@ -3,7 +3,7 @@ import { useCart } from '../context/useCart';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { getImageUrl } from '../utils/getImageUrl';
-import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, Gift, Shield, ChevronRight } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, MapPin, ArrowRight, Sparkles, Compass, Gift, Shield, ChevronRight, Package } from 'lucide-react';
 
 const Cart = () => {
     const { cart, total, loading, error, updateQuantity, removeFromCart, clearCart } = useCart();
@@ -13,11 +13,6 @@ const Cart = () => {
     const [recommendations, setRecommendations] = useState([]);
     const [recommendationsUnavailable, setRecommendationsUnavailable] = useState(false);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        fetchAddresses();
-        fetchRecommendations();
-    }, []);
 
     const fetchRecommendations = async () => {
         const token = localStorage.getItem('token');
@@ -51,6 +46,11 @@ const Cart = () => {
             console.error('Fetch addresses error:', err);
         }
     };
+
+    useEffect(() => {
+        fetchAddresses();
+        fetchRecommendations();
+    }, []);
 
     const handleCheckout = async () => {
         if (!selectedAddress) {

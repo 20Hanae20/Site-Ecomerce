@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { exportInvoicePDF } from '../utils/pdfExport';
 import {
     ChevronLeft,
     Clock,
@@ -22,10 +23,6 @@ const OrderDetail = () => {
     const [error, setError] = useState('');
     const [cancelling, setCancelling] = useState(false);
 
-    useEffect(() => {
-        fetchOrder();
-    }, [fetchOrder]);
-
     const fetchOrder = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -38,6 +35,10 @@ const OrderDetail = () => {
             setIsLoading(false);
         }
     }, [id]);
+
+    useEffect(() => {
+        fetchOrder();
+    }, [fetchOrder]);
 
     const handleCancelOrder = async () => {
         if (!globalThis.confirm('Souhaitez-vous vraiment annuler cette commande ?')) {
@@ -110,10 +111,19 @@ const OrderDetail = () => {
                     <h1>Commande #{order.order_number}</h1>
                     <p style={{ color: 'var(--text-muted)' }}>Passée le {formatDate(order.created_at)}</p>
                 </div>
-                <span className={`order-status-badge-lg ${statusInfo.cls}`}>
-                    {statusInfo.icon}
-                    {statusInfo.label}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button
+                        onClick={() => exportInvoicePDF(order)}
+                        className="btn btn-secondary flex items-center gap-2"
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+                    >
+                        <Package size={14} /> Télécharger Facture
+                    </button>
+                    <span className={`order-status-badge-lg ${statusInfo.cls}`}>
+                        {statusInfo.icon}
+                        {statusInfo.label}
+                    </span>
+                </div>
             </header>
 
             <div className="od-grid">

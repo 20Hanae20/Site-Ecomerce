@@ -194,7 +194,7 @@ function App() {
                 {/* Panier et commande */}
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<ProtectedRoute component={Checkout} />} />
-                <Route path="/payment/confirmation/:orderId" element={<ProtectedRoute component={PaymentConfirmation} />} />
+                <Route path="/payment/confirmation" element={<ProtectedRoute component={PaymentConfirmation} />} />
 
                 {/* Utilisateur authentifié */}
                 <Route path="/profile" element={<ProtectedRoute component={Profile} />} />

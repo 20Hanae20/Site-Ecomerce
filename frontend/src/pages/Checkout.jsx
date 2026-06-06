@@ -14,14 +14,6 @@ const Checkout = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        if (!orderId) {
-            navigate('/cart');
-            return;
-        }
-        fetchOrder();
-    }, [orderId, navigate, fetchOrder]);
-
     const fetchOrder = useCallback(async () => {
         const token = localStorage.getItem('token');
         try {
@@ -31,6 +23,14 @@ const Checkout = () => {
             setError('Impossible de charger la commande');
         }
     }, [orderId]);
+
+    useEffect(() => {
+        if (!orderId) {
+            navigate('/cart');
+            return;
+        }
+        fetchOrder();
+    }, [orderId, navigate, fetchOrder]);
 
     const handlePayment = async () => {
         setIsProcessing(true);

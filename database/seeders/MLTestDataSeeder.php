@@ -166,6 +166,26 @@ class MLTestDataSeeder extends Seeder
             ]);
         }
 
+        // Seed PerfumeView records for all these users
+        $allUsers = User::where('tenant_id', $tenantId)->get();
+        foreach ($allUsers as $u) {
+            // Seed between 5 and 20 views per user
+            $numViews = rand(5, 20);
+            for ($v = 0; $v < $numViews; $v++) {
+                $p = $perfumes->random();
+                $date = Carbon::now()->subDays(rand(1, 30));
+                \App\Models\PerfumeView::updateOrCreate([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $u->id,
+                    'perfume_id' => $p->id
+                ], [
+                    'view_count' => rand(1, 8),
+                    'viewed_at' => $date,
+                    'last_viewed_at' => $date
+                ]);
+            }
+        }
+
         $this->command->info('ML Test Data Seeded successfully!');
     }
 

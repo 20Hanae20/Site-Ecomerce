@@ -4,6 +4,7 @@ import { getImageUrl } from '../utils/getImageUrl';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/useCart';
 import { Filter, Search, RotateCcw, ShoppingCart, Star, Box, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { exportPerfumesPDF } from '../utils/pdfExport';
 
 const getPerfumeImage = (perfume) => {
     return getImageUrl(perfume.image_url);
@@ -24,6 +25,21 @@ const handleImageError = (e, perfume) => {
 
 const PerfumeList = () => {
     const [perfumes, setPerfumes] = useState([]);
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportCatalog = async () => {
+        setIsExporting(true);
+        try {
+            const response = await api.get('/perfumes?per_page=100');
+            const allPerfumes = response.data?.data || response.data || [];
+            await exportPerfumesPDF(allPerfumes);
+        } catch (err) {
+            console.error("Failed to export catalog", err);
+            alert("Erreur lors de l'exportation du catalogue.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
     const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -290,7 +306,15 @@ const PerfumeList = () => {
                         <h1>Collection de Parfums</h1>
                         <p className="subtitle">Explorez notre univers de créations olfactives haut de gamme et d'exception.</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex items-center gap-3" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button
+                            onClick={handleExportCatalog}
+                            disabled={isExporting}
+                            className="btn btn-secondary flex items-center gap-2"
+                            style={{ padding: '0.5rem 1.25rem', fontSize: '0.8rem', borderRadius: '12px' }}
+                        >
+                            <Sparkles size={14} /> {isExporting ? 'Exportation...' : 'Exporter Catalogue PDF'}
+                        </button>
                         <span className="badge-luxury-pill">{pagination.total || 0} créations en ligne</span>
                     </div>
                 </div>
